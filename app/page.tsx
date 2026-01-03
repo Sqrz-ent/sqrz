@@ -144,6 +144,25 @@ return (
         </Script>
       </>
     )}
+{profile.google_analytics_id && (
+  <>
+    {/* Google Analytics (GA4) */}
+    <Script
+      src={`https://www.googletagmanager.com/gtag/js?id=${profile.google_analytics_id}`}
+      strategy="afterInteractive"
+    />
+    <Script id="ga-init" strategy="afterInteractive">
+      {`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${profile.google_analytics_id}', {
+          anonymize_ip: true,
+        });
+      `}
+    </Script>
+  </>
+)}
 
   
     
