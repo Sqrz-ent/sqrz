@@ -71,7 +71,7 @@ export default function BookingForm({
         padding: 24,
         borderRadius: 16,
         background: "#0b0b0b",
-        border: "1px solid rgba(255,255,255,0.06)",
+        border: "3px solid rgba(250, 0, 0, 0.06)",
         textAlign: "left",
       }}
     >
