@@ -171,15 +171,20 @@ return (
 
   
     
-      <div
-        style={{
-          maxWidth: 520,
-          margin: "0 auto",
-          background: "#000",
-          borderRadius: 16,
-          padding: 32,
-          textAlign: "center",
-        }}
+     <div
+  style={{
+    maxWidth: 520,
+    margin: "0 auto",
+    background: "#000",
+    borderRadius: 16,
+    padding: 32,
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    gap: 24, // 👈 THIS IS THE MAGIC LINE
+  }}
+>
+
       >
         {profile.profile_pic_img?.url && (
           <img
