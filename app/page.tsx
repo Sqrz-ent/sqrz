@@ -248,6 +248,24 @@ return (
 
 
 
+        {/* 🎧 Spotify */}
+        {spotifyEmbed && (
+          <div style={{ marginTop: 32 }}>
+            <iframe
+              src={spotifyEmbed}
+              width="100%"
+              height="152"
+              frameBorder="0"
+              allow="autoplay; encrypted-media"
+            />
+          </div>
+        )}
+
+        {/* ▶️ YouTube Gallery */}
+        {profile.video_gallery?.length > 0 && (
+          <YouTubeGallery videos={profile.video_gallery} />
+        )}
+
         {/* 🎧 SoundCloud */}
 {soundcloudEmbed && (
   <div
@@ -267,24 +285,6 @@ return (
     />
   </div>
 )}
-
-        {/* 🎧 Spotify */}
-        {spotifyEmbed && (
-          <div style={{ marginTop: 32 }}>
-            <iframe
-              src={spotifyEmbed}
-              width="100%"
-              height="152"
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-            />
-          </div>
-        )}
-
-        {/* ▶️ YouTube Gallery */}
-        {profile.video_gallery?.length > 0 && (
-          <YouTubeGallery videos={profile.video_gallery} />
-        )}
 
         {/* 📅 Calendar */}
         {profile.slug && (
