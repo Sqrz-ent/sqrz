@@ -150,7 +150,7 @@ export default async function HomePage() {
         )}
 
        <h1 style={{ fontSize: 45, color: "#f6b130" }}>
-  {profile.display_name || profile.slug}
+  {profile.display_name || profile.name}
 </h1>
 
 {/* 🔗 Social Media Bar */}
