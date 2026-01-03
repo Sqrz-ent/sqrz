@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
-import { getYouTubeEmbedUrl } from "@/lib/youtube";
+import YouTubeGallery from "@/components/YouTubeGallery";
 
 /* =========================
    DATA FETCHING
@@ -53,7 +53,6 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(baseUrl),
     title,
     description,
-
     openGraph: {
       type: "profile",
       title,
@@ -68,20 +67,12 @@ export async function generateMetadata(): Promise<Metadata> {
         },
       ],
     },
-
     twitter: {
       card: "summary_large_image",
       title,
       description,
       images: [imageUrl],
     },
-
-    icons: profile.favicon?.url
-      ? {
-          icon: profile.favicon.url,
-          apple: profile.favicon.url,
-        }
-      : undefined,
   };
 }
 
@@ -109,15 +100,8 @@ export default async function HomePage() {
   const profile = await getProfile(username);
   if (!profile) notFound();
 
-  /* =========================
-     MEDIA EMBEDS (⬅️ THIS IS THE IMPORTANT PART)
-  ========================= */
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
-    : null;
-
-  const youtubeEmbed = profile.youtube_url
-    ? getYouTubeEmbedUrl(profile.youtube_url)
     : null;
 
   return (
@@ -152,72 +136,32 @@ export default async function HomePage() {
           />
         )}
 
-        <h1
-          style={{
-            fontSize: 36,
-            fontWeight: 700,
-            marginBottom: 12,
-            color: "#fff",
-          }}
-        >
+        <h1 style={{ fontSize: 36, color: "#fff" }}>
           {profile.display_name || profile.slug}
         </h1>
 
         {profile.description && (
-          <p
-            style={{
-              fontSize: 16,
-              lineHeight: 1.6,
-              opacity: 0.8,
-              whiteSpace: "pre-line",
-              color: "#fff",
-            }}
-          >
+          <p style={{ color: "#fff", opacity: 0.8 }}>
             {profile.description}
           </p>
         )}
 
-        {/* 🎧 SPOTIFY PLAYER */}
+        {/* 🎧 Spotify */}
         {spotifyEmbed && (
-          <div
-            style={{
-              marginTop: 32,
-              borderRadius: 16,
-              overflow: "hidden",
-            }}
-          >
+          <div style={{ marginTop: 32 }}>
             <iframe
               src={spotifyEmbed}
               width="100%"
               height="152"
               frameBorder="0"
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-              loading="lazy"
+              allow="autoplay; encrypted-media"
             />
           </div>
         )}
 
-        {/* ▶️ YOUTUBE PLAYER */}
-        {youtubeEmbed && (
-          <div
-            style={{
-              marginTop: 32,
-              borderRadius: 16,
-              overflow: "hidden",
-              aspectRatio: "16 / 9",
-              background: "#000",
-            }}
-          >
-            <iframe
-              src={youtubeEmbed}
-              width="100%"
-              height="100%"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
+        {/* ▶️ YouTube Gallery */}
+        {profile.video_gallery?.length > 0 && (
+          <YouTubeGallery videos={profile.video_gallery} />
         )}
       </div>
     </main>
