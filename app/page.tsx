@@ -184,8 +184,6 @@ return (
     gap: 24, // 👈 THIS IS THE MAGIC LINE
   }}
 >
-
-      >
         {profile.profile_pic_img?.url && (
           <img
             src={profile.profile_pic_img.url}
