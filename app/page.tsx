@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
+import { getYouTubeEmbedUrl } from "@/lib/youtube";
 
 /* =========================
    DATA FETCHING
@@ -108,8 +109,15 @@ export default async function HomePage() {
   const profile = await getProfile(username);
   if (!profile) notFound();
 
+  /* =========================
+     MEDIA EMBEDS (⬅️ THIS IS THE IMPORTANT PART)
+  ========================= */
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
+    : null;
+
+  const youtubeEmbed = profile.youtube_url
+    ? getYouTubeEmbedUrl(profile.youtube_url)
     : null;
 
   return (
@@ -169,6 +177,7 @@ export default async function HomePage() {
           </p>
         )}
 
+        {/* 🎧 SPOTIFY PLAYER */}
         {spotifyEmbed && (
           <div
             style={{
@@ -183,6 +192,29 @@ export default async function HomePage() {
               height="152"
               frameBorder="0"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+              loading="lazy"
+            />
+          </div>
+        )}
+
+        {/* ▶️ YOUTUBE PLAYER */}
+        {youtubeEmbed && (
+          <div
+            style={{
+              marginTop: 32,
+              borderRadius: 16,
+              overflow: "hidden",
+              aspectRatio: "16 / 9",
+              background: "#000",
+            }}
+          >
+            <iframe
+              src={youtubeEmbed}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
               loading="lazy"
             />
           </div>
