@@ -22,7 +22,7 @@ export default function ProfileCalendar({
     async function loadEvents() {
       try {
         const res = await fetch(
-          `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/calendar?username=${username}`
+`https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/calendar?username=${encodeURIComponent(username)}`
         );
 
         const data = await res.json();
