@@ -1,9 +1,11 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
 import ProfileCalendar from "@/components/ProfileCalendar";
+
 
 /* =========================
    DATA FETCHING
@@ -149,6 +151,12 @@ export default async function HomePage() {
             {profile.description}
           </p>
         )}
+
+      {profile.pics?.length > 0 && (
+      <ImageGallery pics={profile.pics} />
+)}
+
+
 
         {/* 🎧 Spotify */}
         {spotifyEmbed && (
