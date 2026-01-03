@@ -12,7 +12,7 @@ async function getProfile(username: string) {
 }
 
 export default async function HomePage() {
-  const headersList = headers(); // ✅ FIX IS HERE
+  const headersList = await headers(); // ✅ FIX IS HERE
   const host = headersList.get("host");
 
   if (!host) notFound();
