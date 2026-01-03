@@ -35,11 +35,15 @@ export default async function HomePage() {
 
   if (!profile) notFound();
 
-  return (
-    <main style={{ padding: 40 }}>
-      <h1>{profile.slug}</h1>
-      <p>@{profile.username}</p>
-      <p>{profile.description}</p>
-    </main>
-  );
+ return (
+  <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
+    <h1 style={{ fontSize: 32, marginBottom: 8 }}>
+      {profile.slug}
+    </h1>
+
+    <p style={{ fontSize: 16, opacity: 0.8 }}>
+      {profile.description}
+    </p>
+  </main>
+);
 }
