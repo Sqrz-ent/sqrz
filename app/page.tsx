@@ -35,19 +35,35 @@ export async function generateMetadata(): Promise<Metadata> {
   if (!profile) return {};
 
   return {
+  title: profile.slug,
+  description: profile.description,
+
+  icons: {
+    icon: [
+      {
+        url: profile.profile_pic_img?.url,
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: profile.profile_pic_img?.url,
+        sizes: "16x16",
+        type: "image/png",
+      },
+    ],
+    shortcut: profile.profile_pic_img?.url,
+    apple: profile.profile_pic_img?.url,
+  },
+
+  openGraph: {
     title: profile.slug,
     description: profile.description,
-    icons: {
-      icon: profile.profile_pic_img?.url,
-    },
-    openGraph: {
-      title: profile.slug,
-      description: profile.description,
-      images: profile.profile_pic_img?.url
-        ? [{ url: profile.profile_pic_img.url }]
-        : [],
-    },
-  };
+    images: profile.profile_pic_img?.url
+      ? [{ url: profile.profile_pic_img.url }]
+      : [],
+  },
+};
+
 }
 
 export default async function HomePage() {
@@ -75,7 +91,7 @@ export default async function HomePage() {
     <main
       style={{
         minHeight: "100vh",
-        background: "#fafafa",
+        background: "#000000ff",
         padding: "48px 20px",
       }}
     >
@@ -83,7 +99,7 @@ export default async function HomePage() {
         style={{
           maxWidth: 520,
           margin: "0 auto",
-          background: "#ffffff",
+          background: "#000000ff",
           borderRadius: 16,
           padding: 32,
           boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
