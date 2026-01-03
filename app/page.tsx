@@ -5,7 +5,6 @@ import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
 import ProfileCalendar from "@/components/ProfileCalendar";
 
-
 /* =========================
    DATA FETCHING
 ========================= */
@@ -18,8 +17,6 @@ async function getProfile(username: string) {
   if (!res.ok) return null;
   return res.json();
 }
-
-console.log("VIDEO_GALLERY:", profile.video_gallery);
 
 /* =========================
    SEO METADATA
@@ -104,6 +101,9 @@ export default async function HomePage() {
   const profile = await getProfile(username);
   if (!profile) notFound();
 
+  // ✅ SAFE DEBUG LOG (inside scope)
+  console.log("VIDEO_GALLERY:", profile.video_gallery);
+
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
     : null;
@@ -167,11 +167,12 @@ export default async function HomePage() {
         {profile.video_gallery?.length > 0 && (
           <YouTubeGallery videos={profile.video_gallery} />
         )}
+
+        {/* 📅 Calendar */}
+        {profile.slug && (
+          <ProfileCalendar username={profile.slug} />
+        )}
       </div>
     </main>
   );
 }
-
-{profile.slug && (
-  <ProfileCalendar username={profile.slug} />
-)}
