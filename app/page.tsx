@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 async function getProfile(username: string) {
   const res = await fetch(
@@ -11,17 +12,53 @@ async function getProfile(username: string) {
   return res.json();
 }
 
+/* =========================
+   SEO METADATA (IMPORTANT)
+========================= */
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get("host");
+
+  if (!host) return {};
+
+  const parts = host.split(".");
+  const username = parts.length > 2 ? parts[0] : null;
+
+  if (!username || username === "www" || username === "sqrz") {
+    return {
+      title: "SQRZ",
+      description: "Book freelancers with SQRZ",
+    };
+  }
+
+  const profile = await getProfile(username);
+  if (!profile) return {};
+
+  return {
+    title: profile.slug,
+    description: profile.description,
+    icons: {
+      icon: profile.profile_pic_img?.url,
+    },
+    openGraph: {
+      title: profile.slug,
+      description: profile.description,
+      images: profile.profile_pic_img?.url
+        ? [{ url: profile.profile_pic_img.url }]
+        : [],
+    },
+  };
+}
+
 export default async function HomePage() {
   const headersList = await headers();
   const host = headersList.get("host");
 
   if (!host) notFound();
 
-  // Example: willvilla.sqrz.com
   const parts = host.split(".");
   const username = parts.length > 2 ? parts[0] : null;
 
-  // Block root domain + www
   if (!username || username === "www" || username === "sqrz") {
     return (
       <main style={{ padding: 40 }}>
@@ -32,7 +69,6 @@ export default async function HomePage() {
   }
 
   const profile = await getProfile(username);
-
   if (!profile) notFound();
 
   return (
@@ -54,7 +90,6 @@ export default async function HomePage() {
           textAlign: "center",
         }}
       >
-        {/* Profile Image */}
         {profile.profile_pic_img?.url && (
           <img
             src={profile.profile_pic_img.url}
@@ -69,7 +104,6 @@ export default async function HomePage() {
           />
         )}
 
-        {/* Name */}
         <h1
           style={{
             fontSize: 36,
@@ -80,7 +114,6 @@ export default async function HomePage() {
           {profile.slug}
         </h1>
 
-        {/* Description */}
         {profile.description && (
           <p
             style={{
