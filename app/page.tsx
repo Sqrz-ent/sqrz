@@ -1,6 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Script from "next/script";
 import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
@@ -119,6 +120,25 @@ export default async function HomePage() {
 
   return (
     <main
+          {profile.facebook_pixel_id && (
+  <>
+    {/* Facebook Pixel */}
+    <Script id="facebook-pixel" strategy="afterInteractive">
+      {`
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '${profile.facebook_pixel_id}');
+        fbq('track', 'PageView');
+      `}
+    </Script>
+  </>
+)}
       style={{
         minHeight: "100vh",
         background: "#000",
@@ -187,10 +207,6 @@ export default async function HomePage() {
   )}
 
 </div>
-
-
-        
-
         {profile.description && (
           <p style={{ color: "#fff", opacity: 0.8 }}>
             {profile.description}
