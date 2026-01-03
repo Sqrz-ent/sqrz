@@ -6,6 +6,13 @@ import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
 import ProfileCalendar from "@/components/ProfileCalendar";
 import BookingForm from "@/components/BookingForm";
+import {
+  Facebook,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Music,
+} from "lucide-react";
 
 
 
@@ -144,52 +151,46 @@ export default async function HomePage() {
           />
         )}
 
-        <h1 style={{ fontSize: 36, color: "#fff" }}>
-          {profile.display_name || profile.slug}
-        </h1>
-        <h1 style={{ fontSize: 36, color: "#fff" }}>
-          {profile.display_name || profile.slug}
-        </h1>
-        {/* 🔗 Social Media Bar */}
+       <h1 style={{ fontSize: 36, color: "#fff" }}>
+  {profile.display_name || profile.slug}
+</h1>
+
+{/* 🔗 Social Media Bar */}
 <div
   style={{
     marginTop: 12,
     display: "flex",
     justifyContent: "center",
     gap: 16,
-    fontSize: 14,
   }}
 >
   {profile.facebook && (
-    <a
-      href={profile.facebook}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "#f3b130", textDecoration: "none" }}
-    >
-      Facebook
+    <a href={profile.facebook} target="_blank" style={iconStyle}>
+      <Facebook size={20} />
     </a>
   )}
 
   {profile.instagram && (
-    <a
-      href={profile.instagram}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "#f3b130", textDecoration: "none" }}
-    >
-      Instagram
+    <a href={profile.instagram} target="_blank" style={iconStyle}>
+      <Instagram size={20} />
     </a>
   )}
 
   {profile.linkedin && (
-    <a
-      href={profile.linkedin}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "#f3b130", textDecoration: "none" }}
-    >
-      LinkedIn
+    <a href={profile.linkedin} target="_blank" style={iconStyle}>
+      <Linkedin size={20} />
+    </a>
+  )}
+
+  {profile.youtube_url && (
+    <a href={profile.youtube_url} target="_blank" style={iconStyle}>
+      <Youtube size={20} />
+    </a>
+  )}
+
+  {profile.spotify_url && (
+    <a href={profile.spotify_url} target="_blank" style={iconStyle}>
+      <Music size={20} />
     </a>
   )}
 </div>
@@ -203,9 +204,10 @@ export default async function HomePage() {
           </p>
         )}
 
-      {profile.pics?.length > 0 && (
-      <ImageGallery pics={profile.pics} />
+     {profile.pics?.length > 0 && (
+  <ImageGallery pics={profile.pics} />
 )}
+
 
 
 
@@ -237,3 +239,11 @@ export default async function HomePage() {
     </main>
   );
 }
+
+const iconStyle = {
+  color: "#f3b130",
+  display: "inline-flex",
+  alignItems: "center",
+};
+
+
