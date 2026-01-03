@@ -37,9 +37,9 @@ export default async function HomePage() {
 
   return (
     <main style={{ padding: 40 }}>
-      <h1>{profile.display_name}</h1>
+      <h1>{profile.slug}</h1>
       <p>@{profile.username}</p>
-      <p>{profile.bio}</p>
+      <p>{profile.description}</p>
     </main>
   );
 }
