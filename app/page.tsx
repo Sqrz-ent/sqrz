@@ -34,36 +34,41 @@ export async function generateMetadata(): Promise<Metadata> {
   const profile = await getProfile(username);
   if (!profile) return {};
 
+  const faviconUrl = profile.favicon?.url;
+
   return {
-  title: profile.slug,
-  description: profile.description,
-
-  icons: {
-    icon: [
-      {
-        url: profile.profile_pic_img.url,
-        sizes: "32x32",
-        type: "image/png",
-      },
-      {
-        url: profile.profile_pic_img.url,
-        sizes: "16x16",
-        type: "image/png",
-      },
-    ],
-    shortcut: profile.profile_pic_img.url,
-    apple: profile.profile_pic_img.url,
-  },
-
-  openGraph: {
     title: profile.slug,
     description: profile.description,
-    images: profile.profile_pic_img.url
-      ? [{ url: profile.profile_pic_img.url }]
-      : [],
-  },
-};
 
+    icons: faviconUrl
+      ? {
+          icon: [
+            {
+              url: faviconUrl,
+              sizes: "32x32",
+              type: "image/png",
+            },
+            {
+              url: faviconUrl,
+              sizes: "16x16",
+              type: "image/png",
+            },
+          ],
+          shortcut: faviconUrl,
+          apple: faviconUrl,
+        }
+      : undefined,
+
+    openGraph: {
+      title: profile.slug,
+      description: profile.description,
+      images: profile.profile_pic_img?.url
+        ? [{ url: profile.profile_pic_img.url }]
+        : faviconUrl
+        ? [{ url: faviconUrl }]
+        : [],
+    },
+  };
 }
 
 export default async function HomePage() {
