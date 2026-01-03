@@ -11,7 +11,6 @@ import {
   Instagram,
   Linkedin,
   Youtube,
-  Spotify,
 } from "lucide-react";
 
 
@@ -187,11 +186,6 @@ export default async function HomePage() {
     </a>
   )}
 
-  {profile.spotify_url && (
-    <a href={profile.spotify_url} target="_blank" style={iconStyle}>
-      <Spotify size={20} />
-    </a>
-  )}
 </div>
 
 
