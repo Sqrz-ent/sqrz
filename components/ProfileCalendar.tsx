@@ -13,7 +13,7 @@ type CalendarEvent = {
 export default function ProfileCalendar({
   username,
 }: {
-  username: string;
+username: string;
 }) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);

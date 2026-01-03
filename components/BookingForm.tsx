@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-
+<h2 style={{ color: "red", fontSize: 32 }}>
+  BOOKING FORM IS HERE
+</h2>
 export default function BookingForm({
   profileSlug,
 }: {
@@ -65,16 +67,16 @@ export default function BookingForm({
 
   return (
     <form
-      onSubmit={submit}
-      style={{
-        marginTop: 48,
-        padding: 24,
-        borderRadius: 16,
-        background: "#0b0b0b",
-        border: "3px solid rgba(250, 0, 0, 0.06)",
-        textAlign: "left",
-      }}
-    >
+  onSubmit={submit}
+  style={{
+    marginTop: 48,
+    padding: 24,
+    borderRadius: 16,
+    background: "#111",
+    border: "3px solid red",
+    color: "#fff",
+  }}
+>
       <h2 style={{ color: "#fff", marginBottom: 16 }}>
         Booking request
       </h2>
