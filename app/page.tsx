@@ -151,7 +151,7 @@ export default async function HomePage() {
           />
         )}
 
-       <h1 style={{ fontSize: 36, color: "#fff" }}>
+       <h1 style={{ fontSize: 45, color: "#f6b130" }}>
   {profile.display_name || profile.slug}
 </h1>
 
