@@ -120,6 +120,11 @@ export default async function HomePage() {
 
   return (
     <main
+    style={{
+        minHeight: "100vh",
+        background: "#000",
+        padding: "20px 10px",
+      }}
           {profile.facebook_pixel_id && (
   <>
     {/* Facebook Pixel */}
@@ -139,11 +144,7 @@ export default async function HomePage() {
     </Script>
   </>
 )}
-      style={{
-        minHeight: "100vh",
-        background: "#000",
-        padding: "48px 20px",
-      }}
+      
     >
       <div
         style={{
