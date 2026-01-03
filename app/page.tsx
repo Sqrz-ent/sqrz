@@ -13,6 +13,7 @@ import {
   Linkedin,
   Youtube,
 } from "lucide-react";
+import BookMeButton from "@/components/BookMeButton";
 
 
 /* =========================
@@ -124,7 +125,7 @@ return (
       background: "#000",
       padding: "20px 10px",
     }}
-  >
+  ><BookMeButton />
     {profile.facebook_pixel_id && (
       <>
         {/* Facebook Pixel */}
