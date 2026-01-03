@@ -147,6 +147,55 @@ export default async function HomePage() {
         <h1 style={{ fontSize: 36, color: "#fff" }}>
           {profile.display_name || profile.slug}
         </h1>
+        <h1 style={{ fontSize: 36, color: "#fff" }}>
+          {profile.display_name || profile.slug}
+        </h1>
+        {/* 🔗 Social Media Bar */}
+<div
+  style={{
+    marginTop: 12,
+    display: "flex",
+    justifyContent: "center",
+    gap: 16,
+    fontSize: 14,
+  }}
+>
+  {profile.facebook && (
+    <a
+      href={profile.facebook}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "#f3b130", textDecoration: "none" }}
+    >
+      Facebook
+    </a>
+  )}
+
+  {profile.instagram && (
+    <a
+      href={profile.instagram}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "#f3b130", textDecoration: "none" }}
+    >
+      Instagram
+    </a>
+  )}
+
+  {profile.linkedin && (
+    <a
+      href={profile.linkedin}
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ color: "#f3b130", textDecoration: "none" }}
+    >
+      LinkedIn
+    </a>
+  )}
+</div>
+
+
+        
 
         {profile.description && (
           <p style={{ color: "#fff", opacity: 0.8 }}>
