@@ -13,6 +13,8 @@ import {
   Youtube,
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
+import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
+
 
 
 /* =========================
@@ -113,6 +115,9 @@ export default async function HomePage() {
 
   // ✅ SAFE DEBUG LOG (inside scope)
   console.log("VIDEO_GALLERY:", profile.video_gallery);
+  const soundcloudEmbed = profile.soundcloud_url
+    ? getSoundCloudEmbedUrl(profile.soundcloud_url)
+    : null;
 
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
@@ -240,6 +245,25 @@ return (
 
 
 
+        {/* 🎧 SoundCloud */}
+{soundcloudEmbed && (
+  <div
+    style={{
+      marginTop: 32,
+      borderRadius: 16,
+      overflow: "hidden",
+    }}
+  >
+    <iframe
+      width="100%"
+      height="300"
+      scrolling="no"
+      frameBorder="no"
+      allow="autoplay"
+      src={soundcloudEmbed}
+    />
+  </div>
+)}
 
         {/* 🎧 Spotify */}
         {spotifyEmbed && (
