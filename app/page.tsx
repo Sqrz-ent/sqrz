@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
+import ProfileCalendar from "@/components/ProfileCalendar";
+
 
 /* =========================
    DATA FETCHING
@@ -16,6 +18,8 @@ async function getProfile(username: string) {
   if (!res.ok) return null;
   return res.json();
 }
+
+console.log("VIDEO_GALLERY:", profile.video_gallery);
 
 /* =========================
    SEO METADATA
@@ -167,3 +171,7 @@ export default async function HomePage() {
     </main>
   );
 }
+
+{profile.slug && (
+  <ProfileCalendar username={profile.slug} />
+)}
