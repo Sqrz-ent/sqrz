@@ -41,24 +41,24 @@ export async function generateMetadata(): Promise<Metadata> {
   icons: {
     icon: [
       {
-        url: profile.profile_pic_img?.url,
+        url: profile.profile_pic_img.url,
         sizes: "32x32",
         type: "image/png",
       },
       {
-        url: profile.profile_pic_img?.url,
+        url: profile.profile_pic_img.url,
         sizes: "16x16",
         type: "image/png",
       },
     ],
-    shortcut: profile.profile_pic_img?.url,
-    apple: profile.profile_pic_img?.url,
+    shortcut: profile.profile_pic_img.url,
+    apple: profile.profile_pic_img.url,
   },
 
   openGraph: {
     title: profile.slug,
     description: profile.description,
-    images: profile.profile_pic_img?.url
+    images: profile.profile_pic_img.url
       ? [{ url: profile.profile_pic_img.url }]
       : [],
   },
