@@ -6,7 +6,6 @@ import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
 import ProfileCalendar from "@/components/ProfileCalendar";
-import BookingForm from "@/components/BookingForm";
 import {
   Facebook,
   Instagram,
@@ -264,7 +263,6 @@ return (
         {profile.slug && (
           <ProfileCalendar username={profile.slug} />
         )}
-        <BookingForm profileSlug={profile.slug} />
 
       </div>
     </main>
