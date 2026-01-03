@@ -37,7 +37,7 @@ export default async function HomePage() {
 
  return (
   <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
-    <h1 style={{ fontSize: 32, marginBottom: 8 }}>
+    <h1 style={{ fontSize: 64, marginBottom: 8 }}>
       {profile.slug}
     </h1>
 
