@@ -13,9 +13,16 @@ export default function ImageGallery({
 }) {
   if (!pics || pics.length === 0) return null;
 
-  const normalizedPics = pics.map((pic) =>
-    typeof pic === "string" ? pic : pic.url
-  );
+const normalizedPics = pics
+  .map((pic: any) => {
+    if (typeof pic === "string") return pic;
+    if (pic.url) return pic.url;
+    if (pic.image?.url) return pic.image.url;
+    if (pic.file?.path) return pic.file.path;
+    return null;
+  })
+  .filter(Boolean);
+
 
   const [index, setIndex] = useState(0);
 
