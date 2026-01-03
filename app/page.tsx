@@ -182,17 +182,6 @@ export default async function HomePage() {
     </a>
   )}
 
-  {profile.youtube_url && (
-    <a href={profile.youtube_url} target="_blank" style={iconStyle}>
-      <Youtube size={20} />
-    </a>
-  )}
-
-  {profile.spotify_url && (
-    <a href={profile.spotify_url} target="_blank" style={iconStyle}>
-      <Music size={20} />
-    </a>
-  )}
 </div>
 
 
