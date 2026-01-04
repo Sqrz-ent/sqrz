@@ -136,3 +136,8 @@ body {
 .text-accent {
   color: var(--accent-color);
 }
+
+.text-accent-bg {
+  background: var(--accent-color);
+  color: #22a240;
+}

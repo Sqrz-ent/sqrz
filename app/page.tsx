@@ -157,6 +157,12 @@ const template = PROFILE_TEMPLATES[templateKey];
 return (
 <main className={`profile-page ${template.bodyClass}`}>
 
+<button
+  style={buttonStyle}
+  className="cta-button text-accent-bg"
+>
+  Book me
+</button>
 
   <BookMeButton />
 
