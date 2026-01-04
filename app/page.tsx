@@ -62,7 +62,14 @@ async function getProfileFromHost(host: string) {
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
-  const host = headersList.get("host");
+  const rawHost = headersList.get("host");
+if (!rawHost) notFound();
+
+const host = rawHost
+  .toLowerCase()
+  .replace(/:\d+$/, "") // 👈 STRIP PORT
+  .trim();
+
 
   if (!host) return {};
 
