@@ -181,69 +181,87 @@ return (
         "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
     }}
   />
-
-  {/* Hero content */}
-  <div
-    style={{
-      position: "relative",
-      zIndex: 1,
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "flex-end",
-      alignItems: "center",
-      textAlign: "center",
-      padding: "24px 20px",
-      maxWidth: 520,
-      margin: "0 auto",
-    }}
-  ><h1
-  className="text-accent"
-  style={{
-    fontSize: 42,
-    fontWeight: 700,
-    marginBottom: 8,
-  }}
->
-  {profile.display_name}
-</h1>
-
-      {profile.display_name || profile.name}
-      {/* 🔗 Social Media Bar */}
+{/* Hero content */}
 <div
   style={{
-    marginTop: 12,
+    position: "relative",
+    zIndex: 1,
+    height: "100%",
     display: "flex",
-    justifyContent: "center",
-    gap: 16,
+    flexDirection: "column",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    textAlign: "center",
+    padding: "24px 20px",
+    maxWidth: 520,
+    margin: "0 auto",
   }}
 >
-  {profile.facebook && (
-    <a href={profile.facebook} target="_blank" style={iconStyle}>
-      <Facebook size={20} />
-    </a>
-  )}
+  {/* Title */}
+  <h1
+    className="text-accent"
+    style={{
+      fontSize: 42,
+      fontWeight: 700,
+      marginBottom: 8,
+    }}
+  >
+    {profile.display_name || profile.name}
+  </h1>
 
-  {profile.instagram && (
-    <a href={profile.instagram} target="_blank" style={iconStyle}>
-      <Instagram size={20} />
-    </a>
-  )}
+  {/* 🔗 Social Media Bar */}
+  <div
+    className="social-bar"
+    style={{
+      marginTop: 12,
+      display: "flex",
+      justifyContent: "center",
+      gap: 16,
+    }}
+  >
+    {profile.facebook && (
+      <a
+        href={profile.facebook}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-accent"
+      >
+        <Facebook size={20} />
+      </a>
+    )}
 
-  {profile.linkedin && (
-    <a href={profile.linkedin} target="_blank" style={iconStyle}>
-      <Linkedin size={20} />
-    </a>
-  )}
+    {profile.instagram && (
+      <a
+        href={profile.instagram}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-accent"
+      >
+        <Instagram size={20} />
+      </a>
+    )}
 
-  {profile.youtube_url && (
-    <a href={profile.youtube_url} target="_blank" style={iconStyle}>
-      <Youtube size={20} />
-    </a>
-  )}
+    {profile.linkedin && (
+      <a
+        href={profile.linkedin}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-accent"
+      >
+        <Linkedin size={20} />
+      </a>
+    )}
 
-</div>
-    </h1>
+    {profile.youtube_url && (
+      <a
+        href={profile.youtube_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-accent"
+      >
+        <Youtube size={20} />
+      </a>
+    )}
   </div>
 </div>
 
