@@ -228,6 +228,9 @@ return (
 )}
 
   
+
+
+
     
      <div
   style={{
@@ -242,17 +245,6 @@ return (
     gap: 24, // 👈 THIS IS THE MAGIC LINE
   }}
 >
-
-{profile.skills?.length > 0 && <Skills skills={profile.skills} />}
-
-{profile.services?.length > 0 && (
-  <Services services={profile.services} />
-)}
-
-{profile.past_employments?.length > 0 && (
-  <Experience jobs={profile.past_employments} />
-)}
-
 
 
 {/* 🔗 Social Media Bar */}
@@ -294,6 +286,21 @@ return (
             {profile.description}
           </p>
         )}
+
+
+
+
+{profile.skills?.length > 0 && <Skills skills={profile.skills} />}
+
+{profile.services?.length > 0 && (
+  <Services services={profile.services} />
+)}
+
+{profile.past_employments?.length > 0 && (
+  <Experience jobs={profile.past_employments} />
+)}
+
+
 
      {profile.pics?.length > 0 && (
   <ImageGallery pics={profile.pics} />
