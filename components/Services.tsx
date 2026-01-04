@@ -9,7 +9,7 @@ export default function Services({ services }: { services: any[] }) {
         {services.map((item, i) => {
           // handle common Xano relation shapes
           const service =
-            item?.service ||
+            item?.services.service ||
             item?.services ||
             item?.services_id ||
             item;
