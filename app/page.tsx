@@ -206,7 +206,7 @@ return (
         marginBottom: 8,
       }}
     >
-      {profile.display_name || profile.slug}
+      {profile.display_name || profile.name}
       {/* 🔗 Social Media Bar */}
 <div
   style={{
