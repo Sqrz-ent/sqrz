@@ -1,19 +1,32 @@
-export default function Skills({ skills }: { skills: string[] }) {
+type SkillItem = {
+  skills?: {
+    task?: string;
+  };
+};
+
+export default function Skills({ skills }: { skills: SkillItem[] }) {
   if (!skills || skills.length === 0) return null;
 
   return (
     <div>
       <h3 style={titleStyle}>Skills</h3>
       <div style={skillsWrap}>
-        {skills.map((skill, i) => (
-          <span key={i} style={chipStyle}>
-            {skill}
-          </span>
-        ))}
+        {skills.map((item, i) => {
+          const label = item.skills?.task;
+          if (!label) return null;
+
+          return (
+            <span key={i} style={chipStyle}>
+              {label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
 }
+
+/* styles */
 
 const titleStyle = {
   color: "#f3b130",
