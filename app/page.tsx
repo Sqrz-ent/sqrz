@@ -28,14 +28,6 @@ import {
    DATA FETCHING
 ========================= */
 
-export default async function HomePage() {
-  console.log("🔥 HOMEPAGE HIT");
-
-  const headersList = await headers();
-  const rawHost = headersList.get("host");
-  console.log("🔥 HOST HEADER:", rawHost);
-}
-
 
 async function getProfileByUsername(username: string) {
   const res = await fetch(
