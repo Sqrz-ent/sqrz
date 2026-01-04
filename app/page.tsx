@@ -197,15 +197,17 @@ return (
       maxWidth: 520,
       margin: "0 auto",
     }}
-  >
-    <h1
-      style={{
-        fontSize: 42,
-        fontWeight: 700,
-        color: "#f3b130",
-        marginBottom: 8,
-      }}
-    >
+  ><h1
+  className="text-accent"
+  style={{
+    fontSize: 42,
+    fontWeight: 700,
+    marginBottom: 8,
+  }}
+>
+  {profile.display_name}
+</h1>
+
       {profile.display_name || profile.name}
       {/* 🔗 Social Media Bar */}
 <div
