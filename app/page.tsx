@@ -124,7 +124,7 @@ export default async function HomePage() {
 
   const profile = await getProfile(username);
   if (!profile) notFound();
-  
+
 const rawTemplateKey = profile.template_key;
 
 const templateKey: TemplateKey =
@@ -302,7 +302,7 @@ return (
     textAlign: "center",
     display: "flex",
     flexDirection: "column",
-    gap: 32, // 👈 THIS IS THE MAGIC LINE
+    gap: 45, // 👈 THIS IS THE MAGIC LINE
   }}
 >
 
@@ -329,12 +329,6 @@ return (
 
 
 
-     {profile.pics?.length > 0 && (
-  <ImageGallery pics={profile.pics} />
-)}
-
-
-
         {/* 🎧 Spotify */}
         {spotifyEmbed && (
           <div style={{ marginTop: 32 }}>
@@ -347,6 +341,14 @@ return (
             />
           </div>
         )}
+
+
+
+     {profile.pics?.length > 0 && (
+  <ImageGallery pics={profile.pics} />
+)}
+
+
 
         {/* ▶️ YouTube Gallery */}
         {profile.video_gallery?.length > 0 && (
