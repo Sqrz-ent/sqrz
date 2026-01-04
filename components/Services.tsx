@@ -7,22 +7,25 @@ export default function Services({ services }: { services: any[] }) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {services.map((item, i) => {
-          // handle common Xano relation shapes
           const service =
+            item?.services ||
             item?.service ||
-            item?.task ||
             item?.services_id ||
             item;
 
-          if (!service) return null;
+          const name =
+            service?.task ||
+            service?.name ||
+            service?.title;
 
-          const name = service.name;
-          const from = service.price_from;
-          const to = service.price_to;
+          const from = service?.price_from;
+          const to = service?.price_to;
+
+          if (!name && !from) return null;
 
           return (
             <div key={i} style={rowStyle}>
-              <span>{name || "Service"}</span>
+              <span>{name ?? "Service"}</span>
               <span style={priceStyle}>
                 {formatPrice(from, to)}
               </span>
@@ -40,7 +43,6 @@ function formatPrice(from?: number, to?: number | null) {
   return `€${from} – €${to}`;
 }
 
-/* styles */
 const titleStyle = {
   color: "#f3b130",
   marginBottom: 8,
