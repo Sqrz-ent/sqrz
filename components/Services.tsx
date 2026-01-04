@@ -54,7 +54,7 @@ function formatPrice(s: Service) {
 /* styles */
 
 const titleStyle = {
-  color: "#f3b130",
+  color: "text-accent",
   marginBottom: 12,
   fontSize: 18,
 };
@@ -82,18 +82,18 @@ const headerStyle = {
 const serviceName = {
   fontSize: 16,
   fontWeight: 600,
-  color: "#fff",
+  color: "text-accent",
 };
 
 const priceStyle = {
   fontSize: 14,
   fontWeight: 500,
-  color: "#f3b130",
+  color: "text-accent",
   whiteSpace: "nowrap" as const,
 };
 
 const termsStyle = {
   fontSize: 13,
   lineHeight: 1.5,
-  color: "#ccc",
+  color: "text-accent",
 };
