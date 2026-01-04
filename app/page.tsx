@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
+import MediaLibrary from "@/components/MediaLibrary";
+
 
 
 
@@ -286,6 +288,12 @@ return (
   </div>
 )}
 
+{profile.media_assets?.length > 0 && (
+  <MediaLibrary items={profile.media_assets} />
+)}
+
+
+
         {/* 📅 Calendar */}
         {profile.slug && (
           <ProfileCalendar username={profile.slug} />
@@ -295,6 +303,8 @@ return (
     </main>
   );
 }
+
+
 
 const iconStyle = {
   color: "#f3b130",
