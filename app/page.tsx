@@ -173,6 +173,8 @@ return (
       display: "flex",
       flexDirection: "column",
       justifyContent: "flex-end",
+      alignItems: "center",
+      textAlign: "center",
       padding: "24px 20px",
       maxWidth: 520,
       margin: "0 auto",
@@ -192,7 +194,7 @@ return (
   style={{
     marginTop: 12,
     display: "flex",
-    justifyContent: "center",
+    justifyContent: "flex-end",
     gap: 16,
   }}
 >
