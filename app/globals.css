@@ -19,16 +19,17 @@
   }
 }
 
-.page {
+.profile-page {
   background: transparent;
 }
 
 
 body {
-  background: var(--background);
+  background: transparent;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
 
 
 
