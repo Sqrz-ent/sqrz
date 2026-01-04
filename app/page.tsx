@@ -34,8 +34,8 @@ export default async function HomePage() {
   const headersList = await headers();
   const rawHost = headersList.get("host");
   console.log("🔥 HOST HEADER:", rawHost);
+}
 
-  
 
 async function getProfileByUsername(username: string) {
   const res = await fetch(
