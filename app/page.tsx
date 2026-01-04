@@ -172,7 +172,7 @@ return (
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "center",
+      justifyContent: "flex-end",
       padding: "24px 20px",
       maxWidth: 520,
       margin: "0 auto",
@@ -187,6 +187,43 @@ return (
       }}
     >
       {profile.display_name || profile.slug}
+
+{/* 🔗 Social Media Bar */}
+<div
+  style={{
+    marginTop: 12,
+    display: "flex",
+    justifyContent: "center",
+    gap: 16,
+  }}
+>
+  {profile.facebook && (
+    <a href={profile.facebook} target="_blank" style={iconStyle}>
+      <Facebook size={20} />
+    </a>
+  )}
+
+  {profile.instagram && (
+    <a href={profile.instagram} target="_blank" style={iconStyle}>
+      <Instagram size={20} />
+    </a>
+  )}
+
+  {profile.linkedin && (
+    <a href={profile.linkedin} target="_blank" style={iconStyle}>
+      <Linkedin size={20} />
+    </a>
+  )}
+
+  {profile.youtube_url && (
+    <a href={profile.youtube_url} target="_blank" style={iconStyle}>
+      <Youtube size={20} />
+    </a>
+  )}
+
+
+
+
     </h1>
   </div>
 </div>
@@ -249,39 +286,6 @@ return (
   }}
 >
 
-
-{/* 🔗 Social Media Bar */}
-<div
-  style={{
-    marginTop: 12,
-    display: "flex",
-    justifyContent: "center",
-    gap: 16,
-  }}
->
-  {profile.facebook && (
-    <a href={profile.facebook} target="_blank" style={iconStyle}>
-      <Facebook size={20} />
-    </a>
-  )}
-
-  {profile.instagram && (
-    <a href={profile.instagram} target="_blank" style={iconStyle}>
-      <Instagram size={20} />
-    </a>
-  )}
-
-  {profile.linkedin && (
-    <a href={profile.linkedin} target="_blank" style={iconStyle}>
-      <Linkedin size={20} />
-    </a>
-  )}
-
-  {profile.youtube_url && (
-    <a href={profile.youtube_url} target="_blank" style={iconStyle}>
-      <Youtube size={20} />
-    </a>
-  )}
 
 </div>
         {profile.description && (
