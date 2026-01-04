@@ -1,36 +1,46 @@
-type Service = {
-  name: string;
-  price_from?: number;
-  price_to?: number | null;
-};
-
-export default function Services({ services }: { services: Service[] }) {
-  if (!services || services.length === 0) return null;
+export default function Services({ services }: { services: any[] }) {
+  if (!Array.isArray(services) || services.length === 0) return null;
 
   return (
     <div>
       <h3 style={titleStyle}>Services</h3>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {services.map((service, i) => (
-          <div key={i} style={rowStyle}>
-            <span>{service.name}</span>
-            <span style={priceStyle}>
-              {formatPrice(service)}
-            </span>
-          </div>
-        ))}
+        {services.map((item, i) => {
+          // handle common Xano relation shapes
+          const service =
+            item?.service ||
+            item?.services ||
+            item?.services_id ||
+            item;
+
+          if (!service) return null;
+
+          const name = service.name;
+          const from = service.price_from;
+          const to = service.price_to;
+
+          return (
+            <div key={i} style={rowStyle}>
+              <span>{name || "Service"}</span>
+              <span style={priceStyle}>
+                {formatPrice(from, to)}
+              </span>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function formatPrice(service: Service) {
-  if (!service.price_from) return "On request";
-  if (!service.price_to) return `from €${service.price_from}`;
-  return `€${service.price_from} – €${service.price_to}`;
+function formatPrice(from?: number, to?: number | null) {
+  if (!from) return "On request";
+  if (!to) return `from €${from}`;
+  return `€${from} – €${to}`;
 }
 
+/* styles */
 const titleStyle = {
   color: "#f3b130",
   marginBottom: 8,
