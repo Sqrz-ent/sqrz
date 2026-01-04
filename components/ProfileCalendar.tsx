@@ -68,7 +68,7 @@ username: string;
   if (events.length === 0) {
     return (
       <p style={{ color: "#666", marginTop: 24 }}>
-        No confirmed dates yet
+        No dates booked via SQRZ
       </p>
     );
   }
