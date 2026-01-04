@@ -32,15 +32,16 @@ import {
 /* =========================
    DATA FETCHING
 ========================= */
-async function getProfile(username: string) {
+
+async function getProfileByUsername(username: string) {
   const res = await fetch(
     `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile/${username}`,
     { cache: "no-store" }
   );
-
   if (!res.ok) return null;
   return res.json();
 }
+
 async function getProfileByDomain(domain: string) {
   const res = await fetch(
     `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile-by-domain/${domain}`,
@@ -49,35 +50,42 @@ async function getProfileByDomain(domain: string) {
   if (!res.ok) return null;
   return res.json();
 }
+
+async function getProfileFromHost(host: string) {
+  if (host.endsWith(".sqrz.com")) {
+    const username = host.replace(".sqrz.com", "");
+    if (!username || username === "www" || username === "sqrz") return null;
+    return getProfileByUsername(username);
+  }
+
+  // Custom domain
+  return getProfileByDomain(host.replace(/^www\./, ""));
+}
+
+
+
 /* =========================
    SEO METADATA
 ========================= */
-export default async function HomePage() {
+
+
+export async function generateMetadata(): Promise<Metadata> {
   const host = headers().get("host");
-  if (!host) notFound();
-
-  let profile = null;
-
-  // 1️⃣ Subdomain case: username.sqrz.com
-  if (host.endsWith(".sqrz.com")) {
-    const username = host.replace(".sqrz.com", "");
-    profile = await getProfileByUsername(username);
+  if (!host) {
+    return {
+      title: "SQRZ",
+      description: "Book freelancers with SQRZ",
+    };
   }
 
-  // 2️⃣ Custom domain case
-  else {
-    profile = await getProfileByDomain(host);
-  }
+  const profile = await getProfileFromHost(host);
+  if (!profile) return {};
 
-  if (!profile) notFound();
+  const baseUrl = `https://${host}`;
+  const title = profile.display_name || profile.slug;
+  const description =
+    profile.description || `View ${title}'s profile on SQRZ`;
 
-  return (
-    <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 64 }}>{profile.slug}</h1>
-      <p>{profile.description}</p>
-    </main>
-  );
-}
   const imageUrl =
     profile.og_image?.url ||
     profile.profile_pic_img?.url ||
@@ -109,6 +117,8 @@ export default async function HomePage() {
     },
   };
 }
+
+
 
 /* =========================
    PAGE
