@@ -136,7 +136,58 @@ return (
       background: "#000",
       padding: "20px 10px",
     }}
+    
   ><BookMeButton />
+
+  {/* 🖼️ Profile Hero */}
+<div
+  style={{
+    height: 320,
+    backgroundImage: profile.profile_pic_img?.url
+      ? `url(${profile.profile_pic_img.url})`
+      : "linear-gradient(135deg, #111, #000)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    position: "relative",
+  }}
+>
+  {/* Dark overlay */}
+  <div
+    style={{
+      position: "absolute",
+      inset: 0,
+      background:
+        "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
+    }}
+  />
+
+  {/* Hero content */}
+  <div
+    style={{
+      position: "relative",
+      zIndex: 1,
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "flex-end",
+      padding: "24px 20px",
+      maxWidth: 520,
+      margin: "0 auto",
+    }}
+  >
+    <h1
+      style={{
+        fontSize: 42,
+        fontWeight: 700,
+        color: "#f3b130",
+        marginBottom: 8,
+      }}
+    >
+      {profile.display_name || profile.slug}
+    </h1>
+  </div>
+</div>
+
     {profile.facebook_pixel_id && (
       <>
         {/* Facebook Pixel */}
