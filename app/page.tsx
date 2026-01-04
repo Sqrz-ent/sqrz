@@ -47,13 +47,19 @@ async function getProfileByDomain(domain: string) {
 }
 
 async function getProfileFromHost(host: string) {
-  if (host.endsWith(".sqrz.com")) {
-    const username = host.replace(".sqrz.com", "");
+  const cleanHost = host
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/^www\./, "")
+    .trim();
+
+  if (cleanHost.endsWith(".sqrz.com")) {
+    const username = cleanHost.replace(".sqrz.com", "");
     if (!username || username === "www" || username === "sqrz") return null;
     return getProfileByUsername(username);
   }
 
-  return getProfileByDomain(host.replace(/^www\./, ""));
+  return getProfileByDomain(cleanHost);
 }
 
 /* =========================
@@ -63,13 +69,13 @@ async function getProfileFromHost(host: string) {
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const rawHost = headersList.get("host");
-if (!rawHost) notFound();
 
-const host = rawHost
-  .toLowerCase()
-  .replace(/:\d+$/, "") // 👈 STRIP PORT
-  .trim();
+  if (!rawHost) return {};
 
+  const host = rawHost
+    .toLowerCase()
+    .replace(/:\d+$/, "") // strip :443 etc.
+    .trim();
 
   if (!host) return {};
 
@@ -85,6 +91,7 @@ const host = rawHost
     profile.og_image?.url ||
     profile.profile_pic_img?.url ||
     `${baseUrl}/og/default.png`;
+
 
   return {
     metadataBase: new URL(baseUrl),
