@@ -14,7 +14,10 @@ import {
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
-import ShareButton from "@/components/ShareButton";
+import Skills from "@/components/Skills";
+import Services from "@/components/Services";
+import Experience from "@/components/Experience";
+
 
 
 
