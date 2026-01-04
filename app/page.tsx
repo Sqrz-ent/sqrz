@@ -216,7 +216,7 @@ return (
 )}
 
 {profile.past_employments?.length > 0 && (
-  <Experience jobs={Profile.past_employments} />
+  <Experience jobs={profile.past_employments} />
 )}
 
 
