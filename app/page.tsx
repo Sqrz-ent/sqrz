@@ -208,7 +208,7 @@ return (
   {profile.display_name || profile.name}
 </h1>
 
-{profile.skills?.length > 0 && <Skills skills={profile.skills} />}
+{profile.skills?.length > 0 && <Skills skills={profile.skills.task} />}
 
 {profile.services?.length > 0 && (
   <Services services={profile.services} />
