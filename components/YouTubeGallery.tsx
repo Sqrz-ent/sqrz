@@ -60,7 +60,7 @@ export default function YouTubeGallery({
               border: "none",
               cursor: "pointer",
               background:
-                index === activeIndex ? "#dedede6e" : "#dedede19",
+                index === activeIndex ? "#dedede3e" : "#dedede19",
               color: "#fff",
               textAlign: "left",
               opacity: index === activeIndex ? 1 : 0.7,
