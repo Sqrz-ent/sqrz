@@ -134,15 +134,15 @@ return (
     style={{
       minHeight: "100vh",
       background: "#000",
-      padding: "20px 10px",
+      padding: "0px 0px",
     }}
-    
+
   ><BookMeButton />
 
   {/* 🖼️ Profile Hero */}
 <div
   style={{
-    height: 320,
+    height: 480,
     backgroundImage: profile.profile_pic_img?.url
       ? `url(${profile.profile_pic_img.url})`
       : "linear-gradient(135deg, #111, #000)",
@@ -242,23 +242,6 @@ return (
     gap: 24, // 👈 THIS IS THE MAGIC LINE
   }}
 >
-        {profile.profile_pic_img?.url && (
-          <img
-            src={profile.profile_pic_img.url}
-            alt={profile.slug}
-            style={{
-              width: 140,
-              height: 140,
-              borderRadius: "50%",
-              objectFit: "cover",
-              marginBottom: 24,
-            }}
-          />
-        )}
-
-       <h1 style={{ fontSize: 45, color: "#f6b130" }}>
-  {profile.display_name || profile.name}
-</h1>
 
 {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
 
