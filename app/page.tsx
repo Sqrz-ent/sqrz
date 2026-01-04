@@ -17,6 +17,8 @@ import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Skills from "@/components/Skills";
 import Services from "@/components/Services";
 import Experience from "@/components/Experience";
+import { PROFILE_TEMPLATES, DEFAULT_TEMPLATE } from "@/lib/profileTemplates";
+
 
 
 
@@ -119,6 +121,16 @@ export default async function HomePage() {
   const profile = await getProfile(username);
   if (!profile) notFound();
 
+const templateKey =
+  profile.template_key && PROFILE_TEMPLATES[profile.template_key]
+    ? profile.template_key
+    : DEFAULT_TEMPLATE;
+
+const template = PROFILE_TEMPLATES[templateKey];
+
+
+
+
   // ✅ SAFE DEBUG LOG (inside scope)
   const soundcloudEmbed = profile.soundcloud_url
     ? getSoundCloudEmbedUrl(profile.soundcloud_url)
@@ -133,12 +145,8 @@ export default async function HomePage() {
 
 
 return (
-  <main
-    style={{
-      minHeight: "100vh",
-      background: "#000",
-      padding: "0px 0px",
-    }}
+<main className={`profile-page ${template.bodyClass}`}>
+
 
   ><BookMeButton />
 
