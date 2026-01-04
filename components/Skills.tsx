@@ -1,18 +1,19 @@
-type SkillItem = {
-  skills?: {
-    task?: string;
-  };
-};
-
-export default function Skills({ skills }: { skills: SkillItem[] }) {
-  if (!skills || skills.length === 0) return null;
+export default function Skills({ skills }: { skills: any[] }) {
+  if (!Array.isArray(skills) || skills.length === 0) return null;
 
   return (
     <div>
       <h3 style={titleStyle}>Skills</h3>
+
       <div style={skillsWrap}>
         {skills.map((item, i) => {
-          const label = item.skills?.task;
+          // try all common Xano relation patterns
+          const label =
+            item?.skills?.task ||
+            item?.skill?.task ||
+            item?.skills_id?.task ||
+            item?.task;
+
           if (!label) return null;
 
           return (
@@ -27,7 +28,6 @@ export default function Skills({ skills }: { skills: SkillItem[] }) {
 }
 
 /* styles */
-
 const titleStyle = {
   color: "#f3b130",
   marginBottom: 8,
