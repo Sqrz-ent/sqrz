@@ -30,79 +30,40 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-
-
-
 /* =========================
-   FULLCALENDAR – SQRZ THEME
+   FULLCALENDAR – BASE (NO THEME)
 ========================= */
 
-.fc {
+.profile-calendar .fc {
   --fc-page-bg-color: transparent;
-  --fc-border-color: rgba(255, 255, 255, 0.08);
-  --fc-today-bg-color: rgba(243, 177, 48, 0.08);
-
   --fc-neutral-bg-color: transparent;
-  --fc-list-event-hover-bg-color: rgba(255, 255, 255, 0.04);
-
-  --fc-button-bg-color: #111;
-  --fc-button-border-color: rgba(255, 255, 255, 0.1);
-  --fc-button-text-color: #fff;
-  --fc-button-hover-bg-color: #1a1a1a;
-  --fc-button-active-bg-color: #f3b130;
-  --fc-button-active-border-color: #f3b130;
 }
 
-.fc-theme-standard td,
-.fc-theme-standard th {
-  border-color: rgba(255, 255, 255, 0.06);
+/* Grid & borders (neutral) */
+.profile-calendar .fc-theme-standard td,
+.profile-calendar .fc-theme-standard th {
+  border-width: 1px;
 }
 
-/* Header (Month title, arrows) */
-.fc .fc-toolbar-title {
-  color: #fff;
+/* Header layout */
+.profile-calendar .fc-toolbar-title {
   font-size: 18px;
   font-weight: 600;
 }
 
-.fc .fc-button {
+.profile-calendar .fc-button {
   border-radius: 8px;
   font-size: 13px;
   padding: 6px 10px;
 }
 
 /* Day numbers */
-.fc .fc-daygrid-day-number {
-  color: rgba(255, 255, 255, 0.6);
+.profile-calendar .fc-daygrid-day-number {
   font-size: 12px;
-}
-
-/* Today */
-.fc .fc-day-today {
-  background: rgba(243, 177, 48, 0.12);
-}
-
-/* =========================
-   EVENTS
-========================= */
-
-.fc .fc-event {
-  background: linear-gradient(135deg, #f3b130, #ffcf70);
-  border: none;
-  border-radius: 8px;
-  padding: 2px 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #000;
-  box-shadow: 0 4px 12px rgba(243, 177, 48, 0.25);
-}
-
-.fc .fc-event:hover {
-  opacity: 0.9;
 }
 
 /* Hide time text */
-.fc .fc-event-time {
+.profile-calendar .fc-event-time {
   display: none;
 }
 
@@ -111,17 +72,15 @@ body {
 ========================= */
 
 @media (max-width: 640px) {
-  .fc .fc-toolbar {
+  .profile-calendar .fc-toolbar {
     flex-direction: column;
     gap: 8px;
   }
 
-  .fc .fc-toolbar-title {
+  .profile-calendar .fc-toolbar-title {
     font-size: 16px;
   }
 }
-
-
 
 
 
