@@ -76,7 +76,7 @@ const headersList = await headers();
   if (!host) {
     return {
       title: "SQRZ",
-      description: "Book freelancers with SQRZ",
+      description: "The LinkInBio that gets you booked!",
     };
   }
 
@@ -131,17 +131,12 @@ export default async function HomePage() {
 
   if (!host) notFound();
 
-  const parts = host.split(".");
-  const username = parts.length > 2 ? parts[0] : null;
+  const host = headers().get("host");
+if (!host) notFound();
 
-  if (!username || username === "www" || username === "sqrz") {
-    return (
-      <main style={{ padding: 40 }}>
-        <h1>SQRZ</h1>
-        <p>Main website</p>
-      </main>
-    );
-  }
+const profile = await getProfileFromHost(host);
+if (!profile) notFound();
+
 
   const profile = await getProfileFromHost(host);
 if (!profile) notFound();
