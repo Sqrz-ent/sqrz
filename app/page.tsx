@@ -71,17 +71,12 @@ async function getProfileFromHost(host: string) {
 
 export async function generateMetadata(): Promise<Metadata> {
 const headersList = await headers();
-  const host = headersList.get("host");
 
-  if (!host) {
-    return {
-      title: "SQRZ",
-      description: "The LinkInBio that gets you booked!",
-    };
-  }
+ const host = headers().get("host");
+if (!host) notFound();
 
-  const profile = await getProfileFromHost(host);
-  if (!profile) return {};
+const profile = await getProfileFromHost(host);
+if (!profile) notFound();
 
   const baseUrl = `https://${host}`;
   const title = profile.display_name || profile.slug;
@@ -125,21 +120,8 @@ const headersList = await headers();
 /* =========================
    PAGE
 ========================= */
-export default async function HomePage() {
-  const headersList = await headers();
-  const host = headersList.get("host");
-
-  if (!host) notFound();
-
-  const host = headers().get("host");
-if (!host) notFound();
-
-const profile = await getProfileFromHost(host);
-if (!profile) notFound();
 
 
-  const profile = await getProfileFromHost(host);
-if (!profile) notFound();
 
 const rawTemplateKey = profile.template_key;
 
