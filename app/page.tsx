@@ -289,6 +289,13 @@ return (
 
   
 
+<h1 className="text-accent">
+  {profile.display_name}
+</h1>
+
+<p className="text-muted">
+  {profile.description}
+</p>
 
 
     

@@ -1,5 +1,5 @@
 /* Dancer / Performer template */
 .tpl-dancer-light {
   background: #e41aa7;
-  color: #ffffff;
-}
+  color: #111;
+  --accent-color: #e91e63;

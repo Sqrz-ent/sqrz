@@ -1,5 +1,5 @@
 /* Technician / Crew template */
 .tpl-tech-clean {
   background: #d3bbbb;
-  color: #111111;
-}
+  color: #111;
+  --accent-color: #2563eb;

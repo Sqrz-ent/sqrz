@@ -1,5 +1,5 @@
 /* DJ / Music template */
 .tpl-dj-dark {
   background: #000000;
-  color: #ffffff;
-}
+  color: #fff;
+  --accent-color: #f3b130;
