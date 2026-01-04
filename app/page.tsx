@@ -121,25 +121,25 @@ if (!profile) notFound();
    PAGE
 ========================= */
 
+export default async function HomePage() {
+  const headersList = await headers();
+  const host = headersList.get("host");
+  if (!host) notFound();
 
+  const profile = await getProfileFromHost(host);
+  if (!profile) notFound();
 
-const rawTemplateKey = profile.template_key;
+  const rawTemplateKey = profile.template_key;
 
-const templateKey: TemplateKey =
-  rawTemplateKey &&
-  typeof rawTemplateKey === "string" &&
-  rawTemplateKey in PROFILE_TEMPLATES
-    ? (rawTemplateKey as TemplateKey)
-    : DEFAULT_TEMPLATE;
+  const templateKey: TemplateKey =
+    rawTemplateKey &&
+    typeof rawTemplateKey === "string" &&
+    rawTemplateKey in PROFILE_TEMPLATES
+      ? (rawTemplateKey as TemplateKey)
+      : DEFAULT_TEMPLATE;
 
-const template = PROFILE_TEMPLATES[templateKey];
+  const template = PROFILE_TEMPLATES[templateKey];
 
-
-
-
-
-
-  // ✅ SAFE DEBUG LOG (inside scope)
   const soundcloudEmbed = profile.soundcloud_url
     ? getSoundCloudEmbedUrl(profile.soundcloud_url)
     : null;
@@ -148,15 +148,10 @@ const template = PROFILE_TEMPLATES[templateKey];
     ? getSpotifyEmbedUrl(profile.spotify_url)
     : null;
 
+  return (
+    <main className={`profile-page ${template.bodyClass}`}>
+      <BookMeButton />
 
-
-
-
-return (
-<main className={`profile-page ${template.bodyClass}`}>
-
-
-  <BookMeButton />
 
   {/* 🖼️ Profile Hero */}
 <div
