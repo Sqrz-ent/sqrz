@@ -207,6 +207,7 @@ return (
        <h1 style={{ fontSize: 45, color: "#f6b130" }}>
   {profile.display_name || profile.name}
 </h1>
+{console.log("SKILLS RAW:", profile.skills)}
 
 {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
 
