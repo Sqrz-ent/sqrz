@@ -4,3 +4,26 @@
   color: #ffffff;
   --accent-color: #fd69d1;
 }
+
+
+.tpl-dancer-light .profile-calendar .fc {
+  --fc-border-color: #ddd;
+  --fc-today-bg-color: rgba(233, 30, 99, 0.12);
+
+  --fc-button-bg-color: #fff;
+  --fc-button-text-color: #111;
+  --fc-button-hover-bg-color: #f3f4f6;
+}
+
+.tpl-dancer-light .profile-calendar .fc-toolbar-title {
+  color: #111;
+}
+
+.tpl-dancer-light .profile-calendar .fc-daygrid-day-number {
+  color: #666;
+}
+
+.tpl-dancer-light .profile-calendar .fc-event {
+  background: var(--accent-color);
+  color: #fff;
+}
