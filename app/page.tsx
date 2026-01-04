@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
-import MediaLibrary from "@/components/MediaLibrary";
+import ShareButton from "@/components/ShareButton";
+
 
 
 
@@ -288,11 +289,6 @@ return (
   </div>
 )}
 
-{profile.media_assets?.length > 0 && (
-  <MediaLibrary items={profile.media_assets} />
-)}
-
-
 
         {/* 📅 Calendar */}
         {profile.slug && (
@@ -313,3 +309,13 @@ const iconStyle = {
 };
 
 
+<div
+  style={{
+    display: "flex",
+    justifyContent: "center",
+    gap: 12,
+    marginTop: 8,
+  }}
+>
+  <ShareButton />
+</div>
