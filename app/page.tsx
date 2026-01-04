@@ -262,6 +262,7 @@ return (
         <Youtube size={20} />
       </a>
     )}
+    </div>
   </div>
 </div>
 
