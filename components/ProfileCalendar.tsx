@@ -62,30 +62,28 @@ username: string;
   }, [username]);
 
   if (loading) {
-    return <p style={{ color: "#aaa", marginTop: 24 }}>Loading dates…</p>;
+return <p className="text-muted mt-6">Loading dates…</p>;
+
   }
 
   if (events.length === 0) {
-    return (
-      <p style={{ color: "#666", marginTop: 24 }}>
-        No dates booked via SQRZ
-      </p>
-    );
+return <p className="text-muted mt-6">No dates booked via SQRZ</p>;
   }
 
   return (
-    <div style={{ marginTop: 40 }}>
-      <FullCalendar
-        plugins={[dayGridPlugin]}
-        initialView="dayGridMonth"
-        events={events}
-        height="auto"
-        headerToolbar={{
-          left: "prev,next",
-          center: "title",
-          right: "",
-        }}
-      />
-    </div>
-  );
+  <div className="profile-calendar" style={{ marginTop: 40 }}>
+    <FullCalendar
+      plugins={[dayGridPlugin]}
+      initialView="dayGridMonth"
+      events={events}
+      height="auto"
+      headerToolbar={{
+        left: "prev,next",
+        center: "title",
+        right: "",
+      }}
+    />
+  </div>
+);
+
 }
