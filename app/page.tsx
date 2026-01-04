@@ -17,7 +17,6 @@ import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Skills from "@/components/Skills";
 import Services from "@/components/Services";
 import Experience from "@/components/Experience";
-import { Profiler } from "react";
 
 
 
@@ -121,7 +120,6 @@ export default async function HomePage() {
   if (!profile) notFound();
 
   // ✅ SAFE DEBUG LOG (inside scope)
-  console.log("VIDEO_GALLERY:", profile.video_gallery);
   const soundcloudEmbed = profile.soundcloud_url
     ? getSoundCloudEmbedUrl(profile.soundcloud_url)
     : null;
@@ -129,6 +127,11 @@ export default async function HomePage() {
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
     : null;
+
+
+
+
+
 return (
   <main
     style={{
@@ -169,7 +172,7 @@ return (
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "flex-end",
+      justifyContent: "center",
       padding: "24px 20px",
       maxWidth: 520,
       margin: "0 auto",

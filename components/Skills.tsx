@@ -34,7 +34,7 @@ const titleStyle = {
 };
 
 const skillsWrap = {
-  display: "flex",
+  display: "center",
   flexWrap: "wrap" as const,
   gap: 8,
 };
