@@ -296,7 +296,7 @@ return (
   style={{
     maxWidth: 520,
     margin: "0 auto",
-    background: "#000",
+    background: "#000000",
     borderRadius: 16,
     padding: 32,
     textAlign: "center",
