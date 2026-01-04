@@ -42,8 +42,8 @@ const skillsWrap = {
 const chipStyle = {
   padding: "6px 10px",
   borderRadius: 999,
-  background: "#dedede3e",
-  border: "1px solid #333",
+  background: "#dedede19",
+  border: "1px solid #dedede3e",
   fontSize: 13,
   color: "#fff",
 };
