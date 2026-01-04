@@ -41,34 +41,43 @@ async function getProfile(username: string) {
   if (!res.ok) return null;
   return res.json();
 }
-
+async function getProfileByDomain(domain: string) {
+  const res = await fetch(
+    `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile-by-domain/${domain}`,
+    { cache: "no-store" }
+  );
+  if (!res.ok) return null;
+  return res.json();
+}
 /* =========================
    SEO METADATA
 ========================= */
-export async function generateMetadata(): Promise<Metadata> {
-  const headersList = await headers();
-  const host = headersList.get("host");
+export default async function HomePage() {
+  const host = headers().get("host");
+  if (!host) notFound();
 
-  if (!host) return {};
+  let profile = null;
 
-  const username = host.split(".")[0];
-
-  if (!username || username === "www" || username === "sqrz") {
-    return {
-      title: "SQRZ",
-      description: "Book freelancers with SQRZ",
-      metadataBase: new URL("https://sqrz.com"),
-    };
+  // 1️⃣ Subdomain case: username.sqrz.com
+  if (host.endsWith(".sqrz.com")) {
+    const username = host.replace(".sqrz.com", "");
+    profile = await getProfileByUsername(username);
   }
 
-  const profile = await getProfile(username);
-  if (!profile) return {};
+  // 2️⃣ Custom domain case
+  else {
+    profile = await getProfileByDomain(host);
+  }
 
-  const baseUrl = `https://${host}`;
-  const title = profile.display_name || profile.slug;
-  const description =
-    profile.description || `View ${title}'s profile on SQRZ`;
+  if (!profile) notFound();
 
+  return (
+    <main style={{ padding: 40, maxWidth: 600, margin: "0 auto" }}>
+      <h1 style={{ fontSize: 64 }}>{profile.slug}</h1>
+      <p>{profile.description}</p>
+    </main>
+  );
+}
   const imageUrl =
     profile.og_image?.url ||
     profile.profile_pic_img?.url ||
