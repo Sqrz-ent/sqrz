@@ -284,16 +284,6 @@ return (
   </>
 )}
 
-  
-
-<h1 className="text-accent">
-  {profile.display_name}
-</h1>
-
-<p className="text-muted">
-  {profile.description}
-</p>
-
 
     
      <div
@@ -312,7 +302,7 @@ return (
 
 
         {profile.description && (
-          <p style={{ color: "text-accent"}}>
+          <p style={{ color: "text-muted"}}>
             {profile.description}
           </p>
         )}
