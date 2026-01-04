@@ -29,7 +29,7 @@ export default function Skills({ skills }: { skills: any[] }) {
 
 /* styles */
 const titleStyle = {
-  color: "#f3b130",
+  color: "text-accent",
   marginBottom: 8,
 };
 
@@ -45,5 +45,5 @@ const chipStyle = {
   background: "#dedede19",
   border: "1px solid #dedede3e",
   fontSize: 13,
-  color: "#fff",
+  color: "text-accent",
 };

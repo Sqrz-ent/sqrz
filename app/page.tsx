@@ -202,7 +202,7 @@ return (
       style={{
         fontSize: 42,
         fontWeight: 700,
-        color: "#f3b130",
+        color: "text-accent",
         marginBottom: 8,
       }}
     >
@@ -241,9 +241,6 @@ return (
   )}
 
 </div>
-
-
-
     </h1>
   </div>
 </div>
@@ -315,7 +312,7 @@ return (
 
 
         {profile.description && (
-          <p style={{ color: "#fff", opacity: 0.8 }}>
+          <p style={{ color: "text-accent"}}>
             {profile.description}
           </p>
         )}
@@ -395,7 +392,7 @@ return (
 
 
 const iconStyle = {
-  color: "#f3b130",
+  color: "text-accent",
   display: "inline-flex",
   alignItems: "center",
 };
