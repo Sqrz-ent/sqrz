@@ -143,8 +143,8 @@ export default async function HomePage() {
     );
   }
 
-  const profile = await getProfile(username);
-  if (!profile) notFound();
+  const profile = await getProfileFromHost(host);
+if (!profile) notFound();
 
 const rawTemplateKey = profile.template_key;
 
