@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
+
 import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
@@ -22,12 +23,6 @@ import {
   DEFAULT_TEMPLATE,
   type TemplateKey,
 } from "@/lib/profileTemplates";
-
-
-
-
-
-
 
 /* =========================
    DATA FETCHING
@@ -58,25 +53,21 @@ async function getProfileFromHost(host: string) {
     return getProfileByUsername(username);
   }
 
-  // Custom domain
   return getProfileByDomain(host.replace(/^www\./, ""));
 }
-
-
 
 /* =========================
    SEO METADATA
 ========================= */
 
-
 export async function generateMetadata(): Promise<Metadata> {
-const headersList = await headers();
+  const headersList = await headers();
+  const host = headersList.get("host");
 
- const host = headers().get("host");
-if (!host) notFound();
+  if (!host) return {};
 
-const profile = await getProfileFromHost(host);
-if (!profile) notFound();
+  const profile = await getProfileFromHost(host);
+  if (!profile) return {};
 
   const baseUrl = `https://${host}`;
   const title = profile.display_name || profile.slug;
@@ -115,8 +106,6 @@ if (!profile) notFound();
   };
 }
 
-
-
 /* =========================
    PAGE
 ========================= */
@@ -152,116 +141,84 @@ export default async function HomePage() {
     <main className={`profile-page ${template.bodyClass}`}>
       <BookMeButton />
 
-
-  {/* 🖼️ Profile Hero */}
-<div
-  style={{
-    height: 480,
-    backgroundImage: profile.profile_pic_img?.url
-      ? `url(${profile.profile_pic_img.url})`
-      : "linear-gradient(135deg, #111, #000)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    position: "relative",
-  }}
->
-  {/* Dark overlay */}
-  <div
-    style={{
-      position: "absolute",
-      inset: 0,
-      background:
-        "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
-    }}
-  />
-{/* Hero content */}
-<div
-  style={{
-    position: "relative",
-    zIndex: 1,
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    textAlign: "center",
-    padding: "24px 20px",
-    maxWidth: 520,
-    margin: "0 auto",
-  }}
->
-  {/* Title */}
-  <h1
-    className="text-accent"
-    style={{
-      fontSize: 42,
-      fontWeight: 700,
-      marginBottom: 8,
-    }}
-  >
-    {profile.display_name || profile.name}
-  </h1>
-
-  {/* 🔗 Social Media Bar */}
-  <div
-    className="social-bar"
-    style={{
-      marginTop: 12,
-      display: "flex",
-      justifyContent: "center",
-      gap: 16,
-    }}
-  >
-    {profile.facebook && (
-      <a
-        href={profile.facebook}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent"
+      {/* 🖼️ Profile Hero */}
+      <div
+        style={{
+          height: 480,
+          backgroundImage: profile.profile_pic_img?.url
+            ? `url(${profile.profile_pic_img.url})`
+            : "linear-gradient(135deg, #111, #000)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          position: "relative",
+        }}
       >
-        <Facebook size={20} />
-      </a>
-    )}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
+          }}
+        />
 
-    {profile.instagram && (
-      <a
-        href={profile.instagram}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent"
-      >
-        <Instagram size={20} />
-      </a>
-    )}
+        <div
+          style={{
+            position: "relative",
+            zIndex: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            alignItems: "center",
+            textAlign: "center",
+            padding: "24px 20px",
+            maxWidth: 520,
+            margin: "0 auto",
+          }}
+        >
+          <h1
+            className="text-accent"
+            style={{ fontSize: 42, fontWeight: 700, marginBottom: 8 }}
+          >
+            {profile.display_name || profile.name}
+          </h1>
 
-    {profile.linkedin && (
-      <a
-        href={profile.linkedin}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent"
-      >
-        <Linkedin size={20} />
-      </a>
-    )}
+          <div
+            className="social-bar"
+            style={{
+              marginTop: 12,
+              display: "flex",
+              justifyContent: "center",
+              gap: 16,
+            }}
+          >
+            {profile.facebook && (
+              <a href={profile.facebook} target="_blank" rel="noopener noreferrer">
+                <Facebook size={20} />
+              </a>
+            )}
+            {profile.instagram && (
+              <a href={profile.instagram} target="_blank" rel="noopener noreferrer">
+                <Instagram size={20} />
+              </a>
+            )}
+            {profile.linkedin && (
+              <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+                <Linkedin size={20} />
+              </a>
+            )}
+            {profile.youtube_url && (
+              <a href={profile.youtube_url} target="_blank" rel="noopener noreferrer">
+                <Youtube size={20} />
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
 
-    {profile.youtube_url && (
-      <a
-        href={profile.youtube_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-accent"
-      >
-        <Youtube size={20} />
-      </a>
-    )}
-    </div>
-  </div>
-</div>
-
-    {profile.facebook_pixel_id && (
-      <>
-        {/* Facebook Pixel */}
+      {/* Analytics */}
+      {profile.facebook_pixel_id && (
         <Script id="facebook-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -276,129 +233,60 @@ export default async function HomePage() {
             fbq('track', 'PageView');
           `}
         </Script>
-      </>
-    )}
-{profile.google_analytics_id && (
-  <>
-    {/* Google Analytics (GA4) */}
-    <Script
-      src={`https://www.googletagmanager.com/gtag/js?id=${profile.google_analytics_id}`}
-      strategy="afterInteractive"
-    />
-    <Script id="ga-init" strategy="afterInteractive">
-      {`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${profile.google_analytics_id}', {
-          anonymize_ip: true,
-        });
-      `}
-    </Script>
-  </>
-)}
+      )}
 
+      {profile.google_analytics_id && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${profile.google_analytics_id}`}
+            strategy="afterInteractive"
+          />
+          <Script id="ga-init" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${profile.google_analytics_id}', { anonymize_ip: true });
+            `}
+          </Script>
+        </>
+      )}
 
-    
-     <div
-  style={{
-    maxWidth: 520,
-    margin: "0 auto",
-    borderRadius: 16,
-    padding: 32,
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    gap: 45, // 👈 THIS IS THE MAGIC LINE
-  }}
->
+      <div
+        style={{
+          maxWidth: 520,
+          margin: "0 auto",
+          borderRadius: 16,
+          padding: 32,
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          gap: 45,
+        }}
+      >
+        {profile.description && <p>{profile.description}</p>}
 
-
-
-        {profile.description && (
-          <p style={{ color: "text-muted"}}>
-            {profile.description}
-          </p>
+        {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
+        {profile.services?.length > 0 && <Services services={profile.services} />}
+        {profile.past_employments?.length > 0 && (
+          <Experience jobs={profile.past_employments} />
         )}
 
-
-
-
-{profile.skills?.length > 0 && <Skills skills={profile.skills} />}
-
-{profile.services?.length > 0 && (
-  <Services services={profile.services} />
-)}
-
-{profile.past_employments?.length > 0 && (
-  <Experience jobs={profile.past_employments} />
-)}
-
-
-
-        {/* 🎧 Spotify */}
         {spotifyEmbed && (
-          <div style={{ marginTop: 32 }}>
-            <iframe
-              src={spotifyEmbed}
-              width="100%"
-              height="152"
-              frameBorder="0"
-              allow="autoplay; encrypted-media"
-            />
-          </div>
+          <iframe src={spotifyEmbed} width="100%" height="152" />
         )}
 
-
-
-     {profile.pics?.length > 0 && (
-  <ImageGallery pics={profile.pics} />
-)}
-
-
-
-        {/* ▶️ YouTube Gallery */}
+        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
         {profile.video_gallery?.length > 0 && (
           <YouTubeGallery videos={profile.video_gallery} />
         )}
 
-        {/* 🎧 SoundCloud */}
-{soundcloudEmbed && (
-  <div
-    style={{
-      marginTop: 32,
-      borderRadius: 16,
-      overflow: "hidden",
-    }}
-  >
-    <iframe
-      width="100%"
-      height="300"
-      scrolling="no"
-      frameBorder="no"
-      allow="autoplay"
-      src={soundcloudEmbed}
-    />
-  </div>
-)}
-
-
-        {/* 📅 Calendar */}
-        {profile.slug && (
-          <ProfileCalendar username={profile.slug} />
+        {soundcloudEmbed && (
+          <iframe src={soundcloudEmbed} width="100%" height="300" />
         )}
 
+        {profile.slug && <ProfileCalendar username={profile.slug} />}
       </div>
     </main>
   );
-
-
-
-
-const iconStyle = {
-  color: "text-accent",
-  display: "inline-flex",
-  alignItems: "center",
-};
-
 }
