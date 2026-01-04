@@ -17,6 +17,7 @@ import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Skills from "@/components/Skills";
 import Services from "@/components/Services";
 import Experience from "@/components/Experience";
+import { Profiler } from "react";
 
 
 
@@ -207,7 +208,6 @@ return (
        <h1 style={{ fontSize: 45, color: "#f6b130" }}>
   {profile.display_name || profile.name}
 </h1>
-{console.log("SKILLS RAW:", profile.skills)}
 
 {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
 
@@ -216,7 +216,7 @@ return (
 )}
 
 {profile.past_employments?.length > 0 && (
-  <Experience jobs={profile.references} />
+  <Experience jobs={Profile.past_employments} />
 )}
 
 
