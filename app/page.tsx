@@ -205,11 +205,16 @@ return (
   {profile.display_name || profile.name}
 </h1>
 
-<h1 style={{ fontSize: 45, color: "#f3b130" }}>
-  {profile.display_name || profile.name}
-</h1>
+{profile.skills?.length > 0 && <Skills skills={profile.skills} />}
 
-<ShareButton />
+{profile.services?.length > 0 && (
+  <Services services={profile.services} />
+)}
+
+{profile.past_employments?.length > 0 && (
+  <Experience jobs={profile.references} />
+)}
+
 
 
 {/* 🔗 Social Media Bar */}
