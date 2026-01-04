@@ -4,7 +4,7 @@ export default function Experience({ jobs }: { jobs: any }) {
       <h3>DEBUG: Experience Component</h3>
       <pre
         style={{
-          background: "#111",
+          background: "#a82d2d69",
           padding: 12,
           borderRadius: 8,
           fontSize: 12,

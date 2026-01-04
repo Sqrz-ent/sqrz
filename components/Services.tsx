@@ -66,7 +66,7 @@ const listStyle = {
 };
 
 const cardStyle = {
-  background: "#111",
+  background: "#111111",
   border: "1px solid #222",
   borderRadius: 14,
   padding: 16,

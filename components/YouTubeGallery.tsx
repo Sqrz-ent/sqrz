@@ -31,7 +31,7 @@ export default function YouTubeGallery({
           borderRadius: 16,
           overflow: "hidden",
           aspectRatio: "16 / 9",
-          background: "#000",
+          background: "#000000",
         }}
       >
         <iframe
