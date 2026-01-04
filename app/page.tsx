@@ -187,8 +187,7 @@ return (
       }}
     >
       {profile.display_name || profile.slug}
-
-{/* 🔗 Social Media Bar */}
+      {/* 🔗 Social Media Bar */}
 <div
   style={{
     marginTop: 12,
@@ -221,6 +220,7 @@ return (
     </a>
   )}
 
+</div>
 
 
 
@@ -287,7 +287,7 @@ return (
 >
 
 
-</div>
+
         {profile.description && (
           <p style={{ color: "#fff", opacity: 0.8 }}>
             {profile.description}
