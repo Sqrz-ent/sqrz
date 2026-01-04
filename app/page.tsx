@@ -202,7 +202,7 @@ return (
       style={{
         fontSize: 42,
         fontWeight: 700,
-        color: "text-accent",
+        color: "#f3b130",
         marginBottom: 8,
       }}
     >
