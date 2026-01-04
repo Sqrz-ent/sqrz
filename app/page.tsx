@@ -17,7 +17,11 @@ import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Skills from "@/components/Skills";
 import Services from "@/components/Services";
 import Experience from "@/components/Experience";
-import { PROFILE_TEMPLATES, DEFAULT_TEMPLATE } from "@/lib/profileTemplates";
+import {
+  PROFILE_TEMPLATES,
+  DEFAULT_TEMPLATE,
+  type TemplateKey,
+} from "@/lib/profileTemplates";
 
 
 
@@ -120,13 +124,19 @@ export default async function HomePage() {
 
   const profile = await getProfile(username);
   if (!profile) notFound();
+  
+const rawTemplateKey = profile.template_key;
 
-const templateKey =
-  profile.template_key && PROFILE_TEMPLATES[profile.template_key]
-    ? profile.template_key
+const templateKey: TemplateKey =
+  rawTemplateKey &&
+  typeof rawTemplateKey === "string" &&
+  rawTemplateKey in PROFILE_TEMPLATES
+    ? (rawTemplateKey as TemplateKey)
     : DEFAULT_TEMPLATE;
 
 const template = PROFILE_TEMPLATES[templateKey];
+
+
 
 
 
