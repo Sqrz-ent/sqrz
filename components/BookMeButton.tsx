@@ -25,7 +25,7 @@ const buttonStyle = {
   padding: "12px 18px",
   borderRadius: 999,
   border: "none",
-  background: "#f3b130",
+  background: "accent-color",
   color: "#000",
   fontWeight: 700,
   cursor: "pointer",
