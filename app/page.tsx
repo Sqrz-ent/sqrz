@@ -172,7 +172,7 @@ return (
       height: "100%",
       display: "flex",
       flexDirection: "column",
-      justifyContent: "flex-end",
+      justifyContent: "center",
       alignItems: "center",
       textAlign: "center",
       padding: "24px 20px",
