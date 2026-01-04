@@ -70,7 +70,9 @@ async function getProfileFromHost(host: string) {
 
 
 export async function generateMetadata(): Promise<Metadata> {
-  const host = headers().get("host");
+const headersList = await headers();
+  const host = headersList.get("host");
+
   if (!host) {
     return {
       title: "SQRZ",
