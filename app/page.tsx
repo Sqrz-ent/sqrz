@@ -205,6 +205,13 @@ return (
   {profile.display_name || profile.name}
 </h1>
 
+<h1 style={{ fontSize: 45, color: "#f3b130" }}>
+  {profile.display_name || profile.name}
+</h1>
+
+<ShareButton />
+
+
 {/* 🔗 Social Media Bar */}
 <div
   style={{
@@ -308,14 +315,3 @@ const iconStyle = {
   alignItems: "center",
 };
 
-
-<div
-  style={{
-    display: "flex",
-    justifyContent: "center",
-    gap: 12,
-    marginTop: 8,
-  }}
->
-  <ShareButton />
-</div>
