@@ -282,7 +282,7 @@ return (
     textAlign: "center",
     display: "flex",
     flexDirection: "column",
-    gap: 24, // 👈 THIS IS THE MAGIC LINE
+    gap: 32, // 👈 THIS IS THE MAGIC LINE
   }}
 >
 
