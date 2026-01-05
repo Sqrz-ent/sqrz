@@ -1,0 +1,13 @@
+export default function DashboardHome() {
+  return (
+    <main style={{ padding: 40 }}>
+      <h1 style={{ fontSize: 32, fontWeight: 700 }}>
+        Dashboard
+      </h1>
+
+      <p style={{ opacity: 0.7, marginTop: 8 }}>
+        Welcome to your SQRZ dashboard.
+      </p>
+    </main>
+  );
+}
