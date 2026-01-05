@@ -129,11 +129,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const headersList = await headers();
-  const host = headersList.get("host");
-  if (!host) notFound();
+  const rawHost = headersList.get("host");
+  if (!rawHost) notFound();
+
+  const host = rawHost
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .trim();
+
+  // 🔥 IMPORTANT: ignore dashboard host
+  if (host === "dashboard.sqrz.com") {
+    notFound();
+  }
 
   const profile = await getProfileFromHost(host);
   if (!profile) notFound();
+
 
   const rawTemplateKey = profile.template_key;
 
