@@ -1,8 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default function RootPage() {
-  const host = headers().get("host")?.toLowerCase() || "";
+export default async function RootPage() {
+  const headersList = await headers();
+  const host = headersList.get("host")?.toLowerCase() || "";
 
   // Dashboard host → dashboard
   if (host.startsWith("dashboard.")) {
@@ -10,6 +11,6 @@ export default function RootPage() {
   }
 
   // Everything else (profiles, custom domains)
-  // must be handled by the profiles route group
+  // is handled by the (profiles) route group
   redirect("/");
 }
