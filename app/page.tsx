@@ -283,9 +283,7 @@ export default async function HomePage() {
 
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
-        {profile.references?.length > 0 && (
-          <Experience jobs={profile.references} />
-        )}
+     
 
         {spotifyEmbed && (
           <iframe src={spotifyEmbed} width="100%" height="152" />
@@ -301,6 +299,13 @@ export default async function HomePage() {
         )}
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}
+
+
+           {profile.references?.length > 0 && (
+          <Experience jobs={profile.references} />
+        )}
+
+
       </div>
     </main>
   );
