@@ -23,6 +23,8 @@ import {
   DEFAULT_TEMPLATE,
   type TemplateKey,
 } from "@/lib/profileTemplates";
+import FloatingSQRZButton from "@/components/FloatingSQRZButton";
+
 
 /* =========================
    DATA FETCHING
@@ -155,6 +157,7 @@ export default async function HomePage() {
   return (
     <main className={`profile-page ${template.bodyClass}`}>
       <BookMeButton />
+  <FloatingSQRZButton />
 
       {/* 🖼️ Profile Hero */}
       <div
