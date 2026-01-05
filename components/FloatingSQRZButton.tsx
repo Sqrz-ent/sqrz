@@ -23,7 +23,7 @@ export default function FloatingSQRZButton() {
       }}
     >
       <img
-        src="/brand/sqrz-logo.png"
+        src="/brand/sqrz_logo.png"
         alt="SQRZ"
         style={{
           width: 28,
