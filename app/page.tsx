@@ -284,7 +284,7 @@ export default async function HomePage() {
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
         {profile.past_employments?.length > 0 && (
-          <Experience jobs={profile.past_employments} />
+          <Experience jobs={profile.references} />
         )}
 
         {spotifyEmbed && (
