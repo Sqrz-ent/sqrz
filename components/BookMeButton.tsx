@@ -43,7 +43,7 @@ const floatingButtonStyle = {
   padding: "12px 18px",
   borderRadius: 999,
   border: "none",
-  background: "accent-color",
+  background: "text-accent",
   color: "#000",
   fontWeight: 600,
   fontSize: 14,
