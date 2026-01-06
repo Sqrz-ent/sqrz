@@ -14,12 +14,12 @@ export default function BookMeButton({ username }: { username: string }) {
   onMouseEnter={(e) => {
     e.currentTarget.style.transform = "translateY(-1px)";
     e.currentTarget.style.boxShadow =
-      "0 14px 40px rgba(243,177,48,0.45)";
+      "0 14px 40px var(--accent-color)";
   }}
   onMouseLeave={(e) => {
     e.currentTarget.style.transform = "none";
     e.currentTarget.style.boxShadow =
-      "0 10px 30px rgba(243,177,48,0.35)";
+      "0 10px 30px var(--accent-color)";
   }}
 >
   Book me
@@ -48,7 +48,7 @@ const floatingButtonStyle = {
   fontWeight: 600,
   fontSize: 14,
   cursor: "pointer",
-  boxShadow: "0 10px 30px rgba(243,177,48,0.35)",
+  boxShadow: "0 10px 30px var(--accent-color))",
   zIndex: 900,
   transition: "transform 0.15s ease, box-shadow 0.15s ease",
 };
