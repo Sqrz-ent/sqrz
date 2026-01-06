@@ -1,6 +1,18 @@
 "use client";
 
 import { useState } from "react";
+
+export default function BookingModal(...) {
+  console.log(
+    "Google key:",
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  );
+
+  ...
+}
+
+
+import { useState } from "react";
 import BookingModal from "./BookingModal";
 
 export default function BookMeButton({ username }: { username: string }) {
