@@ -8,7 +8,10 @@ export default function BookMeButton({ username }: { username: string }) {
 
   return (
     <>
-      <button onClick={() => setOpen(true)}>
+      <button
+        onClick={() => setOpen(true)}
+        style={floatingButtonStyle}
+      >
         Book me
       </button>
 
@@ -20,8 +23,6 @@ export default function BookMeButton({ username }: { username: string }) {
     </>
   );
 }
-
-
 
 /* styles */
 
