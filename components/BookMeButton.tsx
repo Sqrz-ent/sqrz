@@ -25,9 +25,6 @@ export default function BookMeButton({ username }: { username: string }) {
   Book me
 </button>
 
-        Book me
-      </button>
-
       <BookingModal
         open={open}
         onClose={() => setOpen(false)}
@@ -46,7 +43,7 @@ const floatingButtonStyle = {
   padding: "12px 18px",
   borderRadius: 999,
   border: "none",
-  background: "text-accent",
+  background: "accent-color",
   color: "#000",
   fontWeight: 600,
   fontSize: 14,
