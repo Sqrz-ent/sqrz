@@ -6,10 +6,7 @@ export default function BookingModal(...) {
   console.log(
     "Google key:",
     process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  );
-
-  ...
-}
+  )
 
 
 import { useState } from "react";
