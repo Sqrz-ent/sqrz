@@ -23,12 +23,12 @@ export default function BookMeButton({ username }: { username: string }) {
   onMouseEnter={(e) => {
     e.currentTarget.style.transform = "translateY(-1px)";
     e.currentTarget.style.boxShadow =
-      "0 14px 40px var(--accent-color)";
+      "0 20px 20px var(--accent-color)";
   }}
   onMouseLeave={(e) => {
     e.currentTarget.style.transform = "none";
     e.currentTarget.style.boxShadow =
-      "0 10px 30px var(--accent-color)";
+      "0 10px 10px var(--accent-color)";
   }}
 >
   Book me
