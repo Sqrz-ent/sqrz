@@ -6,6 +6,15 @@ import BookingModal from "./BookingModal";
 export default function BookMeButton({ username }: { username: string }) {
   const [open, setOpen] = useState(false);
 
+
+  // 👇 PUT IT RIGHT HERE
+  console.log(
+    "Google key:",
+    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  );
+
+
+
   return (
     <>
       <button
