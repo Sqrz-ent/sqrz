@@ -3,33 +3,20 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 
-const buttonStyle: React.CSSProperties = {
-  position: "fixed",
-  top: 20,
-  right: 20,
-  zIndex: 1000,
-  padding: "12px 18px",
-  borderRadius: 999,
-  border: "none",
-  fontWeight: 700,
-  cursor: "pointer",
-  boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
-};
-
-export default function BookMeButton() {
+export default function BookMeButton({ username }: { username: string }) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <button
-        onClick={() => setOpen(true)}
-        style={buttonStyle}
-        className="cta-button text-accent-bg"
-      >
+      <button onClick={() => setOpen(true)}>
         Book me
       </button>
 
-      <BookingModal open={open} onClose={() => setOpen(false)} />
+      <BookingModal
+        open={open}
+        onClose={() => setOpen(false)}
+        username={username}
+      />
     </>
   );
 }
