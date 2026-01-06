@@ -167,7 +167,10 @@ export default async function HomePage() {
 
   return (
     <main className={`profile-page ${template.bodyClass}`}>
-      <BookMeButton />
+
+<BookMeButton username={profile.slug} />
+
+
   <FloatingSQRZButton />
 
       {/* 🖼️ Profile Hero */}
