@@ -9,9 +9,22 @@ export default function BookMeButton({ username }: { username: string }) {
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
-        style={floatingButtonStyle}
-      >
+  onClick={() => setOpen(true)}
+  style={floatingButtonStyle}
+  onMouseEnter={(e) => {
+    e.currentTarget.style.transform = "translateY(-1px)";
+    e.currentTarget.style.boxShadow =
+      "0 14px 40px rgba(243,177,48,0.45)";
+  }}
+  onMouseLeave={(e) => {
+    e.currentTarget.style.transform = "none";
+    e.currentTarget.style.boxShadow =
+      "0 10px 30px rgba(243,177,48,0.35)";
+  }}
+>
+  Book me
+</button>
+
         Book me
       </button>
 
@@ -33,7 +46,7 @@ const floatingButtonStyle = {
   padding: "12px 18px",
   borderRadius: 999,
   border: "none",
-  background: "#f3b130",
+  background: "text-accent",
   color: "#000",
   fontWeight: 600,
   fontSize: 14,
