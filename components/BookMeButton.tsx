@@ -40,7 +40,7 @@ const floatingButtonStyle = {
   position: "fixed" as const,
   top: 20,
   right: 20,
-  padding: "12px 18px",
+  padding: "12px 12px",
   borderRadius: 999,
   border: "none",
   background: "var(--accent-color)",
@@ -48,7 +48,7 @@ const floatingButtonStyle = {
   fontWeight: 600,
   fontSize: 14,
   cursor: "pointer",
-  boxShadow: "0 10px 30px var(--accent-color))",
+  boxShadow: "0 10px 10px var(--accent-color))",
   zIndex: 900,
   transition: "transform 0.15s ease, box-shadow 0.15s ease",
 };

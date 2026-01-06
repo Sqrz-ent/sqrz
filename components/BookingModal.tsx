@@ -145,7 +145,7 @@ const submitStyle = {
   padding: "12px 14px",
   borderRadius: 10,
   border: "none",
-  background: "#f3b130",
+  background: "var(--accent-color)",
   color: "#000",
   fontWeight: 600,
   cursor: "pointer",
