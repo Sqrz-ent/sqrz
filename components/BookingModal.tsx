@@ -11,12 +11,25 @@ export default function BookingModal({
   onClose: () => void;
   username: string;
 }) {
+  const [step, setStep] = useState<1 | 2>(1);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
+
+  function nextStep() {
+    if (!name || !email) {
+      setError("Please enter name and email.");
+      return;
+    }
+    setError(null);
+    setStep(2);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,6 +47,7 @@ export default function BookingModal({
           body: JSON.stringify({
             name,
             email,
+            message,
           }),
         }
       );
@@ -42,11 +56,14 @@ export default function BookingModal({
         throw new Error("Failed to send booking request");
       }
 
-      // optional: await res.json();
-      onClose(); // close modal on success
+      onClose();
+      setStep(1);
+      setName("");
+      setEmail("");
+      setMessage("");
     } catch (err) {
-      setError("Something went wrong. Please try again.");
       console.error(err);
+      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -59,43 +76,89 @@ export default function BookingModal({
           ✕
         </button>
 
-        <h2 style={{ marginBottom: 16 }}>Booking Request</h2>
+        <h2 style={{ marginBottom: 16 }}>
+          Booking Request
+        </h2>
+
+        {/* STEP INDICATOR */}
+        <p style={{ opacity: 0.6, marginBottom: 16 }}>
+          Step {step} of 2
+        </p>
 
         <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            placeholder="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-            required
-          />
+          {step === 1 && (
+            <>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+                required
+              />
 
-          <input
-            type="email"
-            placeholder="Your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-            required
-          />
+              <input
+                type="email"
+                placeholder="Your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+                required
+              />
 
-          {error && (
-            <p style={{ color: "#ff6b6b", marginBottom: 12 }}>
-              {error}
-            </p>
+              {error && (
+                <p style={errorStyle}>{error}</p>
+              )}
+
+              <button
+                type="button"
+                style={submitStyle}
+                onClick={nextStep}
+              >
+                Continue
+              </button>
+            </>
           )}
 
-          <button type="submit" style={submitStyle} disabled={loading}>
-            {loading ? "Sending..." : "Continue"}
-          </button>
+          {step === 2 && (
+            <>
+              <textarea
+                placeholder="Tell us about your event, date, location, requirements…"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                style={textareaStyle}
+                rows={5}
+                required
+              />
+
+              {error && (
+                <p style={errorStyle}>{error}</p>
+              )}
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  type="button"
+                  style={secondaryButtonStyle}
+                  onClick={() => setStep(1)}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="submit"
+                  style={submitStyle}
+                  disabled={loading}
+                >
+                  {loading ? "Sending…" : "Send request"}
+                </button>
+              </div>
+            </>
+          )}
         </form>
       </div>
     </div>
   );
-
 }
-
 
 /* styles */
 
@@ -114,7 +177,7 @@ const modalStyle = {
   padding: 24,
   borderRadius: 16,
   width: "100%",
-  maxWidth: 400,
+  maxWidth: 420,
   color: "#fff",
   position: "relative" as const,
 };
@@ -140,8 +203,13 @@ const inputStyle = {
   color: "#fff",
 };
 
+const textareaStyle = {
+  ...inputStyle,
+  resize: "vertical" as const,
+};
+
 const submitStyle = {
-  width: "100%",
+  flex: 1,
   padding: "12px 14px",
   borderRadius: 10,
   border: "none",
@@ -149,4 +217,18 @@ const submitStyle = {
   color: "#000",
   fontWeight: 600,
   cursor: "pointer",
+};
+
+const secondaryButtonStyle = {
+  padding: "12px 14px",
+  borderRadius: 10,
+  border: "1px solid #333",
+  background: "#000",
+  color: "#fff",
+  cursor: "pointer",
+};
+
+const errorStyle = {
+  color: "#ff6b6b",
+  marginBottom: 12,
 };

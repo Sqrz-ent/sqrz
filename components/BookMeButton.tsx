@@ -6,30 +6,11 @@ import BookingModal from "./BookingModal";
 export default function BookMeButton({ username }: { username: string }) {
   const [open, setOpen] = useState(false);
 
-
-  // 👇 PUT IT RIGHT HERE
-  console.log(
-    "Google key:",
-    process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  );
-
-
-
   return (
     <>
       <button
   onClick={() => setOpen(true)}
   style={floatingButtonStyle}
-  onMouseEnter={(e) => {
-    e.currentTarget.style.transform = "translateY(-1px)";
-    e.currentTarget.style.boxShadow =
-      "0 20px 20px var(--accent-color)";
-  }}
-  onMouseLeave={(e) => {
-    e.currentTarget.style.transform = "none";
-    e.currentTarget.style.boxShadow =
-      "0 10px 10px var(--accent-color)";
-  }}
 >
   Book me
 </button>
