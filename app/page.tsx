@@ -127,7 +127,11 @@ export async function generateMetadata(): Promise<Metadata> {
    PAGE
 ========================= */
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: { preview?: string };
+}) {
   const headersList = await headers();
   const rawHost = headersList.get("host");
   if (!rawHost) notFound();
@@ -136,6 +140,9 @@ export default async function HomePage() {
     .toLowerCase()
     .replace(/:\d+$/, "")
     .trim();
+
+    const isPreview = searchParams.preview === "true";
+
 
   // 🔥 IMPORTANT: ignore dashboard host
   if (host === "dashboard.sqrz.com") {
@@ -168,10 +175,9 @@ export default async function HomePage() {
   return (
     <main className={`profile-page ${template.bodyClass}`}>
 
-<BookMeButton username={profile.slug} />
+{!isPreview && <BookMeButton username={profile.slug} />}
+{!isPreview && <FloatingSQRZButton />}
 
-
-  <FloatingSQRZButton />
 
       {/* 🖼️ Profile Hero */}
       <div
@@ -328,24 +334,3 @@ export default async function HomePage() {
   );
 }
 
-export default function ProfilePage({
-  searchParams,
-}: {
-  searchParams: { preview?: string };
-}) {
-  const isPreview = searchParams.preview === "true";
-
-  return (
-    <>
-      {!isPreview && <BookingButton />}
-      <ProfileContent />
-      {!isPreview && <Footer />}
-
-      {isPreview && (
-        <div style={{ position: "fixed", top: 12, right: 12 }}>
-          Preview mode
-        </div>
-      )}
-    </>
-  );
-}
