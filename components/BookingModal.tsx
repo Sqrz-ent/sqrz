@@ -1,14 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import type { Service } from "@/services";
 
-type Service = {
-  id: string;
-  title: string;
-  price_from: number;
-  price_to?: number;
-  instant_booking: boolean;
-};
+
 
 
 export default function BookingModal({

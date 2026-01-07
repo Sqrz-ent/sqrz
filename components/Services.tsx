@@ -6,6 +6,7 @@ type Service = {
   priceFrom?: number;
   priceTo?: number;
   currency?: string;
+  instant_booking?: boolean;
 };
 
 export default function Services({ services }: { services: Service[] }) {
