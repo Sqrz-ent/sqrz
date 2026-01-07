@@ -11,7 +11,10 @@ export default function BookingModal({
   onClose: () => void;
   username: string;
 }) {
-const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
+
+const [services, setServices] = useState<Service[]>([]);
+const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -116,6 +119,37 @@ const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
         </p>
 
         <form onSubmit={handleSubmit}>
+          {/* STEP 0 – Select Service */}
+{step === 0 && (
+  <>
+    <h3 style={{ marginBottom: 12 }}>Select a service</h3>
+
+    {services.map((service) => (
+      <button
+        key={service.id}
+        type="button"
+        onClick={() => {
+          setSelectedService(service);
+          setStep(1);
+        }}
+        style={{
+          ...inputStyle,
+          textAlign: "left",
+          cursor: "pointer",
+        }}
+      >
+        <strong>{service.title}</strong>
+        <div style={{ opacity: 0.7, fontSize: 13 }}>
+          from €{service.price_from}
+          {service.instant_booking && " • Instant booking"}
+        </div>
+      </button>
+    ))}
+
+    {error && <p style={errorStyle}>{error}</p>}
+  </>
+)}
+
           {/* STEP 1 */}
           {step === 1 && (
             <>
