@@ -215,12 +215,13 @@ const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
                 </button>
 
                 <button
-                  type="submit"
-                  style={submitStyle}
-                  disabled={loading}
-                >
-                  {loading ? "Sending…" : "Send request"}
-                </button>
+                type="button"
+                style={submitStyle}
+                 onClick={() => setStep(4)}
+                  >
+                   Continue
+                  </button>
+
               </div>
             </>
           )}
