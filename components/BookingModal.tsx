@@ -11,18 +11,20 @@ export default function BookingModal({
   onClose: () => void;
   username: string;
 }) {
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
 
-  function nextStep() {
+  function nextFromStep1() {
     if (!name || !email) {
       setError("Please enter name and email.");
       return;
@@ -31,9 +33,24 @@ export default function BookingModal({
     setStep(2);
   }
 
+  function nextFromStep2() {
+    if (!message) {
+      setError("Please add a short description.");
+      return;
+    }
+    setError(null);
+    setStep(3);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (!date) {
+      setError("Please select a date.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -48,6 +65,8 @@ export default function BookingModal({
             name,
             email,
             message,
+            event_date: date,
+            event_time: time || null,
           }),
         }
       );
@@ -56,11 +75,14 @@ export default function BookingModal({
         throw new Error("Failed to send booking request");
       }
 
+      // reset + close
       onClose();
       setStep(1);
       setName("");
       setEmail("");
       setMessage("");
+      setDate("");
+      setTime("");
     } catch (err) {
       console.error(err);
       setError("Something went wrong. Please try again.");
@@ -76,16 +98,14 @@ export default function BookingModal({
           ✕
         </button>
 
-        <h2 style={{ marginBottom: 16 }}>
-          Booking Request
-        </h2>
+        <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
 
-        {/* STEP INDICATOR */}
         <p style={{ opacity: 0.6, marginBottom: 16 }}>
-          Step {step} of 2
+          Step {step} of 3
         </p>
 
         <form onSubmit={handleSubmit}>
+          {/* STEP 1 */}
           {step === 1 && (
             <>
               <input
@@ -106,24 +126,23 @@ export default function BookingModal({
                 required
               />
 
-              {error && (
-                <p style={errorStyle}>{error}</p>
-              )}
+              {error && <p style={errorStyle}>{error}</p>}
 
               <button
                 type="button"
                 style={submitStyle}
-                onClick={nextStep}
+                onClick={nextFromStep1}
               >
                 Continue
               </button>
             </>
           )}
 
+          {/* STEP 2 */}
           {step === 2 && (
             <>
               <textarea
-                placeholder="Tell us about your event, date, location, requirements…"
+                placeholder="Tell us about your event, location, requirements…"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 style={textareaStyle}
@@ -131,15 +150,55 @@ export default function BookingModal({
                 required
               />
 
-              {error && (
-                <p style={errorStyle}>{error}</p>
-              )}
+              {error && <p style={errorStyle}>{error}</p>}
 
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={buttonRowStyle}>
                 <button
                   type="button"
                   style={secondaryButtonStyle}
                   onClick={() => setStep(1)}
+                >
+                  Back
+                </button>
+
+                <button
+                  type="button"
+                  style={submitStyle}
+                  onClick={nextFromStep2}
+                >
+                  Continue
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* STEP 3 */}
+          {step === 3 && (
+            <>
+              <label style={labelStyle}>Event date *</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={inputStyle}
+                required
+              />
+
+              <label style={labelStyle}>Event time (optional)</label>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={inputStyle}
+              />
+
+              {error && <p style={errorStyle}>{error}</p>}
+
+              <div style={buttonRowStyle}>
+                <button
+                  type="button"
+                  style={secondaryButtonStyle}
+                  onClick={() => setStep(2)}
                 >
                   Back
                 </button>
@@ -208,6 +267,13 @@ const textareaStyle = {
   resize: "vertical" as const,
 };
 
+const labelStyle = {
+  fontSize: 13,
+  opacity: 0.7,
+  marginBottom: 6,
+  display: "block",
+};
+
 const submitStyle = {
   flex: 1,
   padding: "12px 14px",
@@ -226,6 +292,11 @@ const secondaryButtonStyle = {
   background: "#000",
   color: "#fff",
   cursor: "pointer",
+};
+
+const buttonRowStyle = {
+  display: "flex",
+  gap: 8,
 };
 
 const errorStyle = {
