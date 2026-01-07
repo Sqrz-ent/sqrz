@@ -180,6 +180,12 @@ export default async function HomePage({
 {!isPreview && <BookMeButton username={profile.slug} />}
 {!isPreview && <FloatingSQRZButton />}
 
+<div style={{ position: "fixed", bottom: 10, left: 10, zIndex: 9999 }}>
+  <pre style={{ color: "red", fontSize: 12 }}>
+    preview: {JSON.stringify(isPreview)}
+  </pre>
+</div>
+
 
       {/* 🖼️ Profile Hero */}
       <div
