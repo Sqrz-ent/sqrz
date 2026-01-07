@@ -24,6 +24,8 @@ import {
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
+export const dynamic = "force-dynamic";
+
 
 
 /* =========================
