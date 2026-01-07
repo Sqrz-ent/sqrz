@@ -11,13 +11,17 @@ export default function BookingModal({
   onClose: () => void;
   username: string;
 }) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [zip, setZip] = useState("");
+  const [country, setCountry] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,8 +69,17 @@ export default function BookingModal({
             name,
             email,
             message,
-            event_date: date,
+            event_date: date || null,
             event_time: time || null,
+            address: {
+            street: street || null,
+            city: city || null,
+            zip: zip || null,
+            country: country || null,
+            full:
+              [street, zip, city, country]
+        .filter(Boolean)
+        .join(", ") || null,
           }),
         }
       );
@@ -101,7 +114,7 @@ export default function BookingModal({
         <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
 
         <p style={{ opacity: 0.6, marginBottom: 16 }}>
-          Step {step} of 3
+          Step {step} of 4
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -213,6 +226,61 @@ export default function BookingModal({
               </div>
             </>
           )}
+          {/* STEP 4 */}
+{step === 4 && (
+  <>
+    <input
+      type="text"
+      placeholder="Street & number"
+      value={street}
+      onChange={(e) => setStreet(e.target.value)}
+      style={inputStyle}
+    />
+
+    <input
+      type="text"
+      placeholder="City"
+      value={city}
+      onChange={(e) => setCity(e.target.value)}
+      style={inputStyle}
+    />
+
+    <input
+      type="text"
+      placeholder="ZIP / Postal code"
+      value={zip}
+      onChange={(e) => setZip(e.target.value)}
+      style={inputStyle}
+    />
+
+    <input
+      type="text"
+      placeholder="Country"
+      value={country}
+      onChange={(e) => setCountry(e.target.value)}
+      style={inputStyle}
+    />
+
+    <div style={buttonRowStyle}>
+      <button
+        type="button"
+        style={secondaryButtonStyle}
+        onClick={() => setStep(3)}
+      >
+        Back
+      </button>
+
+      <button
+        type="submit"
+        style={submitStyle}
+        disabled={loading}
+      >
+        {loading ? "Sending…" : "Send request"}
+      </button>
+    </div>
+  </>
+)}
+
         </form>
       </div>
     </div>
