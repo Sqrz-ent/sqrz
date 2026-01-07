@@ -24,10 +24,6 @@ import {
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
-export const dynamic = "force-dynamic";
-import { headers } from "next/headers";
-
-
 
 
 /* =========================
@@ -181,12 +177,6 @@ export default async function HomePage({
 
 {!isPreview && <BookMeButton username={profile.slug} />}
 {!isPreview && <FloatingSQRZButton />}
-
-<div style={{ position: "fixed", bottom: 10, left: 10, zIndex: 9999 }}>
-  <pre style={{ color: "red", fontSize: 12 }}>
-    preview: {JSON.stringify(isPreview)}
-  </pre>
-</div>
 
 
       {/* 🖼️ Profile Hero */}
