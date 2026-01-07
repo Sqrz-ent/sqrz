@@ -25,6 +25,7 @@ import {
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 export const dynamic = "force-dynamic";
+import { headers } from "next/headers";
 
 
 
@@ -144,10 +145,7 @@ export default async function HomePage({
     .replace(/:\d+$/, "")
     .trim();
 
-    const headersList = await headers();
-const referer = headersList.get("referer") || "";
-const isPreview = referer.includes("preview=true");
-
+    const isPreview = searchParams.preview === "true";
 
 
   // 🔥 IMPORTANT: ignore dashboard host
