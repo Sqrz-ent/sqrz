@@ -2,6 +2,15 @@
 
 import { useState } from "react";
 
+type Service = {
+  id: string;
+  title: string;
+  price_from: number;
+  price_to?: number;
+  instant_booking: boolean;
+};
+
+
 export default function BookingModal({
   open,
   onClose,
