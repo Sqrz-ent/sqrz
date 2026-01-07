@@ -80,9 +80,8 @@ const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
               [street, zip, city, country]
         .filter(Boolean)
         .join(", ") || null,
-          }),
         }
-      );
+      }),
 
       if (!res.ok) {
         throw new Error("Failed to send booking request");
