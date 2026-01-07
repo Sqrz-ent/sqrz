@@ -47,61 +47,60 @@ const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
 
-    if (!date) {
-      setError("Please select a date.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const res = await fetch(
-        `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/submitInquiry/${username}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            message,
-            event_date: date || null,
-            event_time: time || null,
-            address: {
+  try {
+    const res = await fetch(
+      `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/submitInquiry/${username}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message,
+          event_date: date || null,
+          event_time: time || null,
+          address: {
             street: street || null,
             city: city || null,
             zip: zip || null,
             country: country || null,
-            full:
-              [street, zip, city, country]
-        .filter(Boolean)
-        .join(", ") || null,
-        }
-      ),
-
-      if (!res.ok) {
-        throw new Error("Failed to send booking request");
+            full: [street, zip, city, country]
+              .filter(Boolean)
+              .join(", ") || null,
+          },
+        }),
       }
+    );
 
-      // reset + close
-      onClose();
-      setStep(1);
-      setName("");
-      setEmail("");
-      setMessage("");
-      setDate("");
-      setTime("");
-    } catch (err) {
-      console.error(err);
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    if (!res.ok) {
+      throw new Error("Failed to send booking request");
     }
+
+    // reset + close
+    onClose();
+    setStep(1);
+    setName("");
+    setEmail("");
+    setMessage("");
+    setDate("");
+    setTime("");
+    setStreet("");
+    setCity("");
+    setZip("");
+    setCountry("");
+  } catch (err) {
+    console.error(err);
+    setError("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
   }
+}
 
   return (
     <div style={overlayStyle}>
