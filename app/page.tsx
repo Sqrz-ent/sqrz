@@ -327,3 +327,25 @@ export default async function HomePage() {
     </main>
   );
 }
+
+export default function ProfilePage({
+  searchParams,
+}: {
+  searchParams: { preview?: string };
+}) {
+  const isPreview = searchParams.preview === "true";
+
+  return (
+    <>
+      {!isPreview && <BookingButton />}
+      <ProfileContent />
+      {!isPreview && <Footer />}
+
+      {isPreview && (
+        <div style={{ position: "fixed", top: 12, right: 12 }}>
+          Preview mode
+        </div>
+      )}
+    </>
+  );
+}
