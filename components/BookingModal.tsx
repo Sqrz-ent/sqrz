@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { Service } from "@/components/services";
+import type { Service } from "@/components/Services";
 
 
 
