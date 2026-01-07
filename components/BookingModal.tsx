@@ -145,7 +145,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
       >
         <strong>{service.task}</strong>
         <div style={{ opacity: 0.7, fontSize: 13 }}>
-          from €{service.price_from}
+          from €{service.priceFrom}
           {service.instant_booking && " • Instant booking"}
         </div>
       </button>
