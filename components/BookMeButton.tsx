@@ -1,4 +1,19 @@
 "use client";
+import type { Service } from "@/types/service";
+
+export default function BookingModal({
+  open,
+  onClose,
+  username,
+  services,
+}: {
+  open: boolean;
+  onClose: () => void;
+  username: string;
+  services: Service[];
+}) {
+
+
 
 import { useState } from "react";
 import BookingModal from "./BookingModal";
@@ -19,6 +34,7 @@ export default function BookMeButton({ username }: { username: string }) {
         open={open}
         onClose={() => setOpen(false)}
         username={username}
+        services={services} 
       />
     </>
   );

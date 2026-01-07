@@ -18,7 +18,6 @@ export default function BookingModal({
 }) {
 const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
 
-const [services, setServices] = useState<Service[]>([]);
 const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const [name, setName] = useState("");
