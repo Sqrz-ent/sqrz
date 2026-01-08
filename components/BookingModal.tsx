@@ -352,6 +352,9 @@ const modalStyle = {
   maxWidth: 420,
   color: "#fff",
   position: "relative" as const,
+  </form>
+
+        {/* Step indicator (bottom of modal) */}
   <p
           style={{
             position: "absolute",
