@@ -148,7 +148,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
             cursor: "pointer",
           }}
         >
-          <strong>{service.task}</strong>
+          <strong>{service.service}</strong>
 
           <div style={{ opacity: 0.7, fontSize: 13 }}>
             {service.priceFrom
