@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Service } from "@/types/service";
 
 export default function BookingModal({
@@ -32,6 +32,17 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!open) return null;
+  useEffect(() => {
+  if (open) {
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }
+}, [open]);
+
 
   function nextFromStep1() {
     if (!name || !email) {
