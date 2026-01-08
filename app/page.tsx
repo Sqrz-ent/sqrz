@@ -284,7 +284,7 @@ export default async function HomePage({
 <HubSpotTracking
   portalId={profile.hubspot_portal_id}
   enabled={profile.hubspot_tracking_enabled}
-  hasConsent={cookieConsent.analytics}
+  hasConsent={true}
   isPreview={isPreview}
 />
 
