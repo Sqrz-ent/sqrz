@@ -2,24 +2,12 @@
 
 import Script from "next/script";
 
-type Props = {
-  portalId: string | null;
-  enabled: boolean;
-  hasConsent: boolean;
-  isPreview: boolean;
+type HubSpotTrackingProps = {
+  portalId: string;
 };
 
-export default function HubSpotTracking({
-  portalId,
-  enabled,
-  hasConsent,
-  isPreview,
-}: Props) {
-  // 🔒 Hard safety gate
-  if (!enabled) return null;
+export default function HubSpotTracking({ portalId }: HubSpotTrackingProps) {
   if (!portalId) return null;
-  if (!hasConsent) return null;
-  if (isPreview) return null;
 
   return (
     <Script
