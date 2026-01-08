@@ -3,12 +3,6 @@
 import { useState } from "react";
 import type { Service } from "@/types/service";
 
-
-
-
-
-import type { Service } from "@/types/service";
-
 export default function BookingModal({
   open,
   onClose,
