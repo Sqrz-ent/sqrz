@@ -1,4 +1,11 @@
 "use client";
+console.log("[AnalyticsGate] rendered", {
+  googleAnalyticsId,
+  facebookPixelId,
+  hubspotPortalId,
+  hubspotEnabled,
+  isPreview,
+});
 
 import { useCookieConsent } from "@/components/hooks/useCookieConsent";
 
