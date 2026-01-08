@@ -352,6 +352,18 @@ const modalStyle = {
   maxWidth: 420,
   color: "#fff",
   position: "relative" as const,
+  <p
+          style={{
+            position: "absolute",
+            bottom: 16,
+            left: "50%",
+            transform: "translateX(-50%)",
+            opacity: 0.5,
+            fontSize: 13,
+          }}
+        >
+          Step {step} of 4
+        </p>
 };
 
 const closeStyle = {
