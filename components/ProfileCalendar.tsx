@@ -67,7 +67,7 @@ return <p className="text-muted mt-6">Loading dates…</p>;
   }
 
   if (events.length === 0) {
-return <p className="text-muted mt-6">No dates booked via SQRZ</p>;
+return <p className="text-muted mt-6"></p>;
   }
 
   return (
