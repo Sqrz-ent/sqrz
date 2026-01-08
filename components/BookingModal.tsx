@@ -367,8 +367,10 @@ const modalStyle = {
   borderRadius: 16,
   width: "100%",
   maxWidth: 420,
+  minHeight: 520,
   color: "#fff",
   position: "relative" as const,
+  transition: "min-height 0.2s ease",
 };
 
 const closeStyle = {
