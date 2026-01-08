@@ -119,27 +119,11 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
 
         <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
 
-        <p style={{ opacity: 0.6, marginBottom: 16 }}>
-          Step {step} of 4
-        </p>
 
         <form onSubmit={handleSubmit}>
   {/* steps */}
-</form>
 
-{/* Step indicator (bottom of modal) */}
-<p
-  style={{
-    position: "absolute",
-    bottom: 16,
-    left: "50%",
-    transform: "translateX(-50%)",
-    opacity: 0.5,
-    fontSize: 13,
-  }}
->
-  Step {step} of 4
-</p>
+
 
           {/* STEP 0 – Select Service */}
 {step === 0 && (
