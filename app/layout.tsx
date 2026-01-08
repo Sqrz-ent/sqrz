@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import CookieBanner from "@/components/tracking/CookieBanner";
+
+
 
 // Template CSS (loaded once)
 import "./templates/tech-clean.css";
@@ -33,6 +36,7 @@ export default function RootLayout({
         className={`app-root ${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+         <CookieBanner />
       </body>
     </html>
   );
