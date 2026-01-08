@@ -370,7 +370,7 @@ const modalStyle = {
   position: "relative" as const,
   transition: "min-height 0.2s ease",
   display: "flex",              // 👈 ADD
-  flexDirection: "column",
+  flexDirection: "column" as const,
 };
 
 const closeStyle = {
