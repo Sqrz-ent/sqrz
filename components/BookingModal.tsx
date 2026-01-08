@@ -328,6 +328,22 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
 )}
 
         </form>
+
+
+{/* Step indicator (bottom of modal) */}
+<p
+  style={{
+    position: "absolute",
+    bottom: 16,
+    left: "50%",
+    transform: "translateX(-50%)",
+    opacity: 0.5,
+    fontSize: 13,
+  }}
+>
+  Step {step} of 4
+</p>
+
       </div>
     </div>
   );
