@@ -25,6 +25,8 @@ import {
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import HubSpotTracking from "@/components/tracking/HubSpotTracking";
+import { useCookieConsent } from "@/components/hooks/useCookieConsent";
+
 
 
 

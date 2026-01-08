@@ -2,6 +2,27 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import CookieBanner from "@/components/tracking/CookieBanner";
+import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+
+export default function RootLayout({ children }) {
+  return (
+    <html>
+      <body>
+        {children}
+
+        <AnalyticsGate
+          googleAnalyticsId={profile.google_analytics_id}
+          facebookPixelId={profile.facebook_pixel_id}
+          tiktokPixelId={profile.tiktok_pixel_id}
+          hubspotPortalId={profile.hubspot_portal_id}
+          hubspotEnabled={profile.hubspot_tracking_enabled}
+          isPreview={isPreview}
+        />
+      </body>
+    </html>
+  );
+}
+
 
 
 
