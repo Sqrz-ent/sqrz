@@ -24,8 +24,8 @@ import {
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
-import HubSpotTracking from "@/components/tracking/HubSpotTracking";
-import { useCookieConsent } from "@/components/hooks/useCookieConsent";
+import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+
 
 
 
@@ -179,6 +179,15 @@ export default async function HomePage({
   return (
     <main className={`profile-page ${template.bodyClass}`}>
 
+
+    {/* 🔐 Analytics + tracking (consent-gated) */}
+    <AnalyticsGate
+      facebookPixelId={profile.facebook_pixel_id}
+      googleAnalyticsId={profile.google_analytics_id}
+      hubspotPortalId={profile.hubspot_portal_id}
+      isPreview={isPreview}
+    />
+
 <BookMeButton
   username={profile.slug}
   services={profile.services}
@@ -263,50 +272,6 @@ export default async function HomePage({
       </div>
 
       {/* Analytics */}
-
-
-
-      {profile.facebook_pixel_id && (
-        <Script id="facebook-pixel" strategy="afterInteractive">
-          {`
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${profile.facebook_pixel_id}');
-            fbq('track', 'PageView');
-          `}
-        </Script>
-      )}
-
-<HubSpotTracking
-  portalId={profile.hubspot_portal_id}
-  enabled={profile.hubspot_tracking_enabled}
-  hasConsent={true}
-  isPreview={isPreview}
-/>
-
-
-      {profile.google_analytics_id && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${profile.google_analytics_id}`}
-            strategy="afterInteractive"
-          />
-          <Script id="ga-init" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${profile.google_analytics_id}', { anonymize_ip: true });
-            `}
-          </Script>
-        </>
-      )}
 
       <div
         style={{
