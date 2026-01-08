@@ -119,49 +119,47 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
 
         <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
 
+<div
+  style={{
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    paddingBottom: 40, // space for step indicator
+  }}
+>
+  <form onSubmit={handleSubmit}>
+    {/* STEP 0 – Select Service */}
+    {step === 0 && (
+      <>
+        <h3 style={{ marginBottom: 12 }}>Select a service</h3>
 
-        <form onSubmit={handleSubmit}>
-  {/* steps */}
-
-
-
-          {/* STEP 0 – Select Service */}
-{step === 0 && (
-  <>
-    <h3 style={{ marginBottom: 12 }}>Select a service</h3>
-
-    {services.length === 0 ? (
-      <p style={{ opacity: 0.6, fontSize: 14 }}>
-        Currently unavailable.
-      </p>
-    ) : (
-      services.map((service) => (
-        <button
-          key={service.id}
-          type="button"
-          onClick={() => {
-            setSelectedService(service);
-            setStep(1);
-          }}
-          style={{
-            ...inputStyle,
-            textAlign: "left",
-            cursor: "pointer",
-          }}
-        >
-          <strong>{service.service}</strong>
-
-          <div style={{ opacity: 0.7, fontSize: 13 }}>
-            {service.priceFrom
-              ? `from €${service.priceFrom}`
-              : "Price on request"}
-            {service.instant_booking && " • Instant booking"}
-          </div>
-        </button>
-      ))
+        {services.length === 0 ? (
+          <p style={{ opacity: 0.6, fontSize: 14 }}>
+            Currently no services available.
+          </p>
+        ) : (
+          services.map((service) => (
+            <button
+              key={service.id}
+              type="button"
+              onClick={() => {
+                setSelectedService(service);
+                setStep(1);
+              }}
+              style={{
+                ...inputStyle,
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+              <strong>{service.service}</strong>
+            </button>
+          ))
+        )}
+      </>
     )}
-  </>
-)}
+
 
           {/* STEP 1 */}
           {step === 1 && (
@@ -371,6 +369,8 @@ const modalStyle = {
   color: "#fff",
   position: "relative" as const,
   transition: "min-height 0.2s ease",
+  display: "flex",              // 👈 ADD
+  flexDirection: "column",
 };
 
 const closeStyle = {
