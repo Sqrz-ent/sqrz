@@ -124,6 +124,23 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
         </p>
 
         <form onSubmit={handleSubmit}>
+  {/* steps */}
+</form>
+
+{/* Step indicator (bottom of modal) */}
+<p
+  style={{
+    position: "absolute",
+    bottom: 16,
+    left: "50%",
+    transform: "translateX(-50%)",
+    opacity: 0.5,
+    fontSize: 13,
+  }}
+>
+  Step {step} of 4
+</p>
+
           {/* STEP 0 – Select Service */}
 {step === 0 && (
   <>
@@ -352,21 +369,6 @@ const modalStyle = {
   maxWidth: 420,
   color: "#fff",
   position: "relative" as const,
-  </form>
-
-        {/* Step indicator (bottom of modal) */}
-  <p
-          style={{
-            position: "absolute",
-            bottom: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-            opacity: 0.5,
-            fontSize: 13,
-          }}
-        >
-          Step {step} of 4
-        </p>
 };
 
 const closeStyle = {
