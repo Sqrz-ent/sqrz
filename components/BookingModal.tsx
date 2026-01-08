@@ -326,7 +326,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
 )}
 
         </form>
-
+</div> 
 
 {/* Step indicator (bottom of modal) */}
 <p
