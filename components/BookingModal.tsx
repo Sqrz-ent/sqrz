@@ -7,14 +7,18 @@ import type { Service } from "@/types/service";
 
 
 
+import type { Service } from "@/types/service";
+
 export default function BookingModal({
   open,
   onClose,
   username,
+  services,
 }: {
   open: boolean;
   onClose: () => void;
   username: string;
+  services: Service[];
 }) {
 const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
 
