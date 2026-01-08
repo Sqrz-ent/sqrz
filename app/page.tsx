@@ -182,9 +182,10 @@ export default async function HomePage({
 
     {/* 🔐 Analytics + tracking (consent-gated) */}
     <AnalyticsGate
-      facebookPixelId={profile.facebook_pixel_id}
       googleAnalyticsId={profile.google_analytics_id}
+      facebookPixelId={profile.facebook_pixel_id}
       hubspotPortalId={profile.hubspot_portal_id}
+      hubspotEnabled={profile.hubspot_tracking_enabled}
       isPreview={isPreview}
     />
 
