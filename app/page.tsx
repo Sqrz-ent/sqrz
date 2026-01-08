@@ -24,6 +24,8 @@ import {
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
+import HubSpotTracking from "@/components/tracking/HubSpotTracking";
+
 
 
 /* =========================
@@ -259,6 +261,9 @@ export default async function HomePage({
       </div>
 
       {/* Analytics */}
+
+
+
       {profile.facebook_pixel_id && (
         <Script id="facebook-pixel" strategy="afterInteractive">
           {`
@@ -275,6 +280,14 @@ export default async function HomePage({
           `}
         </Script>
       )}
+
+<HubSpotTracking
+  portalId={profile.hubspot_portal_id}
+  enabled={profile.hubspot_tracking_enabled}
+  hasConsent={cookieConsent.analytics}
+  isPreview={isPreview}
+/>
+
 
       {profile.google_analytics_id && (
         <>
