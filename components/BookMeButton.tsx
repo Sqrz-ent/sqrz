@@ -1,40 +1,45 @@
 "use client";
-import type { Service } from "@/types/service";
 
-export default function BookingModal({
-  open,
-  onClose,
+import { useState } from "react";
+import type { Service } from "@/types/service";
+import BookingModal from "./BookingModal";
+
+export default function BookMeButton({
   username,
   services,
 }: {
-  open: boolean;
-  onClose: () => void;
   username: string;
   services: Service[];
 }) {
-
-
-
-import { useState } from "react";
-import BookingModal from "./BookingModal";
-
-export default function BookMeButton({ username }: { username: string }) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
       <button
-  onClick={() => setOpen(true)}
-  style={floatingButtonStyle}
->
-  Book me
-</button>
+        onClick={() => setOpen(true)}
+        style={{
+          position: "fixed",
+          top: 20,
+          right: 20,
+          padding: "12px 12px",
+          borderRadius: 999,
+          border: "none",
+          background: "var(--accent-color)",
+          color: "#000",
+          fontWeight: 600,
+          fontSize: 14,
+          cursor: "pointer",
+          zIndex: 900,
+        }}
+      >
+        Book me
+      </button>
 
       <BookingModal
         open={open}
         onClose={() => setOpen(false)}
         username={username}
-        services={services} 
+        services={services}
       />
     </>
   );
