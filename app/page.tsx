@@ -222,7 +222,7 @@ export default async function HomePage({
             className="text-accent"
             style={{ fontSize: 42, fontWeight: 700, marginBottom: 8 }}
           >
-            {profile.display_name || profile.name}
+            {profile.display_name || profile.name || profile.slug}
           </h1>
 
           <div
