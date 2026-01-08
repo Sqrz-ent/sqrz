@@ -126,29 +126,36 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   <>
     <h3 style={{ marginBottom: 12 }}>Select a service</h3>
 
-    {services.map((service) => (
-      <button
-        key={service.id}
-        type="button"
-        onClick={() => {
-          setSelectedService(service);
-          setStep(1);
-        }}
-        style={{
-          ...inputStyle,
-          textAlign: "left",
-          cursor: "pointer",
-        }}
-      >
-        <strong>{service.task}</strong>
-        <div style={{ opacity: 0.7, fontSize: 13 }}>
-          from €{service.priceFrom}
-          {service.instant_booking && " • Instant booking"}
-        </div>
-      </button>
-    ))}
+    {services.length === 0 ? (
+      <p style={{ opacity: 0.6, fontSize: 14 }}>
+        Currently unavailable.
+      </p>
+    ) : (
+      services.map((service) => (
+        <button
+          key={service.id}
+          type="button"
+          onClick={() => {
+            setSelectedService(service);
+            setStep(1);
+          }}
+          style={{
+            ...inputStyle,
+            textAlign: "left",
+            cursor: "pointer",
+          }}
+        >
+          <strong>{service.task}</strong>
 
-    {error && <p style={errorStyle}>{error}</p>}
+          <div style={{ opacity: 0.7, fontSize: 13 }}>
+            {service.priceFrom
+              ? `from €${service.priceFrom}`
+              : "Price on request"}
+            {service.instant_booking && " • Instant booking"}
+          </div>
+        </button>
+      ))
+    )}
   </>
 )}
 
