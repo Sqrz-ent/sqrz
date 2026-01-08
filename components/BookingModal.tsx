@@ -30,18 +30,21 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  if (!open) return null;
+ 
+  // ✅ MUST be here — before any return
   useEffect(() => {
-  if (open) {
-    const originalStyle = window.getComputedStyle(document.body).overflow;
+    if (!open) return;
+
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = originalStyle;
+      document.body.style.overflow = originalOverflow;
     };
-  }
-}, [open]);
+  }, [open]);
+
+  // ✅ Safe now
+  if (!open) return null;
 
 
   function nextFromStep1() {
