@@ -5,7 +5,7 @@ import { useCookieConsent } from "@/components/hooks/useCookieConsent";
 // import your tracking components
 import HubSpotTracking from "@/components/tracking/HubSpotTracking";
 import GoogleAnalytics from "@/components/tracking/GoogleAnalytics";
-import MetaPixel from "@/components/tracking/MetaPixel";
+import FacebookPixel from "@/components/tracking/FacebookPixel";
 
 
 type AnalyticsGateProps = {
@@ -13,7 +13,6 @@ type AnalyticsGateProps = {
   facebookPixelId?: string | null;
   tiktokPixelId?: string | null;
   hubspotPortalId?: string | null;
-
   hubspotEnabled?: boolean;
   isPreview?: boolean;
 };
@@ -50,9 +49,9 @@ export default function AnalyticsGate({
       )}
 
       {/* ---------- MARKETING ---------- */}
-      {hasMarketingConsent && facebookPixelId && (
-        <MetaPixel pixelId={facebookPixelId} />
-      )}
+     {hasMarketingConsent && facebookPixelId && (
+  <FacebookPixel pixelId={facebookPixelId} />
+)}
     </>
   );
 }

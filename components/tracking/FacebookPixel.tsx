@@ -1,7 +1,14 @@
 "use client";
+
 import Script from "next/script";
 
-export default function FacebookPixel({ pixelId }: { pixelId: string }) {
+type FacebookPixelProps = {
+  pixelId: string;
+};
+
+export default function FacebookPixel({ pixelId }: FacebookPixelProps) {
+  if (!pixelId) return null;
+
   return (
     <Script id="facebook-pixel" strategy="afterInteractive">
       {`
