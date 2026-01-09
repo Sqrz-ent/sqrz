@@ -9,13 +9,6 @@ import GoogleAnalytics from "@/components/tracking/GoogleAnalytics";
 import FacebookPixel from "@/components/tracking/FacebookPixel";
 
 
-console.log("[AnalyticsGate] rendered", {
-  googleAnalyticsId,
-  facebookPixelId,
-  hubspotPortalId,
-  hubspotEnabled,
-  isPreview,
-});
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;
@@ -40,6 +33,20 @@ export default function AnalyticsGate({
     isReady,
   } = useCookieConsent();
 
+
+  // ✅ DEBUG LOG (safe)
+  console.log("[AnalyticsGate] state", {
+    googleAnalyticsId,
+    facebookPixelId,
+    hubspotPortalId,
+    hubspotEnabled,
+    isPreview,
+    hasAnalyticsConsent,
+    hasMarketingConsent,
+    isReady,
+  });
+
+
   // ⛔ Never load analytics in preview mode
   if (isPreview) return null;
 
@@ -59,7 +66,7 @@ export default function AnalyticsGate({
 
       {/* ---------- MARKETING ---------- */}
      {hasMarketingConsent && facebookPixelId && (
-  <FacebookPixel pixelId={facebookPixelId} />
+        <FacebookPixel pixelId={facebookPixelId} />
 )}
     </>
   );
