@@ -1,11 +1,5 @@
 "use client";
-console.log("[AnalyticsGate] rendered", {
-  googleAnalyticsId,
-  facebookPixelId,
-  hubspotPortalId,
-  hubspotEnabled,
-  isPreview,
-});
+
 
 import { useCookieConsent } from "@/components/hooks/useCookieConsent";
 
@@ -14,6 +8,14 @@ import HubSpotTracking from "@/components/tracking/HubSpotTracking";
 import GoogleAnalytics from "@/components/tracking/GoogleAnalytics";
 import FacebookPixel from "@/components/tracking/FacebookPixel";
 
+
+console.log("[AnalyticsGate] rendered", {
+  googleAnalyticsId,
+  facebookPixelId,
+  hubspotPortalId,
+  hubspotEnabled,
+  isPreview,
+});
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;
