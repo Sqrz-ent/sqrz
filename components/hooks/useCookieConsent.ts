@@ -1,5 +1,6 @@
 "use client";
 
+const COOKIE_NAME = "sqrz_cookie_consent";
 import { useEffect, useState } from "react";
 
 export type CookieConsent = {

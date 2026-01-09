@@ -66,7 +66,7 @@ export default function AnalyticsGate({
 
       {/* ---------- MARKETING ---------- */}
      {hasMarketingConsent && facebookPixelId && (
-        <FacebookPixel pixelId={facebookPixelId} />
+    <FacebookPixel pixelId={facebookPixelId} />
 )}
     </>
   );
