@@ -307,8 +307,9 @@ export default async function HomePage({
           <iframe src={soundcloudEmbed} width="100%" height="300" />
         )}
 
+       {profile.muso?.profile_url && (
         <MusoWidget profile={profile.muso} />
-
+        )}
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}
 
