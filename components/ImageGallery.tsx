@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 
-type Pic =
-  | { url: string }
-  | string;
+type Pic = any;
 
 export default function ImageGallery({
   pics,
@@ -13,16 +11,18 @@ export default function ImageGallery({
 }) {
   if (!pics || pics.length === 0) return null;
 
-const normalizedPics = pics
-  .map((pic: any) => {
-    if (typeof pic === "string") return pic;
-    if (pic.url) return pic.url;
-    if (pic.image?.url) return pic.image.url;
-    if (pic.file?.path) return pic.file.path;
-    return null;
-  })
-  .filter(Boolean);
+  const normalizedPics = pics
+    .map((pic: any) => {
+      if (typeof pic === "string") return pic;
+      if (pic?.url) return pic.url;
+      if (pic?.cover?.url) return pic.cover.url;
+      if (pic?.image?.url) return pic.image.url;
+      if (pic?.file?.url) return pic.file.url;
+      return null;
+    })
+    .filter(Boolean) as string[];
 
+  if (normalizedPics.length === 0) return null;
 
   const [index, setIndex] = useState(0);
 
@@ -43,7 +43,6 @@ const normalizedPics = pics
         overflow: "hidden",
       }}
     >
-      {/* IMAGE */}
       <img
         src={normalizedPics[index]}
         alt={`Gallery image ${index + 1}`}
@@ -55,27 +54,18 @@ const normalizedPics = pics
         }}
       />
 
-      {/* LEFT */}
       {normalizedPics.length > 1 && (
-        <button
-          onClick={prev}
-          style={navStyle("left")}
-        >
+        <button onClick={prev} style={navStyle("left")}>
           ‹
         </button>
       )}
 
-      {/* RIGHT */}
       {normalizedPics.length > 1 && (
-        <button
-          onClick={next}
-          style={navStyle("right")}
-        >
+        <button onClick={next} style={navStyle("right")}>
           ›
         </button>
       )}
 
-      {/* DOTS */}
       {normalizedPics.length > 1 && (
         <div
           style={{
