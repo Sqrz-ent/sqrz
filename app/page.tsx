@@ -25,6 +25,8 @@ import {
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+import MusoWidget from "@/components/MusoWidget";
+
 
 
 
@@ -304,6 +306,9 @@ export default async function HomePage({
         {soundcloudEmbed && (
           <iframe src={soundcloudEmbed} width="100%" height="300" />
         )}
+
+        <MusoWidget profile={user.muso} />
+
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}
 
