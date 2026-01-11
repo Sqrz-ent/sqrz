@@ -197,7 +197,7 @@ export default async function HomePage({
   services={profile.services}
 />
 <FloatingSQRZButton />
-<ViewTracker slug={profile.slug} />
+<ViewTracker username={profile.slug} />
 
 
       {/* 🖼️ Profile Hero */}
