@@ -7,7 +7,6 @@ export default function ViewTracker({ username }: { username: string }) {
   const searchParams = useSearchParams();
   const isPreview = searchParams.get("preview") === "1";
 
-  // Debug log (safe here)
   console.log("ViewTracker loaded", { username, isPreview });
 
   useEffect(() => {
@@ -18,12 +17,12 @@ export default function ViewTracker({ username }: { username: string }) {
       return;
     }
 
-    console.log("Sending view to Xano...");
+    console.log("Sending view to API...");
 
-   fetch(`/api/profile/view/${username}`, {
-  method: "POST",
-});
-, [isPreview, username]);
+    fetch(`/api/profile/view/${username}`, {
+      method: "POST",
+    });
+  }, [isPreview, username]); // 👈 dependency array goes here
 
   return null;
 }
