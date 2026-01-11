@@ -3,6 +3,9 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
+console.log("ViewTracker loaded", { username, isPreview });
+
+
 export default function ViewTracker({ username }: { username: string }) {
   const searchParams = useSearchParams();
   const isPreview = searchParams.get("preview") === "1";
