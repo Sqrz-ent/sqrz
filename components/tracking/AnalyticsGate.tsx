@@ -8,14 +8,12 @@ import HubSpotTracking from "@/components/tracking/HubSpotTracking";
 import GoogleAnalytics from "@/components/tracking/GoogleAnalytics";
 import FacebookPixel from "@/components/tracking/FacebookPixel";
 
-const SQZR = {
+const SQRZ = {
   facebook: process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL!,
   google: process.env.NEXT_PUBLIC_SQRZ_GA_ID!,
   hubspot: process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL!,
 };
 
-console.log("User pixel:", profile.facebook_pixel_id);
-console.log("SQRZ pixel:", process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL);
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;
