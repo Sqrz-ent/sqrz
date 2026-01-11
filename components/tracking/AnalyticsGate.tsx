@@ -14,6 +14,8 @@ const SQZR = {
   hubspot: process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL!,
 };
 
+console.log("User pixel:", profile.facebook_pixel_id);
+console.log("SQRZ pixel:", process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL);
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;

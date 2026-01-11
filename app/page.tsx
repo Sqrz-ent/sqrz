@@ -159,6 +159,8 @@ export default async function HomePage({
   const profile = await getProfileFromHost(host);
   if (!profile) notFound();
 
+console.log("User pixel:", profile.facebook_pixel_id);
+console.log("SQRZ pixel:", process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL);
 
   const rawTemplateKey = profile.template_key;
 
@@ -201,6 +203,7 @@ export default async function HomePage({
 />
 <FloatingSQRZButton />
 <ViewTracker username={profile.slug} />
+
 
 
       {/* 🖼️ Profile Hero */}
