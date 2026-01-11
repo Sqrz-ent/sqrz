@@ -15,6 +15,10 @@ export default function ViewTracker({ username }: { username: string }) {
       return;
     }
 
+console.log("ViewTracker", {
+  href: window.location.href,
+  preview: searchParams.get("preview"),
+});
 
     fetch(`/api/profile/view/${username}`, {
       method: "POST",
