@@ -26,6 +26,7 @@ import {
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import MusoWidget from "@/components/MusoWidget";
+import ViewTracker from "./ViewTracker";
 
 
 
@@ -196,6 +197,7 @@ export default async function HomePage({
   services={profile.services}
 />
 <FloatingSQRZButton />
+<ViewTracker slug={profile.slug} />
 
 
       {/* 🖼️ Profile Hero */}
