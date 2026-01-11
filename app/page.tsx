@@ -159,8 +159,8 @@ export default async function HomePage({
   const profile = await getProfileFromHost(host);
   if (!profile) notFound();
 
-console.log("User pixel:", profile.facebook_pixel_id);
-console.log("SQRZ pixel:", process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL);
+  console.log("PROFILE KEYS:", Object.keys(profile));
+
 
   const rawTemplateKey = profile.template_key;
 
