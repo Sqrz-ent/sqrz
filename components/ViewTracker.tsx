@@ -9,16 +9,9 @@ export default function ViewTracker({ username }: { username: string }) {
 
 
   useEffect(() => {
-    console.log("ViewTracker effect", { isPreview, username });
-
     if (isPreview) {
       return;
     }
-
-console.log("ViewTracker", {
-  href: window.location.href,
-  preview: searchParams.get("preview"),
-});
 
     fetch(`/api/profile/view/${username}`, {
       method: "POST",
