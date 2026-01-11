@@ -10,7 +10,9 @@ export default function ViewTracker({ slug }: { slug: string }) {
   useEffect(() => {
     if (isPreview) return;
 
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/profile/view/${slug}`, {
+    fetch(
+        `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profileCounter/${username}`
+        {
       method: "POST",
     });
   }, [isPreview, slug]);
