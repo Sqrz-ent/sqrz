@@ -20,13 +20,10 @@ export default function ViewTracker({ username }: { username: string }) {
 
     console.log("Sending view to Xano...");
 
-    fetch(
-      `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profileCounter/${username}`,
-      {
-        method: "POST",
-      }
-    );
-  }, [isPreview, username]);
+   fetch(`/api/profile/view/${username}`, {
+  method: "POST",
+});
+, [isPreview, username]);
 
   return null;
 }

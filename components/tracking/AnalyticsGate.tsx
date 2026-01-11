@@ -34,19 +34,6 @@ export default function AnalyticsGate({
   } = useCookieConsent();
 
 
-  // ✅ DEBUG LOG (safe)
-  console.log("[AnalyticsGate] state", {
-    googleAnalyticsId,
-    facebookPixelId,
-    hubspotPortalId,
-    hubspotEnabled,
-    isPreview,
-    hasAnalyticsConsent,
-    hasMarketingConsent,
-    isReady,
-  });
-
-
   // ⛔ Never load analytics in preview mode
   if (isPreview) return null;
 
