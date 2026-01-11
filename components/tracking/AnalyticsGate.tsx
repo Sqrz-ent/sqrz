@@ -33,9 +33,11 @@ type AnalyticsGateProps = {
 export default function AnalyticsGate({
   googleAnalyticsId,
   facebookPixelId,
-  tiktokPixelId,
   hubspotPortalId,
   hubspotEnabled = false,
+  sqrzGoogleId,
+  sqrzFacebookPixel,
+  sqrzHubspotPortal,
   isPreview = false,
 }: AnalyticsGateProps) {
   const {
