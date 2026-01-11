@@ -159,8 +159,6 @@ export default async function HomePage({
   const profile = await getProfileFromHost(host);
   if (!profile) notFound();
 
-  console.log("PROFILE KEYS:", Object.keys(profile));
-
 
   const rawTemplateKey = profile.template_key;
 
