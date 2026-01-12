@@ -74,6 +74,7 @@ export default function LeadCapture({
               borderRadius: "10px",
               border: "solid",
               marginBottom: "12px",
+              borderColor: " rgba(63, 163, 127, 0.15)"
             }}
           />
 
