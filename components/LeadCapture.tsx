@@ -38,10 +38,10 @@ export default function LeadCapture({
   return (
     <div
       style={{
-        background: "#000000",
+        background: "#ffffff45",
         borderRadius: "16px",
         padding: "24px",
-        maxWidth: "520px",
+        maxWidth: "100%",
         margin: "32px auto",
         color: "#ffffff",
         boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
