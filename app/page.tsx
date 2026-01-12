@@ -301,13 +301,6 @@ export default async function HomePage({
 
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
-     
-        <LeadCapture
-        profileId={profile.id}
-        username={profile.slug}
-        title="Book with a first-time discount"
-        subline="Share your email to receive a special offer and connect directly with this creator"
-        />
 
         {spotifyEmbed && (
           <iframe src={spotifyEmbed} width="100%" height="152" />
@@ -332,7 +325,13 @@ export default async function HomePage({
            {profile.references?.length > 0 && (
           <Experience jobs={profile.references} />
         )}
-
+   
+    <LeadCapture
+        profileId={profile.id}
+        username={profile.slug}
+        title="Book with a first-time discount"
+        subline="Share your email to receive a special offer and connect directly with this creator"
+        />
 
       </div>
     </main>
