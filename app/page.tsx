@@ -27,6 +27,8 @@ import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
+import EmailCapture from "@/components/LeadCapture";
+
 
 
 
@@ -296,7 +298,7 @@ export default async function HomePage({
       >
         {profile.description && <p>{profile.description}</p>}
 
-        <EmailCapture
+        <LeadCapture
         profileId={profile.id}
         headline="Get availability"
         subline="Enter your email to receive current dates and pricing."
