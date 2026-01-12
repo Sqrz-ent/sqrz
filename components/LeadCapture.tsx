@@ -13,6 +13,7 @@ export default function LeadCapture({
   title?: string;
   subline?: string;
 }) {
+
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
