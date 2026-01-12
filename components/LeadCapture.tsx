@@ -41,7 +41,7 @@ export default function LeadCapture({
         background: "#ffffff1d",
         borderRadius: "16px",
         padding: "24px",
-        width: "100%"
+        width: "100%",
         maxWidth: "520px",
         margin: "24px auto",
         color: "#ffffff",
