@@ -23,7 +23,7 @@ export default function LeadCapture({
     setStatus("loading");
 
     try {
-      await fetch("https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/lead/${username}", {
+      await fetch(`https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/lead/${username}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
