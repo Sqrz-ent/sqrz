@@ -4,11 +4,11 @@ import { useState } from "react";
 
 export default function LeadCapture({
   profileId,
-  headline,
-  subline,
+  title = "Get discount now",
+  subline = "Enter your email to receive a special offer.",
 }: {
   profileId: string;
-  headline?: string;
+  title?: string;
   subline?: string;
 }) {
   const [email, setEmail] = useState("");
@@ -36,24 +36,64 @@ export default function LeadCapture({
   }
 
   return (
-    <div className="sqrz-lead-box">
-      <h3>{headline || "Get availability"}</h3>
-      <p>{subline || "Enter your contact to receive a payment discount."}</p>
+    <div
+      style={{
+        background: "#f3b130",
+        borderRadius: "16px",
+        padding: "24px",
+        maxWidth: "480px",
+        margin: "32px auto",
+        color: "#000",
+        boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+      }}
+    >
+      <h3 style={{ fontSize: "22px", fontWeight: 700, marginBottom: "8px" }}>
+        {title}
+      </h3>
+
+      <p style={{ fontSize: "14px", marginBottom: "16px", opacity: 0.8 }}>
+        {subline}
+      </p>
 
       {status === "success" ? (
-        <p>Thanks — you’ll hear from us soon.</p>
+        <div style={{ fontSize: "16px", fontWeight: 600 }}>
+          Thanks — check your inbox shortly.
+        </div>
       ) : (
-        <div className="sqrz-lead-form">
+        <>
           <input
             type="email"
             placeholder="your@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "14px 16px",
+              fontSize: "16px",
+              borderRadius: "10px",
+              border: "none",
+              marginBottom: "12px",
+            }}
           />
-          <button onClick={submit} disabled={status === "loading"}>
-            {status === "loading" ? "Sending…" : "Get details"}
+
+          <button
+            onClick={submit}
+            disabled={status === "loading"}
+            style={{
+              width: "100%",
+              padding: "14px",
+              fontSize: "16px",
+              fontWeight: 600,
+              borderRadius: "10px",
+              border: "none",
+              background: "#000",
+              color: "#fff",
+              cursor: "pointer",
+            }}
+          >
+            {status === "loading" ? "Sending…" : "Get offer"}
           </button>
-        </div>
+        </>
       )}
     </div>
   );
