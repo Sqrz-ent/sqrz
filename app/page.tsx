@@ -296,7 +296,7 @@ export default async function HomePage({
       >
         {profile.description && <p>{profile.description}</p>}
 
-        <LeadCapture
+        <EmailCapture
         profileId={profile.id}
         headline="Get availability"
         subline="Enter your email to receive current dates and pricing."
