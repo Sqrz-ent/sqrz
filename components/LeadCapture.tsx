@@ -4,10 +4,12 @@ import { useState } from "react";
 
 export default function LeadCapture({
   profileId,
-  title = "Get discount now",
-  subline = "Enter your email to receive a special offer.",
+  username,
+  title,
+  subline,
 }: {
   profileId: string;
+  username: string;
   title?: string;
   subline?: string;
 }) {
@@ -20,13 +22,12 @@ export default function LeadCapture({
     setStatus("loading");
 
     try {
-      await fetch(
-      `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/lead/${username}`,
-      {
+      await fetch("https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/lead/${username}", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
+          profile_id: profileId,
         }),
       });
 
