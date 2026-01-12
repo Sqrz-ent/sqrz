@@ -300,7 +300,7 @@ export default async function HomePage({
 
         <LeadCapture
         profileId={profile.id}
-        headline="Get discount now"
+        title="Get discount now"
         subline="Enter your email."
         />
 
