@@ -27,7 +27,7 @@ import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
-import EmailCapture from "@/components/LeadCapture";
+import LeadCapture from "@/components/LeadCapture";
 
 
 
