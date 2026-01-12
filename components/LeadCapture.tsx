@@ -25,7 +25,7 @@ export default function LeadCapture({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          profile_id: profileId,
+          profile_id: username,
         }),
       });
 
