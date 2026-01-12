@@ -38,7 +38,7 @@ export default function LeadCapture({
   return (
     <div
       style={{
-        background: "#f3b130",
+        background: "#000000",
         borderRadius: "16px",
         padding: "24px",
         maxWidth: "480px",
@@ -86,7 +86,7 @@ export default function LeadCapture({
               fontWeight: 600,
               borderRadius: "10px",
               border: "none",
-              background: "#000",
+              background: "#f3b130",
               color: "#fff",
               cursor: "pointer",
             }}
