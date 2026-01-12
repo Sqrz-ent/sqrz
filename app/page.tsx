@@ -296,6 +296,12 @@ export default async function HomePage({
       >
         {profile.description && <p>{profile.description}</p>}
 
+        <LeadCapture
+        profileId={profile.id}
+        headline="Get availability"
+        subline="Enter your email to receive current dates and pricing."
+        />
+
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
      
