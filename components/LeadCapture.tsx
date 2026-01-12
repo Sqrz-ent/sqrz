@@ -72,7 +72,7 @@ export default function LeadCapture({
               padding: "14px 16px",
               fontSize: "16px",
               borderRadius: "10px",
-              border: "none",
+              border: "solid",
               marginBottom: "12px",
             }}
           />

@@ -300,8 +300,8 @@ export default async function HomePage({
 
         <LeadCapture
         profileId={profile.id}
-        title="Get discount now"
-        subline="Enter your email."
+        title="Book with a first-time discount"
+        subline="Share your email to receive a special offer and connect directly with this creator"
         />
 
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
