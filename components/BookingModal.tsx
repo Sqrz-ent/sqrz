@@ -180,6 +180,7 @@ function nextFromStep2() {
               }}
             >
               <strong>{service.service}</strong>
+
            <div style={{ opacity: 0.7, fontSize: 13 }}>
   {service.instant_booking && service.fixedPrice ? (
     <>€{service.fixedPrice} fixed price • Instant booking</>
@@ -193,6 +194,7 @@ function nextFromStep2() {
     <>Price on request</>
   )}
 </div>
+
 
 
             </button>
