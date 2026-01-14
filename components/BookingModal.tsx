@@ -84,7 +84,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
           message,
           service_id: selectedService?.id || null,
           service_task: selectedService?.task || null,
-          instant_booking: selectedService?.instant_booking || false,
+          instant_booking: selectedService?.instant_booking || true,
           event_date: date || null,
           event_time: time || null,
           address: {
