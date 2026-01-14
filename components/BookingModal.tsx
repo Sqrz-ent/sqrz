@@ -180,10 +180,20 @@ function nextFromStep2() {
               }}
             >
               <strong>{service.service}</strong>
-            <div style={{ opacity: 0.7, fontSize: 13 }}>
-            {service.priceFrom ? `from €${service.priceFrom}` : "Price on request"}
-            {service.instant_booking && " • Instant booking"}
-            </div>
+           <div style={{ opacity: 0.7, fontSize: 13 }}>
+  {service.instant_booking && service.fixedPrice ? (
+    <>€{service.fixedPrice} fixed price • Instant booking</>
+  ) : service.priceFrom ? (
+    service.priceTo ? (
+      <>€{service.priceFrom} – €{service.priceTo}</>
+    ) : (
+      <>from €{service.priceFrom}</>
+    )
+  ) : (
+    <>Price on request</>
+  )}
+</div>
+
 
             </button>
           ))
