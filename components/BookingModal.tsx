@@ -182,8 +182,12 @@ function nextFromStep2() {
               <strong>{service.service}</strong>
 
            <div style={{ opacity: 0.7, fontSize: 13 }}>
-  {service.instant_booking && service.fixedPrice ? (
-    <>€{service.fixedPrice} fixed price • Instant booking</>
+  {service.instant_booking ? (
+    service.fixedPrice != null ? (
+      <>€{service.fixedPrice} fixed price • Instant booking</>
+    ) : (
+      <>Instant booking</>
+    )
   ) : service.priceFrom ? (
     service.priceTo ? (
       <>€{service.priceFrom} – €{service.priceTo}</>
@@ -194,6 +198,7 @@ function nextFromStep2() {
     <>Price on request</>
   )}
 </div>
+
 
 
 
