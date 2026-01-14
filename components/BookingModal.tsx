@@ -84,7 +84,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
           message,
           service_id: selectedService?.id || null,
           service_task: selectedService?.task || null,
-          instant_booking: selectedService?.instant_booking || true,
+          instant_booking: selectedService?.instant_booking || false,
           event_date: date || null,
           event_time: time || null,
           address: {
@@ -158,9 +158,15 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
               key={service.id}
               type="button"
               onClick={() => {
-                setSelectedService(service);
-                setStep(1);
+              setSelectedService(service);
+
+              if (service.instant_booking) {
+              setStep(1);   // name/email → message → submit
+              } else {
+              setStep(1);   // same start, but we’ll branch later
+              }
               }}
+
               style={{
                 ...inputStyle,
                 textAlign: "left",
@@ -168,6 +174,11 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
               }}
             >
               <strong>{service.service}</strong>
+            <div style={{ opacity: 0.7, fontSize: 13 }}>
+            {service.priceFrom ? `from €${service.priceFrom}` : "Price on request"}
+            {service.instant_booking && " • Instant booking"}
+            </div>
+
             </button>
           ))
         )}
@@ -226,7 +237,13 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
                 <button
                   type="button"
                   style={secondaryButtonStyle}
-                  onClick={() => setStep(1)}
+                  onClick={() => {
+                  if (selectedService?.instant_booking) {
+                  setStep(4); // skip date/time
+                 } else {
+                  setStep(3);
+  }
+}}
                 >
                   Back
                 </button>
@@ -285,9 +302,9 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
             </>
           )}
           {/* STEP 4 */}
-{step === 4 && (
-  <>
-    <input
+          {step === 4 && !selectedService?.instant_booking && ( 
+          <>
+          <input
       type="text"
       placeholder="Street & number"
       value={street}
