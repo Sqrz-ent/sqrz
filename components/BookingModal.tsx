@@ -14,7 +14,7 @@ export default function BookingModal({
   username: string;
   services: Service[];
 }) {
-const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
+const [step, setStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
 
 const [selectedService, setSelectedService] = useState<Service | null>(null);
 
@@ -56,14 +56,20 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
     setStep(2);
   }
 
-  function nextFromStep2() {
-    if (!message) {
-      setError("Please add a short description.");
-      return;
-    }
-    setError(null);
-    setStep(3);
+function nextFromStep2() {
+  if (!message) {
+    setError("Please add a short description.");
+    return;
   }
+
+  setError(null);
+
+  if (selectedService?.instant_booking) {
+    setStep(5); // 👈 NEW instant-submit step
+  } else {
+    setStep(3); // date/time
+  }
+}
 
   async function handleSubmit(e: React.FormEvent) {
   e.preventDefault();
@@ -84,7 +90,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
           message,
           service_id: selectedService?.id || null,
           service_task: selectedService?.task || null,
-          instant_booking: selectedService?.instant_booking || false,
+          instant_booking: Boolean(selectedService?.instant_booking),
           event_date: date || null,
           event_time: time || null,
           address: {
@@ -355,6 +361,24 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
     </div>
   </>
 )}
+
+{step === 5 && selectedService?.instant_booking && (
+  <>
+    <p style={{ opacity: 0.7, marginBottom: 16 }}>
+      This is an instant service. No date or address is required.
+    </p>
+
+    <button
+      type="submit"
+      style={submitStyle}
+      disabled={loading}
+    >
+      {loading ? "Processing…" : "Book & Pay"}
+    </button>
+  </>
+)}
+
+
 
         </form>
 </div> 
