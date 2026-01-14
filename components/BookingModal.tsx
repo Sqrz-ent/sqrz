@@ -27,7 +27,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
   const [country, setCountry] = useState("");
-
+  const [projectTitle, setProjectTitle] = useState(""); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
  
@@ -228,6 +228,16 @@ function nextFromStep2() {
           {/* STEP 2 */}
           {step === 2 && (
             <>
+              {/* Project name (optional) */}
+               <input
+      type="text"
+      placeholder="Project name"
+      value={projectTitle}
+      onChange={(e) => setProjectTitle(e.target.value)}
+      style={inputStyle}
+    />
+
+
               <textarea
                 placeholder="Tell us about your event, location, requirements…"
                 value={message}
