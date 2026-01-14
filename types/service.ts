@@ -5,6 +5,7 @@ export type Service = {
   terms?: string;
   priceFrom?: number;
   priceTo?: number;
+  fixedPrice?: number;
   currency?: string;
   instant_booking?: boolean;
   priceFixed?: number;
