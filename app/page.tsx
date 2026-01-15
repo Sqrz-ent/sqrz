@@ -308,15 +308,8 @@ const ticket = {
 
 
 
-{profile.links?.length > 0 && (
-  <div className="w-full flex flex-col gap-4">
-    <h2 className="text-lg font-semibold">Featured</h2>
+{profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
 
-    {profile.links.slice(0, 3).map((link: CtaLink, idx: number) => (
-      <CtaCard key={link.id ?? idx} link={link} />
-    ))}
-  </div>
-)}
 
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
@@ -325,7 +318,6 @@ const ticket = {
           <iframe src={spotifyEmbed} width="100%" height="152" />
         )}
 
-        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
         {profile.video_gallery?.length > 0 && (
           <YouTubeGallery videos={profile.video_gallery} />
         )}
@@ -337,6 +329,8 @@ const ticket = {
        {profile.muso?.profile_url && (
         <MusoWidget profile={profile.muso} />
         )}
+
+        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}
 
