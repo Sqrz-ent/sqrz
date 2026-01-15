@@ -28,6 +28,7 @@ import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
+import TicketLinkButton from "@/components/TicketLinkButton";
 
 
 
@@ -181,6 +182,12 @@ export default async function HomePage({
     ? getSpotifyEmbedUrl(profile.spotify_url)
     : null;
 
+const ticket = {
+    label: "Tickets on Eventim",
+    provider: "eventim",
+    url: "https://www.eventim.de/event/...",
+  };
+
   return (
     <main className={`profile-page ${template.bodyClass}`}>
 
@@ -326,6 +333,14 @@ export default async function HomePage({
           <Experience jobs={profile.references} />
         )}
    
+
+return (
+    <div className="max-w-md mx-auto p-6">
+      <TicketLinkButton ticket={ticket} />
+    </div>
+  );
+
+
     <LeadCapture
         profileId={profile.id}
         username={profile.slug}
