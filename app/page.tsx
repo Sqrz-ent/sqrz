@@ -334,11 +334,11 @@ const ticket = {
         )}
    
 
-return (
-    <div className="max-w-md mx-auto p-6">
-      <TicketLinkButton ticket={ticket} />
-    </div>
-  );
+{ticket?.url && (
+  <div className="w-full">
+    <TicketLinkButton ticket={ticket} />
+  </div>
+)}
 
 
     <LeadCapture
