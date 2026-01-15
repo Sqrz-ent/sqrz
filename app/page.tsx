@@ -307,11 +307,7 @@ const ticket = {
         {profile.description && <p>{profile.description}</p>}
 
 
-{ticket?.url && (
-  <div className="w-full">
-    <TicketLinkButton ticket={ticket} />
-  </div>
-)}
+
 {profile.links?.length > 0 && (
   <div className="w-full flex flex-col gap-4">
     <h2 className="text-lg font-semibold">Featured</h2>
@@ -321,7 +317,7 @@ const ticket = {
     ))}
   </div>
 )}
-      
+
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {profile.services?.length > 0 && <Services services={profile.services} />}
 
