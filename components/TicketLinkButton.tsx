@@ -1,9 +1,10 @@
+"use client";
 import React from "react";
 
 type TicketLink = {
-  label?: string;      // e.g. "Eventim Tickets"
-  provider?: string;   // e.g. "eventim"
-  url: string;         // external ticket URL
+  label?: string; // e.g. "Eventim Tickets"
+  provider?: string; // e.g. "eventim"
+  url: string; // external ticket URL
 };
 
 type Props = {
@@ -20,17 +21,23 @@ export default function TicketLinkButton({ ticket, fullWidth = true }: Props) {
       target="_blank"
       rel="noopener noreferrer"
       className={[
-        "inline-flex items-center justify-center gap-2",
-        "rounded-xl px-4 py-3 font-medium",
-        "bg-black text-white hover:opacity-90 transition",
+        "group relative inline-flex items-center justify-center gap-3",
+        "rounded-2xl px-5 py-3.5 font-semibold",
+        "bg-gradient-to-b from-zinc-900 to-black text-white",
+        "border border-white/10 shadow-lg shadow-black/20",
+        "transition-all duration-200",
+        "hover:-translate-y-[1px] hover:shadow-xl hover:shadow-black/30 hover:border-white/20",
+        "active:translate-y-0 active:scale-[0.99]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         fullWidth ? "w-full" : "w-auto",
       ].join(" ")}
     >
-      <span>🎟️</span>
-      <span>{label}</span>
+      {/* Icon */}
+      <span className="text-lg leading-none">🎟️</span>
+
+      {/* Label */}
+      <span className="text-base">{label}</span>
+
+      {/* Provider badge */}
       {ticket.provider && (
-        <span className="text-white/60 text-sm">({ticket.provider})</span>
-      )}
-    </a>
-  );
-}
+        <span className="ml-
