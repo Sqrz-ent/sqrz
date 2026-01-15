@@ -29,6 +29,7 @@ import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
+import CtaCard, { type CtaLink } from "@/components/CtaCard";
 
 
 
@@ -337,6 +338,15 @@ const ticket = {
 {ticket?.url && (
   <div className="w-full">
     <TicketLinkButton ticket={ticket} />
+  </div>
+)}
+{profile.links?.length > 0 && (
+  <div className="w-full flex flex-col gap-4">
+    <h2 className="text-lg font-semibold">Featured</h2>
+
+    {profile.links.slice(0, 3).map((link: CtaLink, idx: number) => (
+      <CtaCard key={link.id ?? idx} link={link} />
+    ))}
   </div>
 )}
 
