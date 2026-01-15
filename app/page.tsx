@@ -30,6 +30,7 @@ import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import CtaCard, { type CtaLink } from "@/components/CtaCard";
+import CtaCarousel from "@/components/CtaCarousel";
 
 
 
