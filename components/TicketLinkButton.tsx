@@ -38,6 +38,17 @@ export default function TicketLinkButton({ ticket, fullWidth = true }: Props) {
       {/* Label */}
       <span className="text-base">{label}</span>
 
-      {/* Provider badge */}
-      {ticket.provider && (
-        <span className="ml-
+      {/* Provider badge (optional) */}
+      {ticket.provider ? (
+        <span className="ml-auto rounded-full bg-white/10 px-2.5 py-1 text-xs font-medium text-white/80 border border-white/10 group-hover:bg-white/15 transition">
+          {ticket.provider}
+        </span>
+      ) : null}
+
+      {/* Subtle shine */}
+      <span className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition">
+        <span className="absolute -top-10 left-1/3 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+      </span>
+    </a>
+  );
+}
