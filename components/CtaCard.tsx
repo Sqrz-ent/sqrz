@@ -62,10 +62,17 @@ export default function CtaCard({ link }: Props) {
         </div>
 
         {/* Button */}
-        <div className="mt-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-semibold text-black transition group-hover:opacity-90">
-          <span>{link.buttonLabel || "Open"}</span>
-          <span aria-hidden>→</span>
-        </div>
+        <div
+  className="mt-4 inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition group-hover:opacity-90"
+  style={{
+    backgroundColor:  "var(--accent-color)",
+    color: "black",
+  }}
+>
+  <span>{link.buttonLabel || "Open"}</span>
+  <span aria-hidden>→</span>
+</div>
+
       </div>
     </a>
   );

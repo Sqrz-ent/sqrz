@@ -16,7 +16,6 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
   const scrollByAmount = (direction: "left" | "right") => {
     if (!scrollerRef.current) return;
 
-    // scroll by ~1 card (card width + gap)
     const amount = 440;
     scrollerRef.current.scrollBy({
       left: direction === "left" ? -amount : amount,
@@ -34,7 +33,11 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
           <button
             type="button"
             onClick={() => scrollByAmount("left")}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold hover:bg-white/10 transition"
+            className="rounded-xl px-3 py-2 text-sm font-semibold transition"
+            style={{
+              backgroundColor: "#f3b130",
+              color: "black",
+            }}
             aria-label="Scroll left"
           >
             ←
@@ -43,7 +46,11 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
           <button
             type="button"
             onClick={() => scrollByAmount("right")}
-            className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold hover:bg-white/10 transition"
+            className="rounded-xl px-3 py-2 text-sm font-semibold transition"
+            style={{
+              backgroundColor: "#f3b130",
+              color: "black",
+            }}
             aria-label="Scroll right"
           >
             →
@@ -57,8 +64,12 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
           "flex gap-4 overflow-x-auto pb-2",
           "snap-x snap-mandatory",
           "[-ms-overflow-style:none] [scrollbar-width:none]",
+          // IMPORTANT: padding makes the cards feel centered + thumb-friendly
+          "px-4 sm:px-0",
         ].join(" ")}
-        style={{ WebkitOverflowScrolling: "touch" }}
+        style={{
+          WebkitOverflowScrolling: "touch",
+        }}
       >
         {/* hide scrollbar (webkit) */}
         <style jsx>{`
@@ -70,7 +81,7 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
         {items.map((link, idx) => (
           <div
             key={link.id ?? idx}
-            className="snap-start shrink-0 w-[85%] sm:w-[420px]"
+            className="snap-center shrink-0 w-[85%] sm:w-[420px]"
           >
             <CtaCard link={link} />
           </div>
