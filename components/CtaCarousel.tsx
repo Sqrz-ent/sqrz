@@ -35,7 +35,7 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
             onClick={() => scrollByAmount("left")}
             className="rounded-xl px-3 py-2 text-sm font-semibold transition"
             style={{
-              backgroundColor: "#f3b130",
+              backgroundColor: "#000000",
               color: "black",
             }}
             aria-label="Scroll left"
@@ -48,7 +48,7 @@ export default function CtaCarousel({ links, title = "Featured" }: Props) {
             onClick={() => scrollByAmount("right")}
             className="rounded-xl px-3 py-2 text-sm font-semibold transition"
             style={{
-              backgroundColor: "#f3b130",
+              backgroundColor: "var(--accent-color)",
               color: "black",
             }}
             aria-label="Scroll right"
