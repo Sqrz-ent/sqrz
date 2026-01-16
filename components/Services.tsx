@@ -1,7 +1,5 @@
-
 import type { Service } from "@/types/service";
 import { getServicePriceLabel } from "@/utils/serviceLabel";
-
 
 export default function Services({ services }: { services: Service[] }) {
   if (!services || services.length === 0) return null;
@@ -15,26 +13,18 @@ export default function Services({ services }: { services: Service[] }) {
           <div key={i} style={cardStyle}>
             <div style={headerStyle}>
               <span style={serviceName}>{s.service}</span>
-              <span style={priceStyle}>
-                {getServicePriceLabel(s)}
-              </span>
+
+              {/* ✅ THIS must be here */}
+              <span style={priceStyle}>{getServicePriceLabel(s)}</span>
             </div>
 
-            {s.terms && (
-              <p style={termsStyle}>
-                {s.terms}
-              </p>
-            )}
+            {s.terms && <p style={termsStyle}>{s.terms}</p>}
           </div>
         ))}
       </div>
     </section>
   );
 }
-
-/* helpers */
-
-<span style={priceStyle}>{getServicePriceLabel(s)}</span>
 
 /* styles */
 
