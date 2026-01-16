@@ -16,7 +16,7 @@ export default function Services({ services }: { services: Service[] }) {
             <div style={headerStyle}>
               <span style={serviceName}>{s.service}</span>
               <span style={priceStyle}>
-                {formatPrice(s)}
+                {getServicePriceLabel(s)}
               </span>
             </div>
 
