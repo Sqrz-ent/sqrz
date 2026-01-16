@@ -106,9 +106,7 @@ export async function generateMetadata(): Promise<Metadata> {
     profile.profile_pic_img?.url ||
     `${baseUrl}/og/default.png`;
 
-    const servicesActive =
-  profile.activateServices === true && (profile.services?.length ?? 0) > 0;
-
+   
   return {
     metadataBase: new URL(baseUrl),
     title,
@@ -184,6 +182,9 @@ export default async function HomePage({
   const spotifyEmbed = profile.spotify_url
     ? getSpotifyEmbedUrl(profile.spotify_url)
     : null;
+
+ const servicesActive =
+  profile.activateServices === true && (profile.services?.length ?? 0) > 0;
 
 const ticket = {
     label: "Tickets on Eventim",
