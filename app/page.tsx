@@ -207,7 +207,6 @@ const ticket = {
       sqrzFacebookPixel={process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL!}
       sqrzHubspotPortal={process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL!}
     />
-{servicesActive && <Services services={profile.services} />}
 
 {servicesActive && (
   <BookMeButton username={profile.slug} services={profile.services} />
