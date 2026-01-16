@@ -107,7 +107,7 @@ function formatDateRange(dateStart?: string | null, dateEnd?: string | null) {
 
   // If start is missing, only show end if it exists and isn't "Present"
   if (!start) {
-    return end === "Present" ? "Dates not specified" : end;
+    return end === "Present" ? "" : end;
   }
 
   return `${start} – ${end}`;
