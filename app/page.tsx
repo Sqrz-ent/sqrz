@@ -29,7 +29,6 @@ import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
-import CtaCard, { type CtaLink } from "@/components/CtaCard";
 import CtaCarousel from "@/components/CtaCarousel";
 
 
@@ -107,6 +106,8 @@ export async function generateMetadata(): Promise<Metadata> {
     profile.profile_pic_img?.url ||
     `${baseUrl}/og/default.png`;
 
+    const servicesActive =
+  profile.activateServices === true && (profile.services?.length ?? 0) > 0;
 
   return {
     metadataBase: new URL(baseUrl),
@@ -205,11 +206,11 @@ const ticket = {
       sqrzFacebookPixel={process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL!}
       sqrzHubspotPortal={process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL!}
     />
+{servicesActive && <Services services={profile.services} />}
 
-<BookMeButton
-  username={profile.slug}
-  services={profile.services}
-/>
+{servicesActive && (
+  <BookMeButton username={profile.slug} services={profile.services} />
+)}
 <FloatingSQRZButton />
 <ViewTracker username={profile.slug} />
 
