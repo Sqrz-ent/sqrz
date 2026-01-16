@@ -57,9 +57,8 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
                 marginBottom: 8,
               }}
             >
-              {formatDate(job.date_start)} –{" "}
-              {job.date_end ? formatDate(job.date_end) : "Present"}
-            </div>
+               {formatDateRange(job.date_start, job.date_end)}
+</div>
 
             {/* Responsibilities */}
             {job.responsibilities && (
@@ -85,9 +84,32 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
    Helpers
 ========================= */
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString(undefined, {
+function formatDate(date?: string | null) {
+  if (!date) return null;
+
+  const d = new Date(date);
+
+  // invalid date
+  if (Number.isNaN(d.getTime())) return null;
+
+  // treat unix default as "empty"
+  if (d.getFullYear() === 1970) return null;
+
+  return d.toLocaleDateString(undefined, {
     year: "numeric",
     month: "short",
   });
 }
+
+function formatDateRange(dateStart?: string | null, dateEnd?: string | null) {
+  const start = formatDate(dateStart);
+  const end = dateEnd ? formatDate(dateEnd) : "Present";
+
+  // If start is missing, only show end if it exists and isn't "Present"
+  if (!start) {
+    return end === "Present" ? "Dates not specified" : end;
+  }
+
+  return `${start} – ${end}`;
+}
+
