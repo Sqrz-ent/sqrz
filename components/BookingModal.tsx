@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Service } from "@/types/service";
+import { getServicePriceLabel } from "@/utils/serviceLabel";
 
 export default function BookingModal({
   open,
@@ -182,22 +183,9 @@ function nextFromStep2() {
               <strong>{service.service}</strong>
 
            <div style={{ opacity: 0.7, fontSize: 13 }}>
-  {service.instant_booking ? (
-    service.fixedPrice != null ? (
-      <>€{service.fixedPrice} fixed price • Instant booking</>
-    ) : (
-      <>Instant booking</>
-    )
-  ) : service.priceFrom ? (
-    service.priceTo ? (
-      <>€{service.priceFrom} – €{service.priceTo}</>
-    ) : (
-      <>from €{service.priceFrom}</>
-    )
-  ) : (
-    <>Price on request</>
-  )}
+  {getServicePriceLabel(service)}
 </div>
+
 
 
 

@@ -1,5 +1,7 @@
 
 import type { Service } from "@/types/service";
+import { getServicePriceLabel } from "@/utils/serviceLabel";
+
 
 export default function Services({ services }: { services: Service[] }) {
   if (!services || services.length === 0) return null;
@@ -32,17 +34,7 @@ export default function Services({ services }: { services: Service[] }) {
 
 /* helpers */
 
-function formatPrice(s: Service) {
-  if (!s.priceFrom) return "On request";
-
-  const currency = s.currency || "EUR";
-
-  if (!s.priceTo) {
-    return `from ${s.priceFrom} ${currency}`;
-  }
-
-  return `${s.priceFrom} – ${s.priceTo} ${currency}`;
-}
+<span style={priceStyle}>{getServicePriceLabel(s)}</span>
 
 /* styles */
 

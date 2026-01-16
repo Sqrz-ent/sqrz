@@ -30,6 +30,7 @@ import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import CtaCarousel from "@/components/CtaCarousel";
+import { getServicePriceLabel } from "@/utils/serviceLabel";
 
 
 
