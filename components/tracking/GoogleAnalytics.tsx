@@ -1,30 +1,30 @@
 "use client";
 
 import Script from "next/script";
+import { useCookieConsent } from "@/components/hooks/useCookieConsent";
 
-type GoogleAnalyticsProps = {
-  id: string; // GA4 Measurement ID: G-XXXXXXX
-};
+export default function AnalyticsGate({
+  googleAnalyticsId,
+  isPreview = false,
+}: {
+  googleAnalyticsId?: string | null;
+  isPreview?: boolean;
+}) {
+  const { hasAnalyticsConsent, isReady } = useCookieConsent();
 
-export default function GoogleAnalytics({ id }: GoogleAnalyticsProps) {
-  if (!id) return null;
+  if (isPreview) return null;
+  if (!isReady) return null;
+  if (!googleAnalyticsId) return null;
 
   return (
     <>
-      <Script
-        async
-        src={`https://www.googletagmanager.com/gtag/js?id=${id}`}
-        strategy="afterInteractive"
-      />
-
-      <Script id={`gtag-init-${id}`} strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          gtag('js', new Date());
-          gtag('config', '${id}');
-        `}
-      </Script>
+      {hasAnalyticsConsent && (
+        <Script id={`ga-config-${googleAnalyticsId}`} strategy="afterInteractive">
+          {`
+            window.gtag && gtag('config', '${googleAnalyticsId}');
+          `}
+        </Script>
+      )}
     </>
   );
 }
