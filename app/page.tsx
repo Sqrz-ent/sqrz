@@ -30,7 +30,6 @@ import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import CtaCarousel from "@/components/CtaCarousel";
-import { getServicePriceLabel } from "@/utils/serviceLabel";
 
 
 
@@ -204,9 +203,6 @@ const ticket = {
       hubspotPortalId={profile.hubspot_portal_id}
       hubspotEnabled={profile.hubspot_tracking_enabled}
       isPreview={isPreview}
-      sqrzGoogleId={process.env.NEXT_PUBLIC_SQRZ_GA_ID!}
-      sqrzFacebookPixel={process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL!}
-      sqrzHubspotPortal={process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL!}
     />
 
 {servicesActive && (
