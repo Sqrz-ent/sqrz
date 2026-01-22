@@ -9,11 +9,13 @@ type HubSpotTrackingProps = {
 export default function HubSpotTracking({ portalId }: HubSpotTrackingProps) {
   if (!portalId) return null;
 
+  const cleanPortalId = String(portalId).replace(/["']/g, "").trim();
+
   return (
     <Script
-      id="hubspot-tracking"
+      id={`hubspot-tracking-${cleanPortalId}`}
       strategy="afterInteractive"
-      src={`https://js.hs-scripts.com/${portalId}.js`}
+      src={`https://js.hs-scripts.com/${cleanPortalId}.js`}
     />
   );
 }
