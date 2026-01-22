@@ -3,7 +3,7 @@
 import Script from "next/script";
 
 type GoogleAnalyticsProps = {
-  id: string;
+  id: string; // GA4 Measurement ID: G-XXXXXXX
 };
 
 export default function GoogleAnalytics({ id }: GoogleAnalyticsProps) {
@@ -11,28 +11,18 @@ export default function GoogleAnalytics({ id }: GoogleAnalyticsProps) {
 
   return (
     <>
-      {/* Load gtag core (only once per ID) */}
       <Script
+        async
         src={`https://www.googletagmanager.com/gtag/js?id=${id}`}
         strategy="afterInteractive"
       />
 
-      {/* Init / config GA */}
-      <Script
-        id={`ga-init-${id}`}
-        strategy="afterInteractive"
-      >
+      <Script id={`gtag-init-${id}`} strategy="afterInteractive">
         {`
           window.dataLayer = window.dataLayer || [];
-          window.gtag = window.gtag || function () {
-            window.dataLayer.push(arguments);
-          };
-
+          function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${id}', {
-            anonymize_ip: true,
-            send_page_view: true
-          });
+          gtag('config', '${id}');
         `}
       </Script>
     </>
