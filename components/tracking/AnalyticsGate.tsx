@@ -31,12 +31,17 @@ export default function AnalyticsGate({
 
   return (
     <>
-      {/* GA config */}
-      {hasAnalyticsConsent && googleAnalyticsId && (
-        <Script id={`ga-config-${googleAnalyticsId}`} strategy="afterInteractive">
-          {`window.gtag && gtag('config', '${googleAnalyticsId}');`}
-        </Script>
-      )}
+      {googleAnalyticsId && (
+  <Script id={`ga-config-${googleAnalyticsId}`} strategy="afterInteractive">
+    {`
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+
+      gtag('config', '${googleAnalyticsId}');
+    `}
+  </Script>
+)}
+
 
       {/* Hubspot */}
       {hasAnalyticsConsent && hubspotEnabled && hubspotPortalId && (
