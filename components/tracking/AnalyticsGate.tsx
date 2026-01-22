@@ -18,9 +18,15 @@ export default function AnalyticsGate({
   hubspotEnabled = false,
   isPreview = false,
 }: AnalyticsGateProps) {
-  const { hasAnalyticsConsent, hasMarketingConsent, isReady } = useCookieConsent();
+  const { isReady } = useCookieConsent();
+
+  // TEMP BYPASS CONSENT (testing only)
+  const hasAnalyticsConsent = true;
+  const hasMarketingConsent = true;
 
   if (isPreview) return null;
+
+  // optional: you can remove this too for testing
   if (!isReady) return null;
 
   return (
@@ -36,17 +42,17 @@ export default function AnalyticsGate({
       {hasAnalyticsConsent && hubspotEnabled && hubspotPortalId && (
         <Script id={`hubspot-${hubspotPortalId}`} strategy="afterInteractive">
           {`
-            (function(d,s,i,r){
+            (function(d,s,i){
               if (d.getElementById(i)) return;
               var js=d.createElement(s), f=d.getElementsByTagName(s)[0];
               js.id=i; js.src='https://js.hs-scripts.com/${hubspotPortalId}.js';
               f.parentNode.insertBefore(js,f);
-            })(document,'script','hs-script-loader','https://js.hs-scripts.com/${hubspotPortalId}.js');
+            })(document,'script','hs-script-loader');
           `}
         </Script>
       )}
 
-      {/* Meta Pixel (only if you want it here too) */}
+      {/* Meta Pixel */}
       {hasMarketingConsent && facebookPixelId && (
         <Script id={`fb-pixel-${facebookPixelId}`} strategy="afterInteractive">
           {`
