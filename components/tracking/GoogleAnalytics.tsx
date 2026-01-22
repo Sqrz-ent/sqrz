@@ -11,19 +11,28 @@ export default function GoogleAnalytics({ id }: GoogleAnalyticsProps) {
 
   return (
     <>
-      {/* Load gtag */}
+      {/* Load gtag core (only once per ID) */}
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${id}`}
         strategy="afterInteractive"
       />
 
-      {/* Init GA */}
-      <Script id="ga-init" strategy="afterInteractive">
+      {/* Init / config GA */}
+      <Script
+        id={`ga-init-${id}`}
+        strategy="afterInteractive"
+      >
         {`
           window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
+          window.gtag = window.gtag || function () {
+            window.dataLayer.push(arguments);
+          };
+
           gtag('js', new Date());
-          gtag('config', '${id}', { anonymize_ip: true });
+          gtag('config', '${id}', {
+            anonymize_ip: true,
+            send_page_view: true
+          });
         `}
       </Script>
     </>
