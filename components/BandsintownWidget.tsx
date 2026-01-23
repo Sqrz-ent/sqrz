@@ -32,6 +32,7 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     a.setAttribute("data-background-color", "transparent");
     a.setAttribute("data-separator-color", "rgba(255, 255, 255, 0.73)");
     a.setAttribute("data-auto-style", "false");
+    a.setAttribute("data-text-alignment", "left");
 
 
 
