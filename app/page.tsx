@@ -305,11 +305,14 @@ const ticket = {
         }}
       >
         {profile.description && <p>{profile.description}</p>}
+
+        {profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
+
+
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
         {servicesActive && <Services services={profile.services} />}
 
 
-        {profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
 
 
         {profile.bandsintown_url ? (
