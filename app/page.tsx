@@ -313,7 +313,9 @@ const ticket = {
         {servicesActive && <Services services={profile.services} />}
 
 
-
+         {spotifyEmbed && (
+          <iframe src={spotifyEmbed} width="100%" height="152" />
+        )}
 
         {profile.bandsintown_url ? (
         <div className="mt-6">
@@ -322,10 +324,6 @@ const ticket = {
         </div>
         ) : null}
 
-
-        {spotifyEmbed && (
-          <iframe src={spotifyEmbed} width="100%" height="152" />
-        )}
 
         {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
 
