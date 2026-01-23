@@ -338,7 +338,10 @@ const ticket = {
            {profile.references?.length > 0 && (
           <Experience jobs={profile.references} />
         )}
-   
+        
+   <div className="max-w-xl mx-auto p-4">
+      <h1 className="text-xl font-semibold mb-4">Tour Dates</h1>
+
 <BandsintownWidget bandsintownUrl={profile.bandsintown_url} />
 
     <LeadCapture
