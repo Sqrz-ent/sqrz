@@ -301,7 +301,7 @@ const ticket = {
           textAlign: "center",
           display: "flex",
           flexDirection: "column",
-          gap: 45,
+          gap: 64,
         }}
       >
         {profile.description && <p>{profile.description}</p>}
