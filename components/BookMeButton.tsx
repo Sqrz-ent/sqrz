@@ -22,7 +22,7 @@ export default function BookMeButton({
           top: 20,
           right: 20,
           padding: "12px 12px",
-          borderRadius: 999,
+          borderRadius: 24,
           border: "none",
           background: "var(--accent-color)",
           color: "#000",
