@@ -307,8 +307,16 @@ const ticket = {
         {profile.description && <p>{profile.description}</p>}
 
 
-
 {profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
+
+
+{profile.bandsintown_url ? (
+  <div className="mt-6">
+    <h2 className="text-xl font-semibold mb-4">Tour Dates</h2>
+    <BandsintownWidget bandsintownUrl={profile.bandsintown_url} />
+  </div>
+) : null}
+
 
 
         {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
@@ -340,10 +348,6 @@ const ticket = {
         )}
 
 
-<div className="mt-6">
-  <h2 className="text-xl font-semibold mb-4">Tour Dates</h2>
-  <BandsintownWidget bandsintownUrl={profile.bandsintown_url} />
-</div>
 
     <LeadCapture
         profileId={profile.id}
