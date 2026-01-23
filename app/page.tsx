@@ -324,6 +324,9 @@ const ticket = {
           <iframe src={spotifyEmbed} width="100%" height="152" />
         )}
 
+        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
+
+
         {profile.video_gallery?.length > 0 && (
           <YouTubeGallery videos={profile.video_gallery} />
         )}
@@ -335,8 +338,6 @@ const ticket = {
        {profile.muso?.profile_url && (
         <MusoWidget profile={profile.muso} />
         )}
-
-        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}
 
