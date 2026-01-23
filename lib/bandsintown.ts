@@ -4,24 +4,20 @@ export function getBandsintownArtistFromUrl(url?: string | null) {
   try {
     const u = new URL(url);
 
-    // Example paths:
-    // /Coldplay
-    // /a/1234567
-    const path = u.pathname.replace(/^\/+/, ""); // remove leading "/"
-
+    const path = u.pathname.replace(/^\/+/, "");
     if (!path) return null;
 
     const parts = path.split("/").filter(Boolean);
 
-    // If URL is /a/1234567 => return "a/1234567"
+    // supports: /a/1234567
     if (parts[0] === "a" && parts[1]) {
       return `a/${parts[1]}`;
     }
 
-    // Otherwise assume it's /ArtistName => return "ArtistName"
+    // supports: /Coldplay
     return decodeURIComponent(parts[0]);
-  } catch (e) {
-    // If it's not a valid URL, maybe user saved just "Coldplay"
+  } catch {
+    // if user stored only "Coldplay"
     return url.trim();
   }
 }
