@@ -39,16 +39,23 @@ export default function AnalyticsGate({
     <>
       {/* GA config */}
       {gaId && (
-        <Script id={`ga-config-${gaId}`} strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+  <>
+    <Script
+      src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+      strategy="afterInteractive"
+    />
 
-            gtag('js', new Date());
-            gtag('config', '${gaId}');
-          `}
-        </Script>
-      )}
+    <Script id={`ga-init-${gaId}`} strategy="afterInteractive">
+      {`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '${gaId}');
+      `}
+    </Script>
+  </>
+)}
+
 
       {/* Hubspot */}
       {hasAnalyticsConsent && hubspotEnabled && hsId && (
