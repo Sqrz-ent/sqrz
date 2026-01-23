@@ -339,7 +339,7 @@ const ticket = {
           <Experience jobs={profile.references} />
         )}
    
-<BandsintownWidget artistName="Coldplay" />
+<BandsintownWidget bandsintownUrl={profile.bandsintown_url} />
 
     <LeadCapture
         profileId={profile.id}
