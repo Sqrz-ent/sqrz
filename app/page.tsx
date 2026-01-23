@@ -342,6 +342,10 @@ const ticket = {
         <MusoWidget profile={profile.muso} />
         )}
 
+        {profile.references?.length > 0 && (
+          <Experience jobs={profile.references} />
+        )}
+
         {profile.slug && <ProfileCalendar username={profile.slug} />}
 
 
@@ -353,9 +357,7 @@ const ticket = {
         subline="Share your email to receive a special offer and connect directly with this creator"
         />
 
-           {profile.references?.length > 0 && (
-          <Experience jobs={profile.references} />
-        )}
+         
 
 
 
