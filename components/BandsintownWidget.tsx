@@ -27,6 +27,13 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     const a = document.createElement("a");
     a.setAttribute("class", "bit-widget-initializer");
     a.setAttribute("data-artist-name", artist);
+    a.setAttribute("data-text-color", "#ffffff");
+    a.setAttribute("data-link-color", "#f3b130"); // brand CTA color
+    a.setAttribute("data-background-color", "transparent");
+    a.setAttribute("data-separator-color", "rgba(255,255,255,0.15)");
+    a.setAttribute("data-auto-style", "false");
+
+
 
     containerRef.current.appendChild(a);
     containerRef.current.appendChild(script);
