@@ -30,6 +30,7 @@ import ViewTracker from "@/components/ViewTracker";
 import LeadCapture from "@/components/LeadCapture";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import CtaCarousel from "@/components/CtaCarousel";
+import BandsintownWidget from "@/components/BandsintownWidget";
 
 
 
@@ -338,7 +339,7 @@ const ticket = {
           <Experience jobs={profile.references} />
         )}
    
-
+<BandsintownWidget artistName="Coldplay" />
 
     <LeadCapture
         profileId={profile.id}
