@@ -38,7 +38,7 @@ export default function AnalyticsGate({
   return (
     <>
       {/* GA config */}
-      {gaId && (
+     {gaId && (
   <>
     <Script
       src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
@@ -50,7 +50,7 @@ export default function AnalyticsGate({
         window.dataLayer = window.dataLayer || [];
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', '${gaId}');
+        gtag('config', '${gaId}', { send_page_view: true });
       `}
     </Script>
   </>
