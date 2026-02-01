@@ -8,6 +8,7 @@ type AnalyticsGateProps = {
   facebookPixelId?: string | null;
   hubspotPortalId?: string | null;
   hubspotEnabled?: boolean;
+  linkedinPartnerId?: string | null;   // 👈 ADD THIS
   isPreview?: boolean;
 };
 
@@ -16,6 +17,7 @@ export default function AnalyticsGate({
   facebookPixelId,
   hubspotPortalId,
   hubspotEnabled = false,
+  linkedinPartnerId,
   isPreview = false,
 }: AnalyticsGateProps) {
   const { isReady } = useCookieConsent();
@@ -27,7 +29,8 @@ export default function AnalyticsGate({
   // ✅ sanitize IDs (removes accidental double quotes like ""123"" or "G-XXXX")
   const cleanId = (val?: string | null) =>
     val?.trim().replace(/^"+|"+$/g, "") || null;
-
+  
+  const liId = cleanId(linkedinPartnerId);
   const gaId = cleanId(googleAnalyticsId);
   const fbId = cleanId(facebookPixelId);
   const hsId = cleanId(hubspotPortalId);
@@ -70,6 +73,32 @@ export default function AnalyticsGate({
           `}
         </Script>
       )}
+
+{/* LinkedIn Insight Tag */}
+{hasMarketingConsent && liId && (
+  <Script id={`linkedin-insight-${liId}`} strategy="afterInteractive">
+    {`
+      _linkedin_partner_id = "${liId}";
+      window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+      window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+
+      (function(l) {
+        if (!l){
+          window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+          window.lintrk.q=[];
+        }
+        var s = document.getElementsByTagName("script")[0];
+        var b = document.createElement("script");
+        b.type = "text/javascript";
+        b.async = true;
+        b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+        s.parentNode.insertBefore(b, s);
+      })(window.lintrk);
+    `}
+  </Script>
+)}
+
+
 
       {/* Meta Pixel */}
       {hasMarketingConsent && fbId && (
