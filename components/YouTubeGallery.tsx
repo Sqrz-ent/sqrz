@@ -5,7 +5,7 @@ import { getYouTubeEmbedUrl } from "@/lib/youtube";
 
 type VideoItem = {
   title?: string;
-  youtube_url: string;
+  url: string;
 };
 
 export default function YouTubeGallery({
@@ -18,7 +18,7 @@ export default function YouTubeGallery({
   const [activeIndex, setActiveIndex] = useState(0);
 
   const activeEmbed = getYouTubeEmbedUrl(
-    videos[activeIndex].youtube_url
+    videos[activeIndex].url
   );
 
   if (!activeEmbed) return null;

@@ -12,13 +12,13 @@ export default function Services({ services }: { services: Service[] }) {
         {services.map((s, i) => (
           <div key={i} style={cardStyle}>
             <div style={headerStyle}>
-              <span style={serviceName}>{s.service}</span>
+              <span style={serviceName}>{s.title}</span>
 
               {/* ✅ THIS must be here */}
               <span style={priceStyle}>{getServicePriceLabel(s)}</span>
             </div>
 
-            {s.terms && <p style={termsStyle}>{s.terms}</p>}
+            {s.description && <p style={termsStyle}>{s.description}</p>}
           </div>
         ))}
       </div>

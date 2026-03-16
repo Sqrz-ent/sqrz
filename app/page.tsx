@@ -43,7 +43,18 @@ import BandsintownWidget from "@/components/BandsintownWidget";
 ========================= */
 
 
+import { supabase } from "@/lib/supabase";
+
 async function getProfileByUsername(username: string) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*)")
+    .eq("slug", username)
+    .single();
+
+  if (data) return data;
+
+  // Fallback: profile not yet migrated to Supabase
   const res = await fetch(
     `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile/${username}`,
     { cache: "no-store" }
@@ -53,6 +64,15 @@ async function getProfileByUsername(username: string) {
 }
 
 async function getProfileByDomain(domain: string) {
+  const { data } = await supabase
+    .from("profiles")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*)")
+    .eq("custom_domain", domain)
+    .single();
+
+  if (data) return data;
+
+  // Fallback: profile not yet migrated to Supabase
   const res = await fetch(
     `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile-by-domain/${domain}`,
     { cache: "no-store" }
@@ -104,7 +124,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const imageUrl =
     profile.og_image?.url ||
-    profile.profile_pic_img?.url ||
+    (profile.avatar_url && !profile.avatar_url.includes("xano.io") ? profile.avatar_url : null) ||
     `${baseUrl}/og/default.png`;
 
    
@@ -142,30 +162,37 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: { preview?: string };
+  searchParams: Promise<{ preview?: string; username?: string }>;
 }) {
-  const headersList = await headers();
-  const rawHost = headersList.get("host");
-  if (!rawHost) notFound();
+  const params = await searchParams;
 
-  const host = rawHost
-    .toLowerCase()
-    .replace(/:\d+$/, "")
-    .trim();
+  console.log("[HomePage] params:", params);
+  console.log("[HomePage] NODE_ENV:", process.env.NODE_ENV);
 
-    const isPreview = searchParams.preview === "true";
+  const isPreview = params.preview === "true";
+  let profile: Record<string, any> | null = null;
 
+  // Dev shortcut: ?username=willvilla bypasses host-based routing (dev only)
+  if (process.env.NODE_ENV === "development" && params.username) {
+    profile = await getProfileByUsername(params.username);
+    console.log("[HomePage] getProfileByUsername result:", profile);
+  } else {
+    const headersList = await headers();
+    const rawHost = headersList.get("host");
+    if (!rawHost) notFound();
 
-  // 🔥 IMPORTANT: ignore dashboard host
-  if (host === "dashboard.sqrz.com") {
-    notFound();
+    const host = rawHost.toLowerCase().replace(/:\d+$/, "").trim();
+
+    // 🔥 IMPORTANT: ignore dashboard host
+    if (host === "dashboard.sqrz.com") notFound();
+
+    profile = await getProfileFromHost(host);
   }
 
-  const profile = await getProfileFromHost(host);
   if (!profile) notFound();
 
 
-  const rawTemplateKey = profile.template_key;
+  const rawTemplateKey = profile.template_id;
 
   const templateKey: TemplateKey =
     rawTemplateKey &&
@@ -176,16 +203,16 @@ export default async function HomePage({
 
   const template = PROFILE_TEMPLATES[templateKey];
 
-  const soundcloudEmbed = profile.soundcloud_url
-    ? getSoundCloudEmbedUrl(profile.soundcloud_url)
+  const soundcloudEmbed = profile.widget_soundcloud
+    ? getSoundCloudEmbedUrl(profile.widget_soundcloud)
     : null;
 
-  const spotifyEmbed = profile.spotify_url
-    ? getSpotifyEmbedUrl(profile.spotify_url)
+  const spotifyEmbed = profile.widget_spotify
+    ? getSpotifyEmbedUrl(profile.widget_spotify)
     : null;
 
- const servicesActive =
-  profile.activateServices === true && (profile.services?.length ?? 0) > 0;
+  const servicesActive =
+    profile.services_active === true && (profile.profile_services?.length ?? 0) > 0;
 
 const ticket = {
     label: "Tickets on Eventim",
@@ -199,15 +226,16 @@ const ticket = {
 
     {/* 🔐 Analytics + tracking (consent-gated) */}
     <AnalyticsGate
-      googleAnalyticsId={profile.google_analytics_id}
-      facebookPixelId={profile.facebook_pixel_id}
+      googleAnalyticsId={profile.pixel_google}
+      facebookPixelId={profile.pixel_facebook}
       hubspotPortalId={profile.hubspot_portal_id}
-      hubspotEnabled={profile.hubspot_tracking_enabled}
+      hubspotEnabled={!!profile.hubspot_portal_id}
+      linkedinPartnerId={profile.pixel_linkedin}
       isPreview={isPreview}
     />
 
 {servicesActive && (
-  <BookMeButton username={profile.slug} services={profile.services} />
+  <BookMeButton username={profile.slug} services={profile.profile_services} />
 )}
 <FloatingSQRZButton />
 <ViewTracker username={profile.slug} />
@@ -218,8 +246,8 @@ const ticket = {
       <div
         style={{
           height: 480,
-          backgroundImage: profile.profile_pic_img?.url
-            ? `url(${profile.profile_pic_img.url})`
+          backgroundImage: profile.avatar_url && !profile.avatar_url.includes("xano.io")
+            ? `url(${profile.avatar_url})`
             : "linear-gradient(135deg, #111, #000)",
           backgroundSize: "cover",
           backgroundPosition: "center",
@@ -266,23 +294,23 @@ const ticket = {
               gap: 16,
             }}
           >
-            {profile.facebook && (
-              <a href={profile.facebook} target="_blank" rel="noopener noreferrer">
+            {profile.social_facebook && (
+              <a href={profile.social_facebook} target="_blank" rel="noopener noreferrer">
                 <Facebook size={20} />
               </a>
             )}
-            {profile.instagram && (
-              <a href={profile.instagram} target="_blank" rel="noopener noreferrer">
+            {profile.social_instagram && (
+              <a href={profile.social_instagram} target="_blank" rel="noopener noreferrer">
                 <Instagram size={20} />
               </a>
             )}
-            {profile.linkedin && (
-              <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+            {profile.social_linkedin && (
+              <a href={profile.social_linkedin} target="_blank" rel="noopener noreferrer">
                 <Linkedin size={20} />
               </a>
             )}
-            {profile.youtube_url && (
-              <a href={profile.youtube_url} target="_blank" rel="noopener noreferrer">
+            {profile.social_youtube && (
+              <a href={profile.social_youtube} target="_blank" rel="noopener noreferrer">
                 <Youtube size={20} />
               </a>
             )}
@@ -304,23 +332,23 @@ const ticket = {
           gap: 64,
         }}
       >
-        {profile.description && <p>{profile.description}</p>}
+        {profile.bio && <p>{profile.bio}</p>}
 
         {profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
 
 
-        {profile.skills?.length > 0 && <Skills skills={profile.skills} />}
-        {servicesActive && <Services services={profile.services} />}
+        {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
+        {servicesActive && <Services services={profile.profile_services} />}
 
 
          {spotifyEmbed && (
           <iframe src={spotifyEmbed} width="100%" height="152" />
         )}
 
-        {profile.bandsintown_url ? (
+        {profile.widget_bandsintown ? (
         <div className="mt-6">
         <h2 className="text-xl font-semibold mb-4">Tour Dates</h2>
-        <BandsintownWidget bandsintownUrl={profile.bandsintown_url} />
+        <BandsintownWidget bandsintownUrl={profile.widget_bandsintown} />
         </div>
         ) : null}
 
@@ -328,8 +356,8 @@ const ticket = {
         {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
 
 
-        {profile.video_gallery?.length > 0 && (
-          <YouTubeGallery videos={profile.video_gallery} />
+        {profile.profile_videos?.length > 0 && (
+          <YouTubeGallery videos={profile.profile_videos} />
         )}
 
         {soundcloudEmbed && (
@@ -340,8 +368,8 @@ const ticket = {
         <MusoWidget profile={profile.muso} />
         )}
 
-        {profile.references?.length > 0 && (
-          <Experience jobs={profile.references} />
+        {profile.profile_references?.length > 0 && (
+          <Experience jobs={profile.profile_references} />
         )}
 
         {profile.slug && <ProfileCalendar username={profile.slug} />}

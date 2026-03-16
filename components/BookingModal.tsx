@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { Service } from "@/types/service";
 import { getServicePriceLabel } from "@/utils/serviceLabel";
+import { supabase } from "@/lib/supabase";
 
 export default function BookingModal({
   open,
@@ -31,6 +32,7 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [projectTitle, setProjectTitle] = useState(""); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
  
   // ✅ MUST be here — before any return
   useEffect(() => {
@@ -64,12 +66,7 @@ function nextFromStep2() {
   }
 
   setError(null);
-
-  if (selectedService?.instant_booking) {
-    setStep(5); // 👈 NEW instant-submit step
-  } else {
-    setStep(3); // date/time
-  }
+  setStep(3); // date/time
 }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -78,51 +75,27 @@ function nextFromStep2() {
   setLoading(true);
 
   try {
-    const res = await fetch(
-      `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/submitInquiry/${username}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          message,
-          service_id: selectedService?.id || null,
-          service_task: selectedService?.task || null,
-          instant_booking: Boolean(selectedService?.instant_booking),
-          event_date: date || null,
-          event_time: time || null,
-          address: {
-            street: street || null,
-            city: city || null,
-            zip: zip || null,
-            country: country || null,
-            full: [street, zip, city, country]
-              .filter(Boolean)
-              .join(", ") || null,
-          },
-        }),
-      }
-    );
+    const { data, error: rpcError } = await supabase.rpc("create_booking_request", {
+      p_to_slug: username,
+      p_from_name: name,
+      p_from_email: email,
+      p_message: message,
+      p_service: selectedService?.title ?? null,
+      p_budget_min: null,
+      p_budget_max: null,
+      p_currency: "eur",
+      p_event_date: date || null,
+      p_event_location: null,
+      p_source: "profile_page",
+    });
 
-    if (!res.ok) {
-      throw new Error("Failed to send booking request");
+    if (rpcError) throw rpcError;
+
+    if (data?.success) {
+      setSuccess(true);
+    } else {
+      throw new Error("Booking request failed");
     }
-
-    // reset + close
-    onClose();
-    setStep(1);
-    setName("");
-    setEmail("");
-    setMessage("");
-    setDate("");
-    setTime("");
-    setStreet("");
-    setCity("");
-    setZip("");
-    setCountry("");
   } catch (err) {
     console.error(err);
     setError("Something went wrong. Please try again.");
@@ -130,6 +103,21 @@ function nextFromStep2() {
     setLoading(false);
   }
 }
+
+  if (success) {
+    return (
+      <div style={overlayStyle}>
+        <div style={modalStyle}>
+          <button onClick={onClose} style={closeStyle}>✕</button>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: 12, textAlign: "center" }}>
+            <div style={{ fontSize: 40 }}>🎉</div>
+            <h2>Request sent!</h2>
+            <p style={{ opacity: 0.7 }}>You'll hear back soon.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={overlayStyle}>
@@ -165,13 +153,8 @@ function nextFromStep2() {
               key={service.id}
               type="button"
               onClick={() => {
-              setSelectedService(service);
-
-              if (service.instant_booking) {
-              setStep(1);   // name/email → message → submit
-              } else {
-              setStep(1);   // same start, but we’ll branch later
-              }
+                setSelectedService(service);
+                setStep(1);
               }}
 
               style={{
@@ -180,7 +163,7 @@ function nextFromStep2() {
                 cursor: "pointer",
               }}
             >
-              <strong>{service.service}</strong>
+              <strong>{service.title}</strong>
 
            <div style={{ opacity: 0.7, fontSize: 13 }}>
   {getServicePriceLabel(service)}
@@ -258,13 +241,7 @@ function nextFromStep2() {
                 <button
                   type="button"
                   style={secondaryButtonStyle}
-                  onClick={() => {
-                  if (selectedService?.instant_booking) {
-                  setStep(4); // skip date/time
-                 } else {
-                  setStep(3);
-  }
-}}
+                  onClick={() => setStep(1)}
                 >
                   Back
                 </button>
@@ -323,7 +300,7 @@ function nextFromStep2() {
             </>
           )}
           {/* STEP 4 */}
-          {step === 4 && !selectedService?.instant_booking && ( 
+          {step === 4 && (
           <>
           <input
       type="text"
@@ -376,24 +353,6 @@ function nextFromStep2() {
     </div>
   </>
 )}
-
-{step === 5 && selectedService?.instant_booking && (
-  <>
-    <p style={{ opacity: 0.7, marginBottom: 16 }}>
-      This is an instant service. No date or address is required.
-    </p>
-
-    <button
-      type="submit"
-      style={submitStyle}
-      disabled={loading}
-    >
-      {loading ? "Processing…" : "Book & Pay"}
-    </button>
-  </>
-)}
-
-
 
         </form>
 </div> 

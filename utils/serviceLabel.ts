@@ -25,21 +25,16 @@ function formatMoney(amount: number, currency: string) {
 export function getServicePriceLabel(service: Service) {
   const currency = safeCurrency(service.currency);
 
-  if (service.instant_booking) {
-    if (service.fixedPrice != null) {
-      return `${formatMoney(service.fixedPrice, currency)} • Fixed price • Instant booking`;
-    }
-    return "Instant booking";
-  }
+  if (service.price_label) return service.price_label;
 
-  if (service.priceFrom != null) {
-    if (service.priceTo != null) {
-      return `${formatMoney(service.priceFrom, currency)} – ${formatMoney(
-        service.priceTo,
+  if (service.price_min != null) {
+    if (service.price_max != null) {
+      return `${formatMoney(service.price_min, currency)} – ${formatMoney(
+        service.price_max,
         currency
       )}`;
     }
-    return `from ${formatMoney(service.priceFrom, currency)}`;
+    return `from ${formatMoney(service.price_min, currency)}`;
   }
 
   return "Price on request";

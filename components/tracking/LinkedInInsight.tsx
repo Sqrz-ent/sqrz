@@ -2,13 +2,11 @@
 
 import Script from "next/script";
 
-export default function LinkedInInsight() {
-  const LINKEDIN_ID = "2800882";
-
+export default function LinkedInInsight({ partnerId }: { partnerId: string }) {
   return (
-    <Script id="linkedin-insight" strategy="afterInteractive">
+    <Script id={`linkedin-insight-${partnerId}`} strategy="afterInteractive">
       {`
-        _linkedin_partner_id = "${LINKEDIN_ID}";
+        _linkedin_partner_id = "${partnerId}";
         window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
         window._linkedin_data_partner_ids.push(_linkedin_partner_id);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 export default function LeadCapture({
   profileId,
@@ -23,15 +24,15 @@ export default function LeadCapture({
     setStatus("loading");
 
     try {
-      await fetch(`https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/lead/${username}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          profile_id: profileId,
-        }),
+      const { error } = await supabase.from("booking_requests").insert({
+        to_profile_id: profileId,
+        from_profile_id: null,
+        message: email,
+        source: "lead_capture",
+        status: "new",
       });
 
+      if (error) throw error;
       setStatus("success");
     } catch (e) {
       setStatus("error");

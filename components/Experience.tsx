@@ -1,9 +1,9 @@
 type ExperienceItem = {
   id: string;
-  employer: string;
+  company: string;
   date_start: string;
   date_end: string | null;
-  responsibilities: string;
+  role: string;
   deleted?: boolean;
 };
 
@@ -46,7 +46,7 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
                 marginBottom: 4,
               }}
             >
-              {job.employer}
+              {job.company}
             </div>
 
             {/* Dates */}
@@ -61,7 +61,7 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
 </div>
 
             {/* Responsibilities */}
-            {job.responsibilities && (
+            {job.role && (
               <p
                 style={{
                   fontSize: 14,
@@ -70,7 +70,7 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
                   margin: 0,
                 }}
               >
-                {job.responsibilities}
+                {job.role}
               </p>
             )}
           </div>

@@ -30,10 +30,10 @@ export default function AnalyticsGate({
   const cleanId = (val?: string | null) =>
     val?.trim().replace(/^"+|"+$/g, "") || null;
   
-  const liId = cleanId(linkedinPartnerId);
-  const gaId = cleanId(googleAnalyticsId);
-  const fbId = cleanId(facebookPixelId);
-  const hsId = cleanId(hubspotPortalId);
+  const liId = cleanId(linkedinPartnerId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_LINKEDIN);
+  const gaId = cleanId(googleAnalyticsId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_GOOGLE);
+  const fbId = cleanId(facebookPixelId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_FACEBOOK);
+  const hsId = cleanId(hubspotPortalId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_HUBSPOT);
 
   if (isPreview) return null;
   if (!isReady) return null;
@@ -61,7 +61,7 @@ export default function AnalyticsGate({
 
 
       {/* Hubspot */}
-      {hasAnalyticsConsent && hubspotEnabled && hsId && (
+      {hasAnalyticsConsent && hsId && (
         <Script id={`hubspot-${hsId}`} strategy="afterInteractive">
           {`
             (function(d,s,i){
