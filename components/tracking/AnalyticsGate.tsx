@@ -1,14 +1,14 @@
 "use client";
 
 import Script from "next/script";
-import { useCookieConsent } from "@/components/hooks/useCookieConsent";
+import { useState, useEffect } from "react";
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;
   facebookPixelId?: string | null;
   hubspotPortalId?: string | null;
   hubspotEnabled?: boolean;
-  linkedinPartnerId?: string | null;   // 👈 ADD THIS
+  linkedinPartnerId?: string | null;
   isPreview?: boolean;
 };
 
@@ -20,48 +20,66 @@ export default function AnalyticsGate({
   linkedinPartnerId,
   isPreview = false,
 }: AnalyticsGateProps) {
-  const { isReady } = useCookieConsent();
+  const [analyticsConsent, setAnalyticsConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
-  // TEMP BYPASS CONSENT (testing only)
-  const hasAnalyticsConsent = true;
-  const hasMarketingConsent = true;
+  useEffect(() => {
+    const checkConsent = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cb = (window as any).Cookiebot;
+      if (cb?.consent) {
+        setAnalyticsConsent(!!cb.consent.statistics);
+        setMarketingConsent(!!cb.consent.marketing);
+      }
+    };
+
+    // Cookiebot may already be loaded by the time this component mounts
+    checkConsent();
+
+    window.addEventListener("CookiebotOnAccept", checkConsent);
+    window.addEventListener("CookiebotOnDecline", checkConsent);
+    window.addEventListener("CookiebotOnLoad", checkConsent);
+
+    return () => {
+      window.removeEventListener("CookiebotOnAccept", checkConsent);
+      window.removeEventListener("CookiebotOnDecline", checkConsent);
+      window.removeEventListener("CookiebotOnLoad", checkConsent);
+    };
+  }, []);
 
   // ✅ sanitize IDs (removes accidental double quotes like ""123"" or "G-XXXX")
   const cleanId = (val?: string | null) =>
     val?.trim().replace(/^"+|"+$/g, "") || null;
-  
+
   const liId = cleanId(linkedinPartnerId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_LINKEDIN);
   const gaId = cleanId(googleAnalyticsId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_GOOGLE);
   const fbId = cleanId(facebookPixelId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_FACEBOOK);
   const hsId = cleanId(hubspotPortalId) || cleanId(process.env.NEXT_PUBLIC_SQRZ_HUBSPOT);
 
   if (isPreview) return null;
-  if (!isReady) return null;
 
   return (
     <>
-      {/* GA config */}
-     {gaId && (
-  <>
-    <Script
-      src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-      strategy="afterInteractive"
-    />
+      {/* GA4 — fires on statistics consent */}
+      {analyticsConsent && gaId && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            strategy="afterInteractive"
+          />
+          <Script id={`ga-init-${gaId}`} strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}', { send_page_view: true });
+            `}
+          </Script>
+        </>
+      )}
 
-    <Script id={`ga-init-${gaId}`} strategy="afterInteractive">
-      {`
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${gaId}', { send_page_view: true });
-      `}
-    </Script>
-  </>
-)}
-
-
-      {/* Hubspot */}
-      {hasAnalyticsConsent && hsId && (
+      {/* HubSpot — fires on marketing consent */}
+      {marketingConsent && hsId && (
         <Script id={`hubspot-${hsId}`} strategy="afterInteractive">
           {`
             (function(d,s,i){
@@ -74,34 +92,31 @@ export default function AnalyticsGate({
         </Script>
       )}
 
-{/* LinkedIn Insight Tag */}
-{hasMarketingConsent && liId && (
-  <Script id={`linkedin-insight-${liId}`} strategy="afterInteractive">
-    {`
-      _linkedin_partner_id = "${liId}";
-      window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
-      window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+      {/* LinkedIn Insight Tag — fires on marketing consent */}
+      {marketingConsent && liId && (
+        <Script id={`linkedin-insight-${liId}`} strategy="afterInteractive">
+          {`
+            _linkedin_partner_id = "${liId}";
+            window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+            window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+            (function(l) {
+              if (!l){
+                window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+                window.lintrk.q=[];
+              }
+              var s = document.getElementsByTagName("script")[0];
+              var b = document.createElement("script");
+              b.type = "text/javascript";
+              b.async = true;
+              b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+              s.parentNode.insertBefore(b, s);
+            })(window.lintrk);
+          `}
+        </Script>
+      )}
 
-      (function(l) {
-        if (!l){
-          window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
-          window.lintrk.q=[];
-        }
-        var s = document.getElementsByTagName("script")[0];
-        var b = document.createElement("script");
-        b.type = "text/javascript";
-        b.async = true;
-        b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
-        s.parentNode.insertBefore(b, s);
-      })(window.lintrk);
-    `}
-  </Script>
-)}
-
-
-
-      {/* Meta Pixel */}
-      {hasMarketingConsent && fbId && (
+      {/* Meta Pixel — fires on marketing consent */}
+      {marketingConsent && fbId && (
         <Script id={`fb-pixel-${fbId}`} strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
