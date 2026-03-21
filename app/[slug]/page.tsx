@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookingLinkForm from "./BookingLinkForm";
 
+export const revalidate = 0;
+
 // Matches PROFILE_TEMPLATES in lib/profileTemplates.ts
 const TEMPLATE_ACCENTS: Record<string, string> = {
   "dj-dark": "#F3B130",

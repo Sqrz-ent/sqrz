@@ -38,6 +38,8 @@ import BandsintownWidget from "@/components/BandsintownWidget";
 
 
 
+export const revalidate = 0;
+
 /* =========================
    DATA FETCHING
 ========================= */
