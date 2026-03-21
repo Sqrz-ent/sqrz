@@ -170,9 +170,14 @@ export default async function PrivateLinkPage({
 
   if (!profile) return notFound();
 
-  const profileAvatarSrc =
-    profile.avatar_url ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name ?? username)}&backgroundColor=F5A623&textColor=ffffff`;
+  const hasRealAvatar =
+    profile.avatar_url &&
+    !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
+    !String(profile.avatar_url).includes("placeholder.");
+
+  const profileAvatarSrc = hasRealAvatar
+    ? (profile.avatar_url as string)
+    : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent((profile.name ?? username) as string)}&backgroundColor=F5A623&textColor=ffffff&fontSize=38`;
 
   // 2. Find the active private link
   const { data: link } = await supabase

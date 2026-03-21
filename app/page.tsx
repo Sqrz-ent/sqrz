@@ -236,6 +236,16 @@ const ticket = {
 
   const claimUrl = `https://dashboard.sqrz.com/claim?token=${encodeURIComponent(claimParam ?? "")}&slug=${encodeURIComponent(profile.slug as string ?? "")}`;
 
+  const hasRealAvatar =
+    profile.avatar_url &&
+    !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
+    !String(profile.avatar_url).includes("placeholder.") &&
+    !String(profile.avatar_url).includes("xano.io");
+
+  const avatarSrc = hasRealAvatar
+    ? (profile.avatar_url as string)
+    : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent((profile.name || profile.slug || "") as string)}&backgroundColor=F5A623&textColor=ffffff&fontSize=38`;
+
   return (
     <>
     {showClaimBanner && (
@@ -299,8 +309,8 @@ const ticket = {
       <div
         style={{
           height: 480,
-          backgroundImage: profile.avatar_url && !profile.avatar_url.includes("xano.io")
-            ? `url(${profile.avatar_url})`
+          backgroundImage: hasRealAvatar
+            ? `url(${avatarSrc})`
             : "linear-gradient(135deg, #111, #000)",
           backgroundSize: "cover",
           backgroundPosition: "center",
