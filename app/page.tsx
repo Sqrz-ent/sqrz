@@ -162,7 +162,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ preview?: string; username?: string }>;
+  searchParams: Promise<{ preview?: string; username?: string; claim?: string }>;
 }) {
   const params = await searchParams;
 
@@ -190,6 +190,20 @@ export default async function HomePage({
   }
 
   if (!profile) notFound();
+
+  // Claim banner — verify token matches this profile and hasn't been claimed yet
+  let showClaimBanner = false;
+  const claimParam = params.claim;
+  if (claimParam && profile.slug) {
+    const { data: claimValid } = await supabase
+      .from("profiles")
+      .select("id, slug, claim_token, is_claimed")
+      .eq("slug", profile.slug as string)
+      .eq("claim_token", claimParam)
+      .eq("is_claimed", false)
+      .maybeSingle();
+    if (claimValid) showClaimBanner = true;
+  }
 
 
   const rawTemplateKey = profile.template_id;
@@ -220,7 +234,46 @@ const ticket = {
     url: "https://www.eventim.de/event/...",
   };
 
+  const claimUrl = `https://dashboard.sqrz.com/claim?token=${encodeURIComponent(claimParam ?? "")}&slug=${encodeURIComponent(profile.slug as string ?? "")}`;
+
   return (
+    <>
+    {showClaimBanner && (
+      <div style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+        background: "#F5A623",
+        color: "#fff",
+        padding: "14px 20px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 16,
+        boxShadow: "0 2px 12px rgba(245,166,35,0.4)",
+        flexWrap: "wrap",
+        fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+      }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>
+          Is this you? Claim this profile and take full control.
+        </span>
+        <a
+          href={claimUrl}
+          style={{
+            background: "#fff",
+            color: "#F5A623",
+            fontWeight: 800,
+            fontSize: 14,
+            padding: "8px 18px",
+            borderRadius: 20,
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Claim Profile →
+        </a>
+      </div>
+    )}
     <main className={`profile-page ${template.bodyClass}`}>
 
 
@@ -390,6 +443,7 @@ const ticket = {
 
       </div>
     </main>
+    </>
   );
 }
 
