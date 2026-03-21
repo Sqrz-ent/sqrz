@@ -1,67 +1,49 @@
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookingLinkForm from "./BookingLinkForm";
 
-// Template accent colors matching profileTemplates.ts
+// Matches PROFILE_TEMPLATES in lib/profileTemplates.ts
 const TEMPLATE_ACCENTS: Record<string, string> = {
   "dj-dark": "#F3B130",
   "dancer-light": "#FD69D1",
   "tech-clean": "#7E6E6E",
 };
-
 const DEFAULT_ACCENT = "#F5A623";
 
 type PageType = "booking" | "download" | "event" | "merch" | "press";
 
-interface PrivateLink {
-  id: string;
-  profile_id: string;
-  link_slug: string;
-  is_active: boolean;
-  page_type: PageType;
-  title: string | null;
-  description: string | null;
-  cover_image_url: string | null;
-  prefill_service: string | null;
-  prefill_event_date: string | null;
-  prefill_budget_min: number | null;
-  prefill_budget_max: number | null;
-  prefill_message: string | null;
-  prefill_location: string | null;
-  price: string | null;
-  stripe_payment_link_url: string | null;
-  external_ticket_url: string | null;
-  inventory_count: number | null;
-  event_name: string | null;
-  event_date: string | null;
-  event_venue: string | null;
-  event_city: string | null;
-  file_path: string | null;
-  max_uses: number | null;
-  use_count: number;
-  expires_at: string | null;
+// ─── Hostname → username (mirrors app/page.tsx) ──────────────────────────────
+
+function getUsernameFromHost(host: string): string | null {
+  const cleanHost = host
+    .toLowerCase()
+    .replace(/:\d+$/, "")
+    .replace(/^www\./, "")
+    .trim();
+
+  if (cleanHost.endsWith(".sqrz.com")) {
+    const username = cleanHost.replace(".sqrz.com", "");
+    if (!username || username === "www" || username === "sqrz") return null;
+    return username;
+  }
+
+  return null; // custom domains handled below via DB lookup
 }
 
-interface Profile {
-  id: string;
-  slug: string;
-  name: string | null;
-  avatar_url: string | null;
-  is_published: boolean | null;
-  template_id: string | null;
-  email: string | null;
-  bio: string | null;
-  profile_services: Array<{
-    id: string;
-    title: string;
-    price_min: number | null;
-    price_max: number | null;
-    price_label: string | null;
-    currency: string | null;
-  }>;
+async function getUsernameFromCustomDomain(host: string): Promise<string | null> {
+  const cleanHost = host.toLowerCase().replace(/:\d+$/, "").trim();
+  const { data } = await supabase
+    .from("profiles")
+    .select("slug")
+    .eq("custom_domain", cleanHost)
+    .eq("custom_domain_verified", true)
+    .single();
+  return data?.slug ?? null;
 }
 
-// Shared page shell styles
+// ─── Shared layout pieces ─────────────────────────────────────────────────────
+
 const shell: React.CSSProperties = {
   minHeight: "100vh",
   background: "#f7f7f5",
@@ -86,27 +68,6 @@ const coverImg: React.CSSProperties = {
   display: "block",
 };
 
-const profileRow: React.CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: 12,
-  marginBottom: 24,
-};
-
-function formatEventDate(dateStr: string | null) {
-  if (!dateStr) return null;
-  try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
 function PoweredBy() {
   return (
     <div
@@ -118,8 +79,7 @@ function PoweredBy() {
         letterSpacing: "0.04em",
       }}
     >
-      Powered by{" "}
-      <span style={{ fontWeight: 700, color: "#888" }}>SQRZ</span>
+      Powered by <span style={{ fontWeight: 700, color: "#888" }}>SQRZ</span>
     </div>
   );
 }
@@ -157,18 +117,53 @@ function CtaButton({
   );
 }
 
+function formatEventDate(dateStr: string | null) {
+  if (!dateStr) return null;
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default async function PrivateLinkPage({
   params,
+  searchParams,
 }: {
-  params: Promise<{ username: string; link_slug: string }>;
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ username?: string }>;
 }) {
-  const { username, link_slug } = await params;
+  const { slug: linkSlug } = await params;
+  const sp = await searchParams;
 
-  // 1. Find profile by slug
+  // Resolve username — dev shortcut mirrors app/page.tsx
+  let username: string | null = null;
+
+  if (process.env.NODE_ENV === "development" && sp.username) {
+    username = sp.username;
+  } else {
+    const headersList = await headers();
+    const rawHost = headersList.get("host") ?? "";
+    username = getUsernameFromHost(rawHost);
+    if (!username) {
+      username = await getUsernameFromCustomDomain(rawHost);
+    }
+  }
+
+  if (!username) return notFound();
+
+  // 1. Find profile
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, slug, name, avatar_url, is_published, template_id, email, bio, profile_services(*)"
+      "id, slug, name, avatar_url, template_id, email, bio, profile_services(*)"
     )
     .eq("slug", username)
     .single();
@@ -180,7 +175,7 @@ export default async function PrivateLinkPage({
     .from("private_booking_links")
     .select("*")
     .eq("profile_id", profile.id)
-    .eq("link_slug", link_slug)
+    .eq("link_slug", linkSlug)
     .eq("is_active", true)
     .single();
 
@@ -203,12 +198,11 @@ export default async function PrivateLinkPage({
       .eq("id", link.id);
   }
 
-  const p = profile as unknown as Profile;
-  const l = link as unknown as PrivateLink;
   const accent =
-    TEMPLATE_ACCENTS[p.template_id ?? ""] ?? DEFAULT_ACCENT;
+    TEMPLATE_ACCENTS[profile.template_id as string ?? ""] ?? DEFAULT_ACCENT;
+  const pageType = link.page_type as PageType;
 
-  // Max uses reached — show unavailable message
+  // Max uses exhausted
   if (maxUsesReached) {
     return (
       <div style={shell}>
@@ -228,20 +222,34 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── BOOKING ──────────────────────────────────────────────────────────────
-  if (l.page_type === "booking") {
-    const services = (p.profile_services ?? []) as Profile["profile_services"];
+  // ─── BOOKING ────────────────────────────────────────────────────────────────
+  if (pageType === "booking") {
+    const services = (profile.profile_services ?? []) as Array<{
+      id: string;
+      title: string;
+      price_min: number | null;
+      price_max: number | null;
+      price_label: string | null;
+      currency: string | null;
+    }>;
 
     return (
       <div style={shell}>
         <div style={container}>
           {/* Profile header */}
-          <div style={profileRow}>
-            {p.avatar_url && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              marginBottom: 24,
+            }}
+          >
+            {profile.avatar_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={p.avatar_url}
-                alt={p.name ?? username}
+                src={profile.avatar_url}
+                alt={profile.name ?? username}
                 style={{
                   width: 48,
                   height: 48,
@@ -253,18 +261,17 @@ export default async function PrivateLinkPage({
             )}
             <div>
               <div style={{ fontWeight: 700, fontSize: 16, color: "#111" }}>
-                {p.name ?? username}
+                {profile.name ?? username}
               </div>
-              {p.bio && (
+              {profile.bio && (
                 <div style={{ fontSize: 13, color: "#666", marginTop: 2 }}>
-                  {p.bio}
+                  {profile.bio}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Headline + description */}
-          {l.title && (
+          {link.title && (
             <h1
               style={{
                 fontSize: 28,
@@ -274,10 +281,10 @@ export default async function PrivateLinkPage({
                 lineHeight: 1.2,
               }}
             >
-              {l.title}
+              {link.title}
             </h1>
           )}
-          {l.description && (
+          {link.description && (
             <p
               style={{
                 fontSize: 15,
@@ -286,11 +293,10 @@ export default async function PrivateLinkPage({
                 lineHeight: 1.6,
               }}
             >
-              {l.description}
+              {link.description}
             </p>
           )}
 
-          {/* Booking form */}
           <div
             style={{
               background: "#fff",
@@ -302,12 +308,12 @@ export default async function PrivateLinkPage({
             <BookingLinkForm
               username={username}
               accent={accent}
-              prefillService={l.prefill_service}
-              prefillEventDate={l.prefill_event_date}
-              prefillBudgetMin={l.prefill_budget_min}
-              prefillBudgetMax={l.prefill_budget_max}
-              prefillMessage={l.prefill_message}
-              prefillLocation={l.prefill_location}
+              prefillService={link.prefill_service}
+              prefillEventDate={link.prefill_event_date}
+              prefillBudgetMin={link.prefill_budget_min}
+              prefillBudgetMax={link.prefill_budget_max}
+              prefillMessage={link.prefill_message}
+              prefillLocation={link.prefill_location}
               services={services}
             />
           </div>
@@ -318,32 +324,32 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── DOWNLOAD ─────────────────────────────────────────────────────────────
-  if (l.page_type === "download") {
+  // ─── DOWNLOAD ───────────────────────────────────────────────────────────────
+  if (pageType === "download") {
     return (
       <div style={shell}>
         <div style={container}>
-          {l.cover_image_url && (
+          {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={l.cover_image_url} alt={l.title ?? "Cover"} style={coverImg} />
+            <img src={link.cover_image_url} alt={link.title ?? "Cover"} style={coverImg} />
           )}
-          {l.title && (
+          {link.title && (
             <h1 style={{ fontSize: 26, fontWeight: 800, color: "#111", margin: "0 0 8px", lineHeight: 1.2 }}>
-              {l.title}
+              {link.title}
             </h1>
           )}
-          {l.description && (
+          {link.description && (
             <p style={{ fontSize: 15, color: "#555", margin: "0 0 16px", lineHeight: 1.6 }}>
-              {l.description}
+              {link.description}
             </p>
           )}
-          {l.price && (
+          {link.price && (
             <div style={{ fontSize: 24, fontWeight: 700, color: accent, marginBottom: 20 }}>
-              {l.price}
+              {link.price}
             </div>
           )}
-          {l.stripe_payment_link_url && (
-            <CtaButton href={l.stripe_payment_link_url} accent={accent}>
+          {link.stripe_payment_link_url && (
+            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
               Buy Now →
             </CtaButton>
           )}
@@ -353,36 +359,34 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── EVENT ────────────────────────────────────────────────────────────────
-  if (l.page_type === "event") {
-    const eventDateFormatted = formatEventDate(l.event_date);
-    const ticketUrl = l.stripe_payment_link_url ?? l.external_ticket_url;
-
+  // ─── EVENT ──────────────────────────────────────────────────────────────────
+  if (pageType === "event") {
+    const ticketUrl = link.stripe_payment_link_url ?? link.external_ticket_url;
     return (
       <div style={shell}>
         <div style={container}>
-          {l.cover_image_url && (
+          {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={l.cover_image_url} alt={l.event_name ?? "Event"} style={coverImg} />
+            <img src={link.cover_image_url} alt={link.event_name ?? "Event"} style={coverImg} />
           )}
-          {l.event_name && (
+          {link.event_name && (
             <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.2 }}>
-              {l.event_name}
+              {link.event_name}
             </h1>
           )}
-          {eventDateFormatted && (
+          {formatEventDate(link.event_date) && (
             <div style={{ fontSize: 15, fontWeight: 600, color: accent, marginBottom: 4 }}>
-              {eventDateFormatted}
+              {formatEventDate(link.event_date)}
             </div>
           )}
-          {(l.event_venue || l.event_city) && (
+          {(link.event_venue || link.event_city) && (
             <div style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
-              {[l.event_venue, l.event_city].filter(Boolean).join(" · ")}
+              {[link.event_venue, link.event_city].filter(Boolean).join(" · ")}
             </div>
           )}
-          {l.description && (
+          {link.description && (
             <p style={{ fontSize: 15, color: "#555", margin: "0 0 24px", lineHeight: 1.6 }}>
-              {l.description}
+              {link.description}
             </p>
           )}
           {ticketUrl && (
@@ -396,37 +400,37 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── MERCH ────────────────────────────────────────────────────────────────
-  if (l.page_type === "merch") {
+  // ─── MERCH ──────────────────────────────────────────────────────────────────
+  if (pageType === "merch") {
     return (
       <div style={shell}>
         <div style={container}>
-          {l.cover_image_url && (
+          {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={l.cover_image_url} alt={l.title ?? "Product"} style={coverImg} />
+            <img src={link.cover_image_url} alt={link.title ?? "Product"} style={coverImg} />
           )}
-          {l.title && (
+          {link.title && (
             <h1 style={{ fontSize: 26, fontWeight: 800, color: "#111", margin: "0 0 8px", lineHeight: 1.2 }}>
-              {l.title}
+              {link.title}
             </h1>
           )}
-          {l.description && (
+          {link.description && (
             <p style={{ fontSize: 15, color: "#555", margin: "0 0 12px", lineHeight: 1.6 }}>
-              {l.description}
+              {link.description}
             </p>
           )}
-          {l.price && (
+          {link.price && (
             <div style={{ fontSize: 24, fontWeight: 700, color: accent, marginBottom: 8 }}>
-              {l.price}
+              {link.price}
             </div>
           )}
-          {l.inventory_count != null && (
+          {link.inventory_count != null && (
             <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>
-              {l.inventory_count} remaining
+              {link.inventory_count} remaining
             </div>
           )}
-          {l.stripe_payment_link_url && (
-            <CtaButton href={l.stripe_payment_link_url} accent={accent}>
+          {link.stripe_payment_link_url && (
+            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
               Buy Now →
             </CtaButton>
           )}
@@ -436,12 +440,11 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── PRESS ────────────────────────────────────────────────────────────────
-  if (l.page_type === "press") {
+  // ─── PRESS ──────────────────────────────────────────────────────────────────
+  if (pageType === "press") {
     return (
       <div style={shell}>
         <div style={container}>
-          {/* Profile card */}
           <div
             style={{
               background: "#fff",
@@ -454,11 +457,11 @@ export default async function PrivateLinkPage({
               gap: 16,
             }}
           >
-            {p.avatar_url && (
+            {profile.avatar_url && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={p.avatar_url}
-                alt={p.name ?? username}
+                src={profile.avatar_url}
+                alt={profile.name ?? username}
                 style={{
                   width: 72,
                   height: 72,
@@ -470,36 +473,43 @@ export default async function PrivateLinkPage({
             )}
             <div>
               <div style={{ fontWeight: 800, fontSize: 20, color: "#111" }}>
-                {p.name ?? username}
+                {profile.name ?? username}
               </div>
-              {p.bio && (
+              {profile.bio && (
                 <div style={{ fontSize: 14, color: "#555", marginTop: 4, lineHeight: 1.5 }}>
-                  {p.bio}
+                  {profile.bio}
                 </div>
               )}
             </div>
           </div>
 
-          {l.description && (
+          {link.description && (
             <p style={{ fontSize: 15, color: "#555", margin: "0 0 24px", lineHeight: 1.6 }}>
-              {l.description}
+              {link.description}
             </p>
           )}
 
-          {/* Downloads */}
-          {l.file_path && (
+          {link.file_path && (
             <div style={{ marginBottom: 20 }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 10 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: "#888",
+                  marginBottom: 10,
+                }}
+              >
                 Downloads
-              </h2>
-              <CtaButton href={l.file_path} accent={accent}>
+              </div>
+              <CtaButton href={link.file_path} accent={accent}>
                 Download Press Kit →
               </CtaButton>
             </div>
           )}
 
-          {/* Contact */}
-          {p.email && (
+          {profile.email && (
             <div
               style={{
                 background: "#fff",
@@ -508,14 +518,23 @@ export default async function PrivateLinkPage({
                 boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
               }}
             >
-              <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: "#888",
+                  marginBottom: 4,
+                }}
+              >
                 Contact
               </div>
               <a
-                href={`mailto:${p.email}`}
+                href={`mailto:${profile.email}`}
                 style={{ fontSize: 15, fontWeight: 600, color: accent, textDecoration: "none" }}
               >
-                {p.email}
+                {profile.email}
               </a>
             </div>
           )}
@@ -526,6 +545,5 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // Fallback
   return notFound();
 }

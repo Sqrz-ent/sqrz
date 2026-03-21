@@ -38,6 +38,16 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
+const labelStyle: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.06em",
+  color: "#888",
+  marginBottom: 4,
+  display: "block",
+};
+
 export default function BookingLinkForm({
   username,
   accent,
@@ -53,8 +63,12 @@ export default function BookingLinkForm({
   const [email, setEmail] = useState("");
   const [service, setService] = useState(prefillService ?? "");
   const [eventDate, setEventDate] = useState(prefillEventDate ?? "");
-  const [budgetMin, setBudgetMin] = useState(prefillBudgetMin ? String(prefillBudgetMin) : "");
-  const [budgetMax, setBudgetMax] = useState(prefillBudgetMax ? String(prefillBudgetMax) : "");
+  const [budgetMin, setBudgetMin] = useState(
+    prefillBudgetMin ? String(prefillBudgetMin) : ""
+  );
+  const [budgetMax, setBudgetMax] = useState(
+    prefillBudgetMax ? String(prefillBudgetMax) : ""
+  );
   const [message, setMessage] = useState(prefillMessage ?? "");
   const [location, setLocation] = useState(prefillLocation ?? "");
   const [loading, setLoading] = useState(false);
@@ -75,19 +89,22 @@ export default function BookingLinkForm({
     setLoading(true);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc("create_booking_request", {
-        p_to_slug: username,
-        p_from_name: name,
-        p_from_email: email,
-        p_message: message,
-        p_service: service || null,
-        p_budget_min: budgetMin ? parseFloat(budgetMin) : null,
-        p_budget_max: budgetMax ? parseFloat(budgetMax) : null,
-        p_currency: "usd",
-        p_event_date: eventDate || null,
-        p_event_location: location || null,
-        p_source: "private_link",
-      });
+      const { data, error: rpcError } = await supabase.rpc(
+        "create_booking_request",
+        {
+          p_to_slug: username,
+          p_from_name: name,
+          p_from_email: email,
+          p_message: message,
+          p_service: service || null,
+          p_budget_min: budgetMin ? parseFloat(budgetMin) : null,
+          p_budget_max: budgetMax ? parseFloat(budgetMax) : null,
+          p_currency: "usd",
+          p_event_date: eventDate || null,
+          p_event_location: location || null,
+          p_source: "private_link",
+        }
+      );
 
       if (rpcError) throw rpcError;
 
@@ -128,11 +145,8 @@ export default function BookingLinkForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-      {/* Contact */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Your Name
-      </label>
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
+      <label style={labelStyle}>Your Name</label>
       <input
         type="text"
         placeholder="Jane Smith"
@@ -142,9 +156,7 @@ export default function BookingLinkForm({
         required
       />
 
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Your Email
-      </label>
+      <label style={labelStyle}>Your Email</label>
       <input
         type="email"
         placeholder="jane@example.com"
@@ -154,15 +166,12 @@ export default function BookingLinkForm({
         required
       />
 
-      {/* Service */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Service
-      </label>
+      <label style={labelStyle}>Service</label>
       {services.length > 0 ? (
         <select
           value={service}
           onChange={(e) => setService(e.target.value)}
-          style={{ ...inputStyle }}
+          style={inputStyle}
         >
           <option value="">Select a service…</option>
           {services.map((s) => (
@@ -181,10 +190,7 @@ export default function BookingLinkForm({
         />
       )}
 
-      {/* Event date */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Event Date
-      </label>
+      <label style={labelStyle}>Event Date</label>
       <input
         type="date"
         value={eventDate}
@@ -192,10 +198,7 @@ export default function BookingLinkForm({
         style={inputStyle}
       />
 
-      {/* Location */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Location
-      </label>
+      <label style={labelStyle}>Location</label>
       <input
         type="text"
         placeholder="City, Venue or Address"
@@ -204,11 +207,15 @@ export default function BookingLinkForm({
         style={inputStyle}
       />
 
-      {/* Budget */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Budget (USD)
-      </label>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+      <label style={labelStyle}>Budget (USD)</label>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 8,
+          marginBottom: 10,
+        }}
+      >
         <input
           type="number"
           placeholder="Min"
@@ -227,10 +234,7 @@ export default function BookingLinkForm({
         />
       </div>
 
-      {/* Message */}
-      <label style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "#888", marginBottom: 4 }}>
-        Message
-      </label>
+      <label style={labelStyle}>Message</label>
       <textarea
         placeholder="Tell us about your event or project…"
         value={message}
