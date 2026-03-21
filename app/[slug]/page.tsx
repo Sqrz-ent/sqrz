@@ -170,6 +170,10 @@ export default async function PrivateLinkPage({
 
   if (!profile) return notFound();
 
+  const profileAvatarSrc =
+    profile.avatar_url ||
+    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name ?? username)}&backgroundColor=F5A623&textColor=ffffff`;
+
   // 2. Find the active private link
   const { data: link } = await supabase
     .from("private_booking_links")
@@ -245,20 +249,18 @@ export default async function PrivateLinkPage({
               marginBottom: 24,
             }}
           >
-            {profile.avatar_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.avatar_url}
-                alt={profile.name ?? username}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={profileAvatarSrc}
+              alt={profile.name ?? username}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: "50%",
+                objectFit: "cover",
+                flexShrink: 0,
+              }}
+            />
             <div>
               <div style={{ fontWeight: 700, fontSize: 16, color: "#111" }}>
                 {profile.name ?? username}
@@ -457,20 +459,18 @@ export default async function PrivateLinkPage({
               gap: 16,
             }}
           >
-            {profile.avatar_url && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.avatar_url}
-                alt={profile.name ?? username}
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
-            )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={profileAvatarSrc}
+              alt={profile.name ?? username}
+              style={{
+                width: 72,
+                height: 72,
+                borderRadius: "50%",
+                objectFit: "cover",
+                flexShrink: 0,
+              }}
+            />
             <div>
               <div style={{ fontWeight: 800, fontSize: 20, color: "#111" }}>
                 {profile.name ?? username}
