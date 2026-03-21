@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import { supabase } from "@/lib/supabase";
 
 type CalendarEvent = {
   title: string;
@@ -10,47 +11,38 @@ type CalendarEvent = {
   end?: string;
 };
 
-export default function ProfileCalendar({
-  username,
-}: {
-username: string;
-}) {
+export default function ProfileCalendar({ username }: { username: string }) {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadEvents() {
       try {
-        const res = await fetch(
-`https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/calendar?username=${encodeURIComponent(username)}`
-        );
+        // Resolve profile id from slug
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("slug", username)
+          .single();
 
-        const data = await res.json();
+        if (!profile) return;
 
-        const mappedEvents: CalendarEvent[] = data
-          // ✅ only confirmed bookings
-          .filter((item: any) => item.status === "confirmed")
-          // ✅ extract nested job object under key "0"
-          .map((item: any) => {
-            const job = item["0"];
-            if (!job || !job.start) return null;
+        // Fetch confirmed bookings for this profile
+        const { data: bookings } = await supabase
+          .from("bookings")
+          .select("id, title, event_date, event_date_end, status")
+          .eq("owner_id", profile.id)
+          .eq("status", "confirmed");
 
-            const startDate = new Date(job.start);
-            const endDate =
-              job.end && job.end > 0 ? new Date(job.end) : null;
+        const mapped: CalendarEvent[] = (bookings ?? [])
+          .filter((b) => b.event_date)
+          .map((b) => ({
+            title: b.title || "Confirmed booking",
+            start: b.event_date,
+            end: b.event_date_end ?? undefined,
+          }));
 
-            return {
-              title: job.name || "Confirmed booking",
-              start: startDate.toISOString(),
-              // FullCalendar expects end to be exclusive
-              end: endDate
-                ? new Date(endDate.getTime() + 24 * 60 * 60 * 1000).toISOString()
-                : undefined,
-            };
-          })
-          .filter(Boolean); // remove nulls
-
-        setEvents(mappedEvents);
+        setEvents(mapped);
       } catch (err) {
         console.error("Calendar fetch failed", err);
       } finally {
@@ -61,29 +53,22 @@ username: string;
     loadEvents();
   }, [username]);
 
-  if (loading) {
-return <p className="text-muted mt-6">Loading dates…</p>;
-
-  }
-
-  if (events.length === 0) {
-return <p className="text-muted mt-6"></p>;
-  }
+  if (loading) return <p className="text-muted mt-6">Loading dates…</p>;
+  if (events.length === 0) return null;
 
   return (
-  <div className="profile-calendar" style={{ marginTop: 40 }}>
-    <FullCalendar
-      plugins={[dayGridPlugin]}
-      initialView="dayGridMonth"
-      events={events}
-      height="auto"
-      headerToolbar={{
-        left: "prev,next",
-        center: "title",
-        right: "",
-      }}
-    />
-  </div>
-);
-
+    <div className="profile-calendar" style={{ marginTop: 40 }}>
+      <FullCalendar
+        plugins={[dayGridPlugin]}
+        initialView="dayGridMonth"
+        events={events}
+        height="auto"
+        headerToolbar={{
+          left: "prev,next",
+          center: "title",
+          right: "",
+        }}
+      />
+    </div>
+  );
 }

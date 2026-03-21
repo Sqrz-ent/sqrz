@@ -52,15 +52,7 @@ async function getProfileByUsername(username: string) {
     .eq("slug", username)
     .single();
 
-  if (data) return data;
-
-  // Fallback: profile not yet migrated to Supabase
-  const res = await fetch(
-    `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile/${username}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) return null;
-  return res.json();
+  return data ?? null;
 }
 
 async function getProfileByDomain(domain: string) {
@@ -70,15 +62,7 @@ async function getProfileByDomain(domain: string) {
     .eq("custom_domain", domain)
     .single();
 
-  if (data) return data;
-
-  // Fallback: profile not yet migrated to Supabase
-  const res = await fetch(
-    `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profile-by-domain/${domain}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) return null;
-  return res.json();
+  return data ?? null;
 }
 
 async function getProfileFromHost(host: string) {
@@ -124,7 +108,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   const imageUrl =
     profile.og_image?.url ||
-    (profile.avatar_url && !profile.avatar_url.includes("xano.io") ? profile.avatar_url : null) ||
+    (profile.avatar_url && !String(profile.avatar_url).includes("placeholder.") ? profile.avatar_url : null) ||
     `${baseUrl}/og/default.png`;
 
    
@@ -239,8 +223,7 @@ const ticket = {
   const hasRealAvatar =
     profile.avatar_url &&
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
-    !String(profile.avatar_url).includes("placeholder.") &&
-    !String(profile.avatar_url).includes("xano.io");
+    !String(profile.avatar_url).includes("placeholder.");
 
   const avatarSrc = hasRealAvatar
     ? (profile.avatar_url as string)

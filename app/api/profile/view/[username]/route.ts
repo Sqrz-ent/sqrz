@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
+);
 
 export async function POST(
   req: Request,
@@ -6,19 +12,10 @@ export async function POST(
 ) {
   const { username } = await context.params;
 
-  console.log("View API hit for:", username);
-
-  const url = `https://xuwq-ib46-ag3b.f2.xano.io/api:ZUfHfBuE/profileCounter/${username}`;
-
-  console.log("Calling Xano:", url);
-
-  const res = await fetch(url, { method: "POST" });
-
-  console.log("Xano status:", res.status);
-
-  const text = await res.text();
-
-  console.log("Xano response:", text);
+  // Increment view_count on the profile row
+  await supabase.rpc("increment_profile_view_count", { p_slug: username }).catch(() => {
+    // RPC may not exist yet — fail silently so the profile page never breaks
+  });
 
   return NextResponse.json({ ok: true });
 }

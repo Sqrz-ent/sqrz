@@ -7,11 +7,8 @@ export default function Skills({ skills }: { skills: any[] }) {
 
       <div style={skillsWrap}>
         {skills.map((item, i) => {
-          // try all common Xano relation patterns
           const label =
             item?.skills?.name ||
-            item?.skill?.name ||
-            item?.skills_id?.name ||
             item?.name;
 
           if (!label) return null;
