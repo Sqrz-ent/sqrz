@@ -208,6 +208,9 @@ export default async function HomePage({
 
   // ── Non-blocking view logging (service role bypasses RLS) ──────────────────
   {
+    console.log("[views] service key exists:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
+    console.log("[views] url exists:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -216,14 +219,20 @@ export default async function HomePage({
     const session_id = params.sid || Math.random().toString(36).slice(2);
     const referrer = headersList.get("referer");
 
-    adminSupabase.from("profile_views").insert({
+    const { error: viewError } = await adminSupabase.from("profile_views").insert({
       profile_id: profile.id,
       session_id,
       utm_source: params.utm_source || params.ref || null,
       utm_medium: params.utm_medium || null,
       utm_campaign: params.utm_campaign || null,
       referrer: referrer || null,
-    }).then(() => {}).catch(() => {});
+    });
+
+    if (viewError) {
+      console.error("[views] insert failed:", viewError.message);
+    } else {
+      console.log("[views] insert succeeded for profile:", profile.id);
+    }
 
     adminSupabase.rpc("increment_profile_view_count", {
       p_slug: profile.slug,
