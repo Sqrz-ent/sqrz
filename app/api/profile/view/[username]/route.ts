@@ -13,9 +13,11 @@ export async function POST(
   const { username } = await context.params;
 
   // Increment view_count on the profile row
-  await supabase.rpc("increment_profile_view_count", { p_slug: username }).catch(() => {
-    // RPC may not exist yet — fail silently so the profile page never breaks
-  });
+  const { error } = await supabase.rpc("increment_profile_view_count", { p_slug: username });
+  if (error) {
+    // fail silently — profile page never breaks
+    console.log("[view] increment failed:", error.message);
+  }
 
   return NextResponse.json({ ok: true });
 }
