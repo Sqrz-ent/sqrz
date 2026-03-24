@@ -225,11 +225,17 @@ const ticket = {
   const hasRealAvatar =
     profile.avatar_url &&
     !profile.avatar_url.includes("placeholder") &&
-    profile.avatar_url.startsWith("http");
+    profile.avatar_url.startsWith("https") &&
+    !profile.avatar_url.includes("placeholder.sqrz");
 
-  const heroBackground = hasRealAvatar
-    ? `linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${profile.avatar_url})`
-    : `linear-gradient(135deg, #1a1a1a 0%, #2a1a00 50%, #111111 100%)`;
+  const heroStyle = {
+    backgroundImage: hasRealAvatar
+      ? `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%), url(${profile.avatar_url})`
+      : `linear-gradient(135deg, #1a1200 0%, #2d1f00 40%, #0d0d0d 100%)`,
+    backgroundSize: "cover",
+    backgroundPosition: "center top",
+    backgroundColor: "#111111",
+  };
 
   return (
     <>
@@ -294,20 +300,10 @@ const ticket = {
       <div
         style={{
           height: 480,
-          backgroundImage: heroBackground,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
           position: "relative",
+          ...heroStyle,
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.9))",
-          }}
-        />
 
         <div
           style={{
