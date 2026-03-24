@@ -1,5 +1,6 @@
 import React from "react";
 import { headers } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
@@ -205,21 +206,26 @@ export default async function HomePage({
 
   if (!profile) notFound();
 
-  // ── Non-blocking view logging ──────────────────────────────────────────────
+  // ── Non-blocking view logging (service role bypasses RLS) ──────────────────
   {
+    const adminSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
     const headersList = await headers();
     const session_id = params.sid || Math.random().toString(36).slice(2);
+    const referrer = headersList.get("referer");
 
-    supabase.from("profile_views").insert({
+    adminSupabase.from("profile_views").insert({
       profile_id: profile.id,
       session_id,
       utm_source: params.utm_source || params.ref || null,
       utm_medium: params.utm_medium || null,
       utm_campaign: params.utm_campaign || null,
-      referrer: headersList.get("referer") || null,
+      referrer: referrer || null,
     }).then(() => {}).catch(() => {});
 
-    supabase.rpc("increment_profile_view_count", {
+    adminSupabase.rpc("increment_profile_view_count", {
       p_slug: profile.slug,
     }).then(() => {}).catch(() => {});
   }
