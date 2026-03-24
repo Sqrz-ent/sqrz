@@ -41,6 +41,24 @@ import BandsintownWidget from "@/components/BandsintownWidget";
 
 export const revalidate = 0;
 
+function getProfileGradient(slug: string): string {
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = slug.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const gradients = [
+    "linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%)",
+    "linear-gradient(135deg, #1a0000 0%, #2d0000 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #0a1a0a 0%, #0d2b0d 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #1a1200 0%, #2d1f00 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #0a0a1a 0%, #1a0d2e 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #001a1a 0%, #002d2d 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #1a000d 0%, #2d0016 50%, #0d0d0d 100%)",
+    "linear-gradient(135deg, #0d1a00 0%, #1a2d00 50%, #0d0d0d 100%)",
+  ];
+  return gradients[Math.abs(hash) % gradients.length];
+}
+
 /* =========================
    DATA FETCHING
 ========================= */
@@ -230,8 +248,8 @@ const ticket = {
     !profile.avatar_url.includes("placeholder.sqrz");
 
   const heroBackground = hasRealAvatar
-    ? `url(${profile.avatar_url})`
-    : "linear-gradient(135deg, #F5A623 0%, #c17d0e 40%, #1a1a1a 100%)";
+    ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url})`
+    : getProfileGradient(profile.slug || "");
 
   const dicebearUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name || profile.slug)}&backgroundColor=F5A623&fontFamily=Arial&fontSize=40&textColor=ffffff`;
 
@@ -325,9 +343,15 @@ const ticket = {
           <img
             src={hasRealAvatar ? profile.avatar_url : dicebearUrl}
             alt={profile.name || profile.slug}
-            width={120}
-            height={120}
-            style={{ borderRadius: "50%", objectFit: "cover", marginBottom: 16 }}
+            width={160}
+            height={160}
+            style={{
+              borderRadius: "50%",
+              objectFit: "cover",
+              marginBottom: 16,
+              border: "3px solid rgba(255,255,255,0.2)",
+              background: "rgba(0,0,0,0.3)",
+            }}
           />
           <h1
             className="text-accent"
