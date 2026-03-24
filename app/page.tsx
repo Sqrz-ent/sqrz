@@ -231,7 +231,7 @@ export default async function HomePage({
 
     adminSupabase.rpc("increment_profile_view_count", {
       p_slug: profile.slug,
-    }).then(() => {}).catch(() => {});
+    }).then(() => {});
   }
 
   // Claim banner — verify token matches this profile and hasn't been claimed yet
