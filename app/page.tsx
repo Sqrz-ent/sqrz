@@ -251,7 +251,12 @@ const ticket = {
     ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url})`
     : getProfileGradient(profile.slug || "");
 
-  const dicebearUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name || profile.slug)}&backgroundColor=F5A623&fontFamily=Arial&fontSize=40&textColor=ffffff`;
+  const initials = (profile.name || profile.slug)
+    .split(" ")
+    .map((w: string) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   const heroStyle: React.CSSProperties = {
     height: 480,
@@ -324,6 +329,27 @@ const ticket = {
       {/* 🖼️ Profile Hero */}
       <div style={heroStyle}>
 
+        {!hasRealAvatar && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <span style={{
+              fontSize: "clamp(80px, 20vw, 160px)",
+              fontWeight: "800",
+              fontFamily: "Barlow Condensed, sans-serif",
+              color: "rgba(255,255,255,0.15)",
+              letterSpacing: "-0.02em",
+              userSelect: "none",
+            }}>
+              {initials}
+            </span>
+          </div>
+        )}
+
         <div
           style={{
             position: "relative",
@@ -339,20 +365,21 @@ const ticket = {
             margin: "0 auto",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={hasRealAvatar ? profile.avatar_url : dicebearUrl}
-            alt={profile.name || profile.slug}
-            width={160}
-            height={160}
-            style={{
-              borderRadius: "50%",
-              objectFit: "cover",
-              marginBottom: 16,
-              border: "3px solid rgba(255,255,255,0.2)",
-              background: "rgba(0,0,0,0.3)",
-            }}
-          />
+          {hasRealAvatar && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.avatar_url}
+              alt={profile.name || profile.slug}
+              width={160}
+              height={160}
+              style={{
+                borderRadius: "50%",
+                objectFit: "cover",
+                marginBottom: 16,
+                border: "3px solid rgba(255,255,255,0.2)",
+              }}
+            />
+          )}
           <h1
             className="text-accent"
             style={{ fontSize: 42, fontWeight: 700, marginBottom: 8 }}
