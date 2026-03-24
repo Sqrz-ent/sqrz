@@ -206,11 +206,8 @@ export default async function HomePage({
 
   if (!profile) notFound();
 
-  // ── Non-blocking view logging (service role bypasses RLS) ──────────────────
+  // ── View logging (debug mode — awaited so errors surface in Vercel logs) ────
   {
-    console.log("[views] service key exists:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-    console.log("[views] url exists:", !!process.env.NEXT_PUBLIC_SUPABASE_URL);
-
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -228,11 +225,9 @@ export default async function HomePage({
       referrer: referrer || null,
     });
 
-    if (viewError) {
-      console.error("[views] insert failed:", viewError.message);
-    } else {
-      console.log("[views] insert succeeded for profile:", profile.id);
-    }
+    console.log("[views] profile.id:", profile.id);
+    console.log("[views] insert error:", viewError?.message || "none");
+    console.log("[views] service key defined:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
     adminSupabase.rpc("increment_profile_view_count", {
       p_slug: profile.slug,
