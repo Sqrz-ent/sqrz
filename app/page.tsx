@@ -1,3 +1,4 @@
+import React from "react";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
@@ -228,7 +229,9 @@ const ticket = {
     profile.avatar_url.startsWith("https") &&
     !profile.avatar_url.includes("placeholder.sqrz");
 
-  const heroStyle = {
+  const heroStyle: React.CSSProperties = {
+    height: 480,
+    position: "relative",
     backgroundImage: hasRealAvatar
       ? `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%), url(${profile.avatar_url})`
       : `linear-gradient(135deg, #1a1200 0%, #2d1f00 40%, #0d0d0d 100%)`,
@@ -297,13 +300,7 @@ const ticket = {
 
 
       {/* 🖼️ Profile Hero */}
-      <div
-        style={{
-          height: 480,
-          position: "relative",
-          ...heroStyle,
-        }}
-      >
+      <div style={heroStyle}>
 
         <div
           style={{
