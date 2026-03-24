@@ -229,16 +229,19 @@ const ticket = {
     profile.avatar_url.startsWith("https") &&
     !profile.avatar_url.includes("placeholder.sqrz");
 
-  // updated 2026-03-21
+  const heroBackground = hasRealAvatar
+    ? `url(${profile.avatar_url})`
+    : "linear-gradient(135deg, #F5A623 0%, #c17d0e 40%, #1a1a1a 100%)";
+
+  const dicebearUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.name || profile.slug)}&backgroundColor=F5A623&fontFamily=Arial&fontSize=40&textColor=ffffff`;
+
   const heroStyle: React.CSSProperties = {
     height: 480,
     position: "relative",
-    backgroundImage: hasRealAvatar
-      ? `linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.85) 100%), url(${profile.avatar_url})`
-      : `linear-gradient(135deg, #1a0a00 0%, #2d1500 40%, #0d0d0d 100%)`,
+    backgroundImage: heroBackground,
     backgroundSize: "cover",
     backgroundPosition: "center top",
-    backgroundColor: "#111111",
+    backgroundColor: "#1a1a1a",
   };
 
   return (
@@ -318,6 +321,14 @@ const ticket = {
             margin: "0 auto",
           }}
         >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={hasRealAvatar ? profile.avatar_url : dicebearUrl}
+            alt={profile.name || profile.slug}
+            width={120}
+            height={120}
+            style={{ borderRadius: "50%", objectFit: "cover", marginBottom: 16 }}
+          />
           <h1
             className="text-accent"
             style={{ fontSize: 42, fontWeight: 700, marginBottom: 8 }}
