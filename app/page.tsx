@@ -213,12 +213,27 @@ export default async function HomePage({
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
     const headersList = await headers();
-    const session_id = params.sid || Math.random().toString(36).slice(2);
     const referrer = headersList.get("referer");
+
+    // Session ID from cookie for consistency across page loads
+    const cookieHeader = headersList.get("cookie") || "";
+    const sessionMatch = cookieHeader.match(/sqrz_session=([^;]+)/);
+    const session_id = sessionMatch?.[1] || params.sid || Math.random().toString(36).slice(2);
+
+    // Visitor fingerprint — non-reversible hash of UA + IP for deduplication
+    const userAgent = headersList.get("user-agent") || "";
+    const ip =
+      headersList.get("x-forwarded-for")?.split(",")[0] ||
+      headersList.get("x-real-ip") ||
+      "";
+    const visitor_fingerprint = Buffer.from(userAgent.slice(0, 50) + ip)
+      .toString("base64")
+      .slice(0, 16);
 
     const { error: viewError } = await adminSupabase.from("profile_views").insert({
       profile_id: profile.id,
       session_id,
+      visitor_fingerprint,
       utm_source: params.utm_source || params.ref || null,
       utm_medium: params.utm_medium || null,
       utm_campaign: params.utm_campaign || null,
