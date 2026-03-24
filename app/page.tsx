@@ -227,9 +227,7 @@ const ticket = {
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
     !String(profile.avatar_url).includes("placeholder.");
 
-  const avatarSrc = hasRealAvatar
-    ? (profile.avatar_url as string)
-    : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent((profile.name || profile.slug || "") as string)}&backgroundColor=F5A623&textColor=ffffff&fontSize=38`;
+  const avatarSrc = profile.avatar_url as string;
 
   return (
     <>

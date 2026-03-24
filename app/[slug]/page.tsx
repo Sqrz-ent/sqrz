@@ -15,6 +15,15 @@ const DEFAULT_ACCENT = "#F5A623";
 
 type PageType = "booking" | "download" | "event" | "merch" | "press";
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 // ─── Hostname → username (mirrors app/page.tsx) ──────────────────────────────
 
 function getUsernameFromHost(host: string): string | null {
@@ -177,9 +186,7 @@ export default async function PrivateLinkPage({
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
     !String(profile.avatar_url).includes("placeholder.");
 
-  const profileAvatarSrc = hasRealAvatar
-    ? (profile.avatar_url as string)
-    : `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent((profile.name ?? username) as string)}&backgroundColor=F5A623&textColor=ffffff&fontSize=38`;
+  const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
 
   // 2. Find the active private link
   const { data: link } = await supabase
@@ -256,18 +263,39 @@ export default async function PrivateLinkPage({
               marginBottom: 24,
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={profileAvatarSrc}
-              alt={profile.name ?? username}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                objectFit: "cover",
-                flexShrink: 0,
-              }}
-            />
+            {profileAvatarSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profileAvatarSrc}
+                alt={profile.name ?? username}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: "50%",
+                  background: "#F5A623",
+                  color: "white",
+                  fontSize: 18,
+                  fontWeight: 800,
+                  fontFamily: "Barlow Condensed, sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {getInitials(profile.name ?? username)}
+              </div>
+            )}
             <div>
               <div style={{ fontWeight: 700, fontSize: 16, color: "#111" }}>
                 {profile.name ?? username}
@@ -466,18 +494,39 @@ export default async function PrivateLinkPage({
               gap: 16,
             }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={profileAvatarSrc}
-              alt={profile.name ?? username}
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                objectFit: "cover",
-                flexShrink: 0,
-              }}
-            />
+            {profileAvatarSrc ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={profileAvatarSrc}
+                alt={profile.name ?? username}
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  objectFit: "cover",
+                  flexShrink: 0,
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: "50%",
+                  background: "#F5A623",
+                  color: "white",
+                  fontSize: 28,
+                  fontWeight: 800,
+                  fontFamily: "Barlow Condensed, sans-serif",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                {getInitials(profile.name ?? username)}
+              </div>
+            )}
             <div>
               <div style={{ fontWeight: 800, fontSize: 20, color: "#111" }}>
                 {profile.name ?? username}
