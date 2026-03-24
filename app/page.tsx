@@ -224,10 +224,12 @@ const ticket = {
 
   const hasRealAvatar =
     profile.avatar_url &&
-    !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
-    !String(profile.avatar_url).includes("placeholder.");
+    !profile.avatar_url.includes("placeholder") &&
+    profile.avatar_url.startsWith("http");
 
-  const avatarSrc = profile.avatar_url as string;
+  const heroBackground = hasRealAvatar
+    ? `linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7)), url(${profile.avatar_url})`
+    : `linear-gradient(135deg, #1a1a1a 0%, #2a1a00 50%, #111111 100%)`;
 
   return (
     <>
@@ -292,9 +294,7 @@ const ticket = {
       <div
         style={{
           height: 480,
-          backgroundImage: hasRealAvatar
-            ? `url(${avatarSrc})`
-            : "linear-gradient(135deg, #111, #000)",
+          backgroundImage: heroBackground,
           backgroundSize: "cover",
           backgroundPosition: "center",
           position: "relative",
