@@ -167,7 +167,16 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ preview?: string; username?: string; claim?: string }>;
+  searchParams: Promise<{
+    preview?: string;
+    username?: string;
+    claim?: string;
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    ref?: string;
+    sid?: string;
+  }>;
 }) {
   const params = await searchParams;
 
@@ -195,6 +204,25 @@ export default async function HomePage({
   }
 
   if (!profile) notFound();
+
+  // ── Non-blocking view logging ──────────────────────────────────────────────
+  {
+    const headersList = await headers();
+    const session_id = params.sid || Math.random().toString(36).slice(2);
+
+    supabase.from("profile_views").insert({
+      profile_id: profile.id,
+      session_id,
+      utm_source: params.utm_source || params.ref || null,
+      utm_medium: params.utm_medium || null,
+      utm_campaign: params.utm_campaign || null,
+      referrer: headersList.get("referer") || null,
+    }).then(() => {}).catch(() => {});
+
+    supabase.rpc("increment_profile_view_count", {
+      p_slug: profile.slug,
+    }).then(() => {}).catch(() => {});
+  }
 
   // Claim banner — verify token matches this profile and hasn't been claimed yet
   let showClaimBanner = false;
