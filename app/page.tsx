@@ -264,12 +264,14 @@ export default async function HomePage({
   }
 
 
-  const rawTemplateKey = profile.template_id;
+  // DB stores keys with hyphens (e.g. "dancer-light"); PROFILE_TEMPLATES uses underscores
+  const rawTemplateKey =
+    typeof profile.template_id === "string"
+      ? profile.template_id.replace(/-/g, "_")
+      : null;
 
   const templateKey: TemplateKey =
-    rawTemplateKey &&
-    typeof rawTemplateKey === "string" &&
-    rawTemplateKey in PROFILE_TEMPLATES
+    rawTemplateKey && rawTemplateKey in PROFILE_TEMPLATES
       ? (rawTemplateKey as TemplateKey)
       : DEFAULT_TEMPLATE;
 
