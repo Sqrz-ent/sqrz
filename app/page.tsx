@@ -382,27 +382,6 @@ const ticket = {
       {/* 🖼️ Profile Hero */}
       <div style={heroStyle}>
 
-        {!hasRealAvatar && (
-          <div style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}>
-            <span style={{
-              fontSize: "clamp(80px, 20vw, 160px)",
-              fontWeight: "800",
-              fontFamily: "Barlow Condensed, sans-serif",
-              color: "rgba(255,255,255,0.15)",
-              letterSpacing: "-0.02em",
-              userSelect: "none",
-            }}>
-              {initials}
-            </span>
-          </div>
-        )}
-
         <div
           style={{
             position: "relative",
@@ -418,7 +397,7 @@ const ticket = {
             margin: "0 auto",
           }}
         >
-          {hasRealAvatar && (
+          {hasRealAvatar ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={profile.avatar_url}
@@ -428,14 +407,38 @@ const ticket = {
               style={{
                 borderRadius: "50%",
                 objectFit: "cover",
-                marginBottom: 16,
+                marginBottom: 12,
                 border: "3px solid rgba(255,255,255,0.2)",
               }}
             />
+          ) : (
+            <div style={{
+              width: 100,
+              height: 100,
+              borderRadius: "50%",
+              background: "rgba(255,255,255,0.1)",
+              border: "2px solid rgba(255,255,255,0.2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 12,
+              flexShrink: 0,
+            }}>
+              <span style={{
+                fontSize: 36,
+                fontWeight: 800,
+                fontFamily: "Barlow Condensed, sans-serif",
+                color: "#F5A623",
+                letterSpacing: "-0.01em",
+                userSelect: "none",
+              }}>
+                {initials}
+              </span>
+            </div>
           )}
           <h1
             className="text-accent"
-            style={{ fontSize: 42, fontWeight: 700, marginBottom: 8 }}
+            style={{ fontSize: 42, fontWeight: 700, marginBottom: 6 }}
           >
             {profile.display_name || profile.name || profile.slug}
           </h1>
