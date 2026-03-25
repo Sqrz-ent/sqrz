@@ -3,6 +3,9 @@
   background: #111111;
   color: #ffffff;
   --accent-color: #fd69d1;
+  --surface-color: #1e1e1e;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
 }
 
 

@@ -29,11 +29,11 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
   const [country, setCountry] = useState("");
-  const [projectTitle, setProjectTitle] = useState(""); 
+  const [projectTitle, setProjectTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
- 
+
   // ✅ MUST be here — before any return
   useEffect(() => {
     if (!open) return;
@@ -149,31 +149,14 @@ function nextFromStep2() {
           </p>
         ) : (
           services.map((service) => (
-            <button
+            <ServiceCard
               key={service.id}
-              type="button"
+              service={service}
               onClick={() => {
                 setSelectedService(service);
                 setStep(1);
               }}
-
-              style={{
-                ...inputStyle,
-                textAlign: "left",
-                cursor: "pointer",
-              }}
-            >
-              <strong>{service.title}</strong>
-
-           <div style={{ opacity: 0.7, fontSize: 13 }}>
-  {getServicePriceLabel(service)}
-</div>
-
-
-
-
-
-            </button>
+            />
           ))
         )}
       </>
@@ -216,7 +199,6 @@ function nextFromStep2() {
           {/* STEP 2 */}
           {step === 2 && (
             <>
-              {/* Project name (optional) */}
                <input
       type="text"
       placeholder="Project name"
@@ -355,7 +337,7 @@ function nextFromStep2() {
 )}
 
         </form>
-</div> 
+</div>
 
 {/* Step indicator (bottom of modal) */}
 <p
@@ -366,13 +348,43 @@ function nextFromStep2() {
     transform: "translateX(-50%)",
     opacity: 0.5,
     fontSize: 13,
+    whiteSpace: "nowrap",
   }}
 >
-  Step {step} of 4
+  Step {step + 1} of 4
 </p>
 
       </div>
     </div>
+  );
+}
+
+// ─── Service card with hover ───────────────────────────────────────────────────
+
+function ServiceCard({ service, onClick }: { service: Service; onClick: () => void }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...inputStyle,
+        textAlign: "left",
+        cursor: "pointer",
+        background: "var(--surface-color, #242424)",
+        border: hovered
+          ? `1px solid var(--accent-color, #F3B130)`
+          : `1px solid var(--border-color, rgba(255,255,255,0.08))`,
+        transition: "border-color 0.15s",
+      }}
+    >
+      <strong>{service.title}</strong>
+      <div style={{ opacity: 0.7, fontSize: 13 }}>
+        {getServicePriceLabel(service)}
+      </div>
+    </button>
   );
 }
 
@@ -389,7 +401,8 @@ const overlayStyle = {
 };
 
 const modalStyle = {
-  background: "#111",
+  background: "var(--surface-color, #1a1a1a)",
+  borderTop: "3px solid var(--accent-color, #F3B130)",
   padding: 24,
   borderRadius: 16,
   width: "100%",
@@ -398,7 +411,7 @@ const modalStyle = {
   color: "#fff",
   position: "relative" as const,
   transition: "min-height 0.2s ease",
-  display: "flex",              // 👈 ADD
+  display: "flex",
   flexDirection: "column" as const,
 };
 
@@ -408,7 +421,7 @@ const closeStyle = {
   right: 12,
   background: "transparent",
   border: "none",
-  color: "#fff",
+  color: "var(--text-muted, rgba(255,255,255,0.6))",
   fontSize: 18,
   cursor: "pointer",
 };
@@ -418,8 +431,8 @@ const inputStyle = {
   padding: "12px 14px",
   marginBottom: 12,
   borderRadius: 8,
-  border: "1px solid #333",
-  background: "#000",
+  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
+  background: "rgba(0,0,0,0.3)",
   color: "#fff",
 };
 
@@ -440,7 +453,7 @@ const submitStyle = {
   padding: "12px 14px",
   borderRadius: 10,
   border: "none",
-  background: "var(--accent-color)",
+  background: "var(--accent-color, #F3B130)",
   color: "#000",
   fontWeight: 600,
   cursor: "pointer",
@@ -449,9 +462,9 @@ const submitStyle = {
 const secondaryButtonStyle = {
   padding: "12px 14px",
   borderRadius: 10,
-  border: "1px solid #333",
-  background: "#000",
-  color: "#fff",
+  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
+  background: "transparent",
+  color: "var(--text-muted, rgba(255,255,255,0.6))",
   cursor: "pointer",
 };
 
