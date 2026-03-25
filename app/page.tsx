@@ -65,7 +65,7 @@ function getProfileGradient(slug: string): string {
 ========================= */
 
 
-import { supabase } from "@/lib/supabase";
+import { supabaseServer as supabase } from "@/lib/supabase-server";
 
 async function getProfileByUsername(username: string) {
   const { data } = await supabase

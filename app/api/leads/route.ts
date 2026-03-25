@@ -7,6 +7,14 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(request: Request) {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("[api/leads] Missing env vars:", {
+      url: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      key: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    });
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
+
   try {
     const { profile_id, visitor_name, visitor_email, message, budget } =
       await request.json();
