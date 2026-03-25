@@ -29,7 +29,7 @@ import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
-import LeadCapture from "@/components/LeadCapture";
+import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import CtaCarousel from "@/components/CtaCarousel";
 import BandsintownWidget from "@/components/BandsintownWidget";
@@ -520,11 +520,9 @@ const ticket = {
 
 
 
-       <LeadCapture
-        profileId={profile.id}
-        username={profile.slug}
-        title="Book with a first-time discount"
-        subline="Share your email to receive a special offer and connect directly with this creator"
+       <ChatBubble
+        profileId={profile.id as string}
+        profileName={(profile.display_name || profile.name || profile.slug) as string}
         />
 
          
