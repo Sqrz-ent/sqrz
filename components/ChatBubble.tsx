@@ -169,7 +169,7 @@ export default function ChatBubble({
                   style={{
                     marginTop: 4,
                     padding: "11px",
-                    background: "#F3B130",
+                    background: "var(--accent-color, #F3B130)",
                     color: "#111111",
                     border: "none",
                     borderRadius: 10,
@@ -199,7 +199,7 @@ export default function ChatBubble({
           width: 56,
           height: 56,
           borderRadius: "50%",
-          background: "#F3B130",
+          background: "var(--accent-color, #F3B130)",
           border: "none",
           cursor: "pointer",
           display: "flex",

@@ -416,7 +416,7 @@ const ticket = {
                 fontSize: 36,
                 fontWeight: 800,
                 fontFamily: "Barlow Condensed, sans-serif",
-                color: "#F5A623",
+                color: "var(--accent-color, #F3B130)",
                 letterSpacing: "-0.01em",
                 userSelect: "none",
               }}>
@@ -438,6 +438,7 @@ const ticket = {
               display: "flex",
               justifyContent: "center",
               gap: 16,
+              color: "var(--accent-color, #F3B130)",
             }}
           >
             {profile.social_facebook && (
