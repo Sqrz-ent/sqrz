@@ -397,21 +397,7 @@ const ticket = {
             margin: "0 auto",
           }}
         >
-          {hasRealAvatar ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profile.avatar_url}
-              alt={profile.name || profile.slug}
-              width={160}
-              height={160}
-              style={{
-                borderRadius: "50%",
-                objectFit: "cover",
-                marginBottom: 12,
-                border: "3px solid rgba(255,255,255,0.2)",
-              }}
-            />
-          ) : (
+          {!hasRealAvatar && (
             <div style={{
               width: 100,
               height: 100,
