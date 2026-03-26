@@ -1,0 +1,32 @@
+/* Midnight template */
+.tpl-midnight {
+  background: #0a0a0a;
+  color: #ffffff;
+  --accent-color: #F3B130;
+  --surface-color: #1a1a1a;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(255, 255, 255, 0.08);
+}
+
+.tpl-midnight .profile-calendar .fc {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-today-bg-color: rgba(243, 177, 48, 0.15);
+
+  --fc-button-bg-color: #111;
+  --fc-button-text-color: #fff;
+  --fc-button-hover-bg-color: #1a1a1a;
+  --fc-button-active-bg-color: var(--accent-color);
+}
+
+.tpl-midnight .profile-calendar .fc-toolbar-title {
+  color: #fff;
+}
+
+.tpl-midnight .profile-calendar .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tpl-midnight .profile-calendar .fc-event {
+  background: var(--accent-color);
+  color: #000;
+}

@@ -1,0 +1,32 @@
+/* Studio template */
+.tpl-studio {
+  background: #080f1a;
+  color: #ffffff;
+  --accent-color: #38BDF8;
+  --surface-color: #162030;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(56, 189, 248, 0.15);
+}
+
+.tpl-studio .profile-calendar .fc {
+  --fc-border-color: rgba(56, 189, 248, 0.15);
+  --fc-today-bg-color: rgba(56, 189, 248, 0.1);
+
+  --fc-button-bg-color: #162030;
+  --fc-button-text-color: #fff;
+  --fc-button-hover-bg-color: #1e2d40;
+  --fc-button-active-bg-color: var(--accent-color);
+}
+
+.tpl-studio .profile-calendar .fc-toolbar-title {
+  color: #fff;
+}
+
+.tpl-studio .profile-calendar .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tpl-studio .profile-calendar .fc-event {
+  background: var(--accent-color);
+  color: #000;
+}

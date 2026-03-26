@@ -1,0 +1,32 @@
+/* Neon template */
+.tpl-neon {
+  background: #0d0d1a;
+  color: #ffffff;
+  --accent-color: #A855F7;
+  --surface-color: #1a1a24;
+  --text-muted: rgba(255, 255, 255, 0.6);
+  --border-color: rgba(168, 85, 247, 0.15);
+}
+
+.tpl-neon .profile-calendar .fc {
+  --fc-border-color: rgba(168, 85, 247, 0.15);
+  --fc-today-bg-color: rgba(168, 85, 247, 0.12);
+
+  --fc-button-bg-color: #1a1a24;
+  --fc-button-text-color: #fff;
+  --fc-button-hover-bg-color: #24243a;
+  --fc-button-active-bg-color: var(--accent-color);
+}
+
+.tpl-neon .profile-calendar .fc-toolbar-title {
+  color: #fff;
+}
+
+.tpl-neon .profile-calendar .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tpl-neon .profile-calendar .fc-event {
+  background: var(--accent-color);
+  color: #fff;
+}

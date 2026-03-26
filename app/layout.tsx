@@ -3,9 +3,9 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 // Template CSS (loaded once)
-import "./templates/tech-clean.css";
-import "./templates/dj-dark.css";
-import "./templates/dancer-light.css";
+import "./templates/midnight.css";
+import "./templates/neon.css";
+import "./templates/studio.css";
 
 import Script from "next/script";
 

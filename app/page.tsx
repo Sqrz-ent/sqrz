@@ -23,6 +23,7 @@ import Experience from "@/components/Experience";
 import {
   PROFILE_TEMPLATES,
   DEFAULT_TEMPLATE,
+  LEGACY_TEMPLATE_MAP,
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
@@ -264,16 +265,19 @@ export default async function HomePage({
   }
 
 
-  // DB stores keys with hyphens (e.g. "dancer-light"); PROFILE_TEMPLATES uses underscores
-  const rawTemplateKey =
-    typeof profile.template_id === "string"
-      ? profile.template_id.replace(/-/g, "_")
-      : null;
-
-  const templateKey: TemplateKey =
-    rawTemplateKey && rawTemplateKey in PROFILE_TEMPLATES
-      ? (rawTemplateKey as TemplateKey)
-      : DEFAULT_TEMPLATE;
+  // Resolve template key: handle new names, legacy hyphens, and legacy key names
+  const rawTemplateKey = typeof profile.template_id === "string" ? profile.template_id : null;
+  const templateKey: TemplateKey = (() => {
+    if (!rawTemplateKey) return DEFAULT_TEMPLATE;
+    // Direct match (new keys: midnight, neon, studio)
+    if (rawTemplateKey in PROFILE_TEMPLATES) return rawTemplateKey as TemplateKey;
+    // Legacy key match (dj-dark, dancer-light, tech-clean, underscore variants)
+    if (rawTemplateKey in LEGACY_TEMPLATE_MAP) return LEGACY_TEMPLATE_MAP[rawTemplateKey];
+    // Underscore-normalized legacy (dj_dark, dancer_light, tech_clean)
+    const normalized = rawTemplateKey.replace(/-/g, "_");
+    if (normalized in LEGACY_TEMPLATE_MAP) return LEGACY_TEMPLATE_MAP[normalized];
+    return DEFAULT_TEMPLATE;
+  })();
 
   const template = PROFILE_TEMPLATES[templateKey];
 

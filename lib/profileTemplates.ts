@@ -1,22 +1,38 @@
 export const PROFILE_TEMPLATES = {
-  tech_clean: {
-    bodyClass: "tpl-tech-clean",
-    headlineFont: "font-inter",
-    label: "Technician / Crew",
-  },
-  dj_dark: {
-    bodyClass: "tpl-dj-dark",
+  midnight: {
+    bodyClass: "tpl-midnight",
     headlineFont: "font-grotesk",
-    label: "DJ / Music Artist",
+    label: "Midnight",
+    accent: "#F3B130",
+    bg: "#0a0a0a",
   },
-  dancer_light: {
-    bodyClass: "tpl-dancer-light",
+  neon: {
+    bodyClass: "tpl-neon",
     headlineFont: "font-playfair",
-    label: "Dancer / Performer",
+    label: "Neon",
+    accent: "#A855F7",
+    bg: "#0d0d1a",
+  },
+  studio: {
+    bodyClass: "tpl-studio",
+    headlineFont: "font-inter",
+    label: "Studio",
+    accent: "#38BDF8",
+    bg: "#080f1a",
   },
 } as const;
 
-// 👇 THIS is the key part
 export type TemplateKey = keyof typeof PROFILE_TEMPLATES;
 
-export const DEFAULT_TEMPLATE: TemplateKey = "tech_clean";
+export const DEFAULT_TEMPLATE: TemplateKey = "midnight";
+
+// Legacy key mapping (DB may still have old values)
+export const LEGACY_TEMPLATE_MAP: Record<string, TemplateKey> = {
+  dj_dark: "midnight",
+  dj_dark_normalized: "midnight",
+  "dj-dark": "midnight",
+  dancer_light: "neon",
+  "dancer-light": "neon",
+  tech_clean: "studio",
+  "tech-clean": "studio",
+};
