@@ -32,7 +32,6 @@ import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
-import CtaCarousel from "@/components/CtaCarousel";
 import BandsintownWidget from "@/components/BandsintownWidget";
 
 
@@ -264,6 +263,16 @@ export default async function HomePage({
     if (claimValid) showClaimBanner = true;
   }
 
+
+  // Fetch active private links for this profile
+  const { data: privateLinksData } = await supabase
+    .from("private_booking_links")
+    .select("link_slug, title")
+    .eq("profile_id", profile.id as string)
+    .eq("is_active", true)
+    .order("created_at", { ascending: true });
+
+  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string }[];
 
   // Fetch confirmed bookings server-side (bypass RLS via supabaseServer)
   const { data: confirmedBookings } = await supabase
@@ -551,7 +560,36 @@ const ticket = {
       >
         {profile.bio && <p>{profile.bio}</p>}
 
-        {profile.links?.length > 0 && <CtaCarousel links={profile.links} />}
+        {privateLinks.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Links</h2>
+            {privateLinks.map((pl) => (
+              <a
+                key={pl.link_slug}
+                href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "14px 18px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  background: "rgba(255,255,255,0.04)",
+                  textDecoration: "none",
+                  color: "inherit",
+                  fontWeight: 500,
+                  fontSize: 15,
+                  transition: "background 0.15s",
+                }}
+              >
+                <span>{pl.title}</span>
+                <span style={{ opacity: 0.5, marginLeft: 12 }}>→</span>
+              </a>
+            ))}
+          </div>
+        )}
 
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
