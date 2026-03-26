@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { getYouTubeEmbedUrl } from "@/lib/youtube";
 
-const INITIAL_SHOW = 2;
+const INITIAL_SHOW = 4;
 
 type VideoItem = {
   title?: string;
