@@ -270,6 +270,7 @@ export default async function HomePage({
     .select("link_slug, title")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
+    .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
   const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string }[];
