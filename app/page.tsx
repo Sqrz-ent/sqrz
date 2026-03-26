@@ -472,8 +472,8 @@ const ticket = {
       {/* Analytics */}
 
       <div
+        className="profile-content"
         style={{
-          maxWidth: 520,
           margin: "0 auto",
           borderRadius: 16,
           padding: 32,

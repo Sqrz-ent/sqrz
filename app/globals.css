@@ -91,6 +91,16 @@ body {
 
 
 
+.profile-content {
+  max-width: 520px;
+}
+
+@media (min-width: 768px) {
+  .profile-content {
+    max-width: 680px;
+  }
+}
+
 .text-primary {
   color: inherit;
 }

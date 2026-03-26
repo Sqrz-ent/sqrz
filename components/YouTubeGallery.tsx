@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { getYouTubeEmbedUrl } from "@/lib/youtube";
 
+const INITIAL_SHOW = 2;
+
 type VideoItem = {
   title?: string;
   url: string;
@@ -16,12 +18,13 @@ export default function YouTubeGallery({
   if (!videos || videos.length === 0) return null;
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showAll, setShowAll] = useState(false);
 
-  const activeEmbed = getYouTubeEmbedUrl(
-    videos[activeIndex].url
-  );
-
+  const activeEmbed = getYouTubeEmbedUrl(videos[activeIndex].url);
   if (!activeEmbed) return null;
+
+  const visibleVideos = showAll ? videos : videos.slice(0, INITIAL_SHOW);
+  const hiddenCount = videos.length - INITIAL_SHOW;
 
   return (
     <div style={{ marginTop: 32 }}>
@@ -47,7 +50,7 @@ export default function YouTubeGallery({
 
       {/* 📃 VIDEO LIST */}
       <div style={{ marginTop: 16, textAlign: "left" }}>
-        {videos.map((video, index) => (
+        {visibleVideos.map((video, index) => (
           <button
             key={index}
             onClick={() => setActiveIndex(index)}
@@ -69,6 +72,28 @@ export default function YouTubeGallery({
             {video.title || `Video ${index + 1}`}
           </button>
         ))}
+
+        {!showAll && hiddenCount > 0 && (
+          <button
+            onClick={() => setShowAll(true)}
+            style={{
+              display: "block",
+              width: "100%",
+              marginTop: 4,
+              padding: "10px 14px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.12)",
+              background: "transparent",
+              color: "rgba(255,255,255,0.5)",
+              fontSize: 13,
+              cursor: "pointer",
+              textAlign: "center",
+              fontFamily: "inherit",
+            }}
+          >
+            Load {hiddenCount} more video{hiddenCount !== 1 ? "s" : ""}
+          </button>
+        )}
       </div>
     </div>
   );
