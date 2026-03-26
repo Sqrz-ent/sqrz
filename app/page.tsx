@@ -265,6 +265,20 @@ export default async function HomePage({
   }
 
 
+  // Fetch confirmed bookings server-side (bypass RLS via supabaseServer)
+  const { data: confirmedBookings } = await supabase
+    .from("bookings")
+    .select("id, title, date_start, date_end")
+    .eq("owner_id", profile.id as string)
+    .eq("status", "confirmed")
+    .not("date_start", "is", null);
+
+  const bookingEvents = (confirmedBookings ?? []).map((b: Record<string, unknown>) => ({
+    title: (b.title as string) || "Confirmed booking",
+    start: b.date_start as string,
+    end: (b.date_end as string | null) ?? undefined,
+  }));
+
   // Resolve template key: handle new names, legacy hyphens, and legacy key names
   const rawTemplateKey = typeof profile.template_id === "string" ? profile.template_id : null;
   const templateKey: TemplateKey = (() => {
@@ -574,9 +588,9 @@ const ticket = {
           <Experience jobs={profile.profile_references} />
         )}
 
-        {profile.slug && (
+        {(bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0) && (
           <ProfileCalendar
-            username={profile.slug}
+            bookingEvents={bookingEvents}
             availabilityBlocks={profile.availability_blocks ?? []}
           />
         )}
