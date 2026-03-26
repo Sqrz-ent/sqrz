@@ -27,7 +27,8 @@ export default function ProfileCalendar({
   username: string;
   availabilityBlocks?: AvailabilityBlock[];
 }) {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [events, setEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,30 +46,32 @@ export default function ProfileCalendar({
         // Fetch confirmed bookings for this profile
         const { data: bookings } = await supabase
           .from("bookings")
-          .select("id, title, event_date, event_date_end, status")
+          .select("id, title, date_start, date_end, status")
           .eq("owner_id", profile.id)
           .eq("status", "confirmed");
 
+        console.log("calendar bookings raw:", bookings);
+
         const mapped: CalendarEvent[] = (bookings ?? [])
-          .filter((b) => b.event_date)
+          .filter((b) => b.date_start)
           .map((b) => ({
             title: b.title || "Confirmed booking",
-            start: b.event_date,
-            end: b.event_date_end ?? undefined,
+            start: b.date_start,
+            end: b.date_end ?? undefined,
           }));
 
         // Add availability blocks as grey background events
-        const blockEvents: CalendarEvent[] = availabilityBlocks.map((block) => ({
+        const blockEvents = availabilityBlocks.map((block) => ({
           title: block.label || "Unavailable",
           start: block.start_date,
-          // FullCalendar end dates for all-day events are exclusive, add 1 day
+          // FullCalendar all-day end dates are exclusive — add 1 day
           end: (() => {
             const d = new Date(block.end_date);
             d.setDate(d.getDate() + 1);
             return d.toISOString().slice(0, 10);
           })(),
-          color: "#555555",
-          textColor: "#aaaaaa",
+          display: "background" as const,
+          color: "#666666",
         }));
 
         setEvents([...mapped, ...blockEvents]);
