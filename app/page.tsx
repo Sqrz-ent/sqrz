@@ -268,7 +268,7 @@ export default async function HomePage({
   // Fetch confirmed bookings server-side (bypass RLS via supabaseServer)
   const { data: confirmedBookings } = await supabase
     .from("bookings")
-    .select("id, title, date_start, date_end")
+    .select("id, title, date_start, date_end, show_label")
     .eq("owner_id", profile.id as string)
     .eq("status", "confirmed")
     .not("date_start", "is", null);
@@ -277,6 +277,7 @@ export default async function HomePage({
     title: (b.title as string) || "Confirmed booking",
     start: b.date_start as string,
     end: (b.date_end as string | null) ?? undefined,
+    show_label: (b.show_label as boolean | null) ?? false,
   }));
 
   // Resolve template key: handle new names, legacy hyphens, and legacy key names

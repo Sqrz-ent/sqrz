@@ -3,10 +3,15 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 
+const EVENT_BG = "rgba(243, 177, 48, 0.2)";
+const EVENT_BORDER = "rgba(243, 177, 48, 0.35)";
+const EVENT_TEXT = "rgba(243, 177, 48, 0.7)";
+
 type BookingEvent = {
-  title: string;
+  title: string | null;
   start: string;
   end?: string;
+  show_label?: boolean | null;
 };
 
 type AvailabilityBlock = {
@@ -14,6 +19,7 @@ type AvailabilityBlock = {
   start_date: string;
   end_date: string;
   label: string | null;
+  show_label?: boolean | null;
 };
 
 export default function ProfileCalendar({
@@ -25,8 +31,17 @@ export default function ProfileCalendar({
 }) {
   if (bookingEvents.length === 0 && availabilityBlocks.length === 0) return null;
 
+  const mappedBookings = bookingEvents.map((b) => ({
+    title: b.show_label ? (b.title || "Booked") : "Unavailable",
+    start: b.start,
+    end: b.end,
+    backgroundColor: EVENT_BG,
+    borderColor: EVENT_BORDER,
+    textColor: EVENT_TEXT,
+  }));
+
   const blockEvents = availabilityBlocks.map((block) => ({
-    title: block.label || "Unavailable",
+    title: block.show_label ? (block.label || "Unavailable") : "Unavailable",
     start: block.start_date,
     // FullCalendar all-day end dates are exclusive — add 1 day
     end: (() => {
@@ -34,11 +49,12 @@ export default function ProfileCalendar({
       d.setDate(d.getDate() + 1);
       return d.toISOString().slice(0, 10);
     })(),
-    display: "background" as const,
-    color: "#666666",
+    backgroundColor: EVENT_BG,
+    borderColor: EVENT_BORDER,
+    textColor: EVENT_TEXT,
   }));
 
-  const allEvents = [...bookingEvents, ...blockEvents];
+  const allEvents = [...mappedBookings, ...blockEvents];
 
   return (
     <div className="profile-calendar" style={{ marginTop: 40 }}>
