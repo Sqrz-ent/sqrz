@@ -71,7 +71,7 @@ import { supabaseServer as supabase } from "@/lib/supabase-server";
 async function getProfileByUsername(username: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*)")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
     .eq("slug", username)
     .single();
 
@@ -81,7 +81,7 @@ async function getProfileByUsername(username: string) {
 async function getProfileByDomain(domain: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*)")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
     .eq("custom_domain", domain)
     .single();
 
@@ -435,6 +435,57 @@ const ticket = {
             {profile.display_name || profile.name || profile.slug}
           </h1>
 
+          {/* Availability badge */}
+          {(() => {
+            const status = profile.availability_status as string | null;
+            if (!status || status === "available") return (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 12px",
+                borderRadius: 20,
+                background: "rgba(34,197,94,0.15)",
+                border: "1px solid rgba(34,197,94,0.3)",
+                marginBottom: 8,
+              }}>
+                <span style={{ fontSize: 8, lineHeight: 1 }}>🟢</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#4ade80" }}>Available for bookings</span>
+              </div>
+            );
+            if (status === "limited") return (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 12px",
+                borderRadius: 20,
+                background: "rgba(234,179,8,0.15)",
+                border: "1px solid rgba(234,179,8,0.3)",
+                marginBottom: 8,
+              }}>
+                <span style={{ fontSize: 8, lineHeight: 1 }}>🟡</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#facc15" }}>Limited availability</span>
+              </div>
+            );
+            if (status === "unavailable") return (
+              <div style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "4px 12px",
+                borderRadius: 20,
+                background: "rgba(239,68,68,0.15)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                marginBottom: 8,
+              }}>
+                <span style={{ fontSize: 8, lineHeight: 1 }}>🔴</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#f87171" }}>Not taking bookings</span>
+              </div>
+            );
+            return null;
+          })()}
+
           <div
             className="social-bar"
             style={{
@@ -523,7 +574,12 @@ const ticket = {
           <Experience jobs={profile.profile_references} />
         )}
 
-        {profile.slug && <ProfileCalendar username={profile.slug} />}
+        {profile.slug && (
+          <ProfileCalendar
+            username={profile.slug}
+            availabilityBlocks={profile.availability_blocks ?? []}
+          />
+        )}
 
 
 
