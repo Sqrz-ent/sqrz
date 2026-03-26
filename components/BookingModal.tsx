@@ -373,10 +373,10 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
         ...inputStyle,
         textAlign: "left",
         cursor: "pointer",
-        background: "var(--surface-color, #242424)",
+        background: "#f5f5f5",
         border: hovered
           ? `1px solid var(--accent-color, #F3B130)`
-          : `1px solid var(--border-color, rgba(255,255,255,0.08))`,
+          : `1px solid #e0e0e0`,
         transition: "border-color 0.15s",
       }}
     >
@@ -401,14 +401,14 @@ const overlayStyle = {
 };
 
 const modalStyle = {
-  background: "var(--surface-color, #1a1a1a)",
+  background: "#ffffff",
   borderTop: "3px solid var(--accent-color, #F3B130)",
   padding: 24,
   borderRadius: 16,
   width: "100%",
   maxWidth: 420,
   minHeight: 520,
-  color: "#fff",
+  color: "#111111",
   position: "relative" as const,
   transition: "min-height 0.2s ease",
   display: "flex",
@@ -421,7 +421,7 @@ const closeStyle = {
   right: 12,
   background: "transparent",
   border: "none",
-  color: "var(--text-muted, rgba(255,255,255,0.6))",
+  color: "#666666",
   fontSize: 18,
   cursor: "pointer",
 };
@@ -431,9 +431,9 @@ const inputStyle = {
   padding: "12px 14px",
   marginBottom: 12,
   borderRadius: 8,
-  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
-  background: "rgba(0,0,0,0.3)",
-  color: "#fff",
+  border: "1px solid #e0e0e0",
+  background: "#f5f5f5",
+  color: "#111111",
 };
 
 const textareaStyle = {
@@ -462,9 +462,9 @@ const submitStyle = {
 const secondaryButtonStyle = {
   padding: "12px 14px",
   borderRadius: 10,
-  border: "1px solid var(--border-color, rgba(255,255,255,0.08))",
+  border: "1px solid #e0e0e0",
   background: "transparent",
-  color: "var(--text-muted, rgba(255,255,255,0.6))",
+  color: "#666666",
   cursor: "pointer",
 };
 

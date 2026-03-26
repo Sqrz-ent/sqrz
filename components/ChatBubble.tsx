@@ -44,9 +44,9 @@ export default function ChatBubble({
     padding: "10px 12px",
     fontSize: 14,
     borderRadius: 8,
-    border: "1px solid rgba(255,255,255,0.15)",
-    background: "rgba(255,255,255,0.06)",
-    color: "#ffffff",
+    border: "1px solid #e0e0e0",
+    background: "#f5f5f5",
+    color: "#111111",
     outline: "none",
     boxSizing: "border-box",
     fontFamily: "inherit",
@@ -62,10 +62,10 @@ export default function ChatBubble({
             bottom: 88,
             right: 20,
             width: 320,
-            background: "#1a1a1a",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background: "#ffffff",
+            border: "1px solid rgba(0,0,0,0.08)",
             borderRadius: 16,
-            boxShadow: "0 16px 48px rgba(0,0,0,0.6)",
+            boxShadow: "0 16px 48px rgba(0,0,0,0.25)",
             zIndex: 9999,
             overflow: "hidden",
             animation: "chatPanelIn 0.2s ease",
@@ -76,13 +76,13 @@ export default function ChatBubble({
           <div
             style={{
               padding: "14px 16px 12px",
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
+              borderBottom: "1px solid rgba(0,0,0,0.08)",
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
             }}
           >
-            <span style={{ color: "#ffffff", fontSize: 14, fontWeight: 700 }}>
+            <span style={{ color: "#111111", fontSize: 14, fontWeight: 700 }}>
               Message {profileName}
             </span>
             <button
@@ -90,7 +90,7 @@ export default function ChatBubble({
               style={{
                 background: "none",
                 border: "none",
-                color: "rgba(255,255,255,0.5)",
+                color: "#888888",
                 fontSize: 20,
                 cursor: "pointer",
                 padding: 0,
@@ -109,7 +109,7 @@ export default function ChatBubble({
                 style={{
                   padding: "24px 0",
                   textAlign: "center",
-                  color: "#ffffff",
+                  color: "#111111",
                   fontSize: 14,
                   lineHeight: 1.6,
                 }}
@@ -117,7 +117,7 @@ export default function ChatBubble({
                 <div style={{ fontSize: 28, marginBottom: 10 }}>✓</div>
                 <strong>Message sent!</strong>
                 <br />
-                <span style={{ color: "rgba(255,255,255,0.6)" }}>
+                <span style={{ color: "#666666" }}>
                   {profileName} will be in touch.
                 </span>
               </div>
