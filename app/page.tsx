@@ -325,15 +325,25 @@ export default async function HomePage({
     }
   }
 
-  // Photo gallery — defensive parse for jsonb or string, filter to valid http URLs
+  // Transform Dropbox share URLs to direct-access URLs
+  function transformGalleryUrl(url: string): string {
+    if (url.includes("dropbox.com")) {
+      return url
+        .replace("?dl=0", "?raw=1")
+        .replace("?dl=1", "?raw=1")
+        .replace("www.dropbox.com", "dl.dropboxusercontent.com");
+    }
+    return url;
+  }
+
+  // Photo gallery — bulletproof parse, never crash the page
   let photoGallery: string[] = [];
   try {
     const raw = profile.widget_photo_gallery;
-    if (Array.isArray(raw)) {
-      photoGallery = (raw as unknown[]).filter((url): url is string => typeof url === "string" && url.startsWith("http"));
-    } else if (typeof raw === "string" && raw) {
-      photoGallery = (JSON.parse(raw) as unknown[]).filter((url): url is string => typeof url === "string" && url.startsWith("http"));
-    }
+    const arr = Array.isArray(raw) ? raw : (typeof raw === "string" ? JSON.parse(raw) : []);
+    photoGallery = (arr as unknown[])
+      .filter((url): url is string => typeof url === "string" && url.length > 0)
+      .map(transformGalleryUrl);
   } catch {
     photoGallery = [];
   }
