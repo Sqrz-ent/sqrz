@@ -314,19 +314,6 @@ export default async function HomePage({
     ? getSpotifyEmbedUrl(profile.widget_spotify)
     : null;
 
-  // Vimeo oEmbed — server-side fetch, silently fail
-  let vimeoEmbed: { html?: string } | null = null;
-  if (profile.widget_vimeo) {
-    try {
-      const res = await fetch(
-        `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(profile.widget_vimeo as string)}`
-      );
-      if (res.ok) vimeoEmbed = await res.json();
-    } catch {
-      // silently fail — don't crash the page
-    }
-  }
-
   // Mixcloud embed URL — no external fetch, just build the iframe src
   let mixcloudEmbedUrl: string | null = null;
   if (profile.widget_mixcloud) {
@@ -338,12 +325,15 @@ export default async function HomePage({
     }
   }
 
-  // Photo gallery — defensive parse for jsonb or string
+  // Photo gallery — defensive parse for jsonb or string, filter to valid http URLs
   let photoGallery: string[] = [];
   try {
-    photoGallery = Array.isArray(profile.widget_photo_gallery)
-      ? (profile.widget_photo_gallery as string[])
-      : JSON.parse((profile.widget_photo_gallery as string) || "[]");
+    const raw = profile.widget_photo_gallery;
+    if (Array.isArray(raw)) {
+      photoGallery = (raw as unknown[]).filter((url): url is string => typeof url === "string" && url.startsWith("http"));
+    } else if (typeof raw === "string" && raw) {
+      photoGallery = (JSON.parse(raw) as unknown[]).filter((url): url is string => typeof url === "string" && url.startsWith("http"));
+    }
   } catch {
     photoGallery = [];
   }
@@ -652,13 +642,6 @@ const ticket = {
 
         {soundcloudEmbed && (
           <iframe src={soundcloudEmbed} width="100%" height="300" />
-        )}
-
-        {vimeoEmbed?.html && (
-          <div
-            style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", borderRadius: 8 }}
-            dangerouslySetInnerHTML={{ __html: vimeoEmbed.html }}
-          />
         )}
 
         {mixcloudEmbedUrl && (
