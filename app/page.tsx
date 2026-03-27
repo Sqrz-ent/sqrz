@@ -314,23 +314,20 @@ export default async function HomePage({
     ? getSpotifyEmbedUrl(profile.widget_spotify)
     : null;
 
-  // Vimeo oEmbed — server-side fetch
-  let vimeoHtml: string | null = null;
+  // Vimeo oEmbed — server-side fetch, silently fail
+  let vimeoEmbed: { html?: string } | null = null;
   if (profile.widget_vimeo) {
     try {
-      const oembedRes = await fetch(
-        `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(profile.widget_vimeo as string)}&width=640`
+      const res = await fetch(
+        `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(profile.widget_vimeo as string)}`
       );
-      if (oembedRes.ok) {
-        const oembedData = await oembedRes.json();
-        vimeoHtml = oembedData.html ?? null;
-      }
+      if (res.ok) vimeoEmbed = await res.json();
     } catch {
-      vimeoHtml = null;
+      // silently fail — don't crash the page
     }
   }
 
-  // Mixcloud embed URL
+  // Mixcloud embed URL — no external fetch, just build the iframe src
   let mixcloudEmbedUrl: string | null = null;
   if (profile.widget_mixcloud) {
     try {
@@ -341,10 +338,15 @@ export default async function HomePage({
     }
   }
 
-  // Photo gallery
-  const photoGallery: string[] = Array.isArray(profile.widget_photo_gallery)
-    ? (profile.widget_photo_gallery as string[])
-    : [];
+  // Photo gallery — defensive parse for jsonb or string
+  let photoGallery: string[] = [];
+  try {
+    photoGallery = Array.isArray(profile.widget_photo_gallery)
+      ? (profile.widget_photo_gallery as string[])
+      : JSON.parse((profile.widget_photo_gallery as string) || "[]");
+  } catch {
+    photoGallery = [];
+  }
 
   const servicesActive =
     profile.services_active === true && (profile.profile_services?.length ?? 0) > 0;
@@ -652,10 +654,10 @@ const ticket = {
           <iframe src={soundcloudEmbed} width="100%" height="300" />
         )}
 
-        {vimeoHtml && (
+        {vimeoEmbed?.html && (
           <div
             style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", borderRadius: 8 }}
-            dangerouslySetInnerHTML={{ __html: vimeoHtml }}
+            dangerouslySetInnerHTML={{ __html: vimeoEmbed.html }}
           />
         )}
 
