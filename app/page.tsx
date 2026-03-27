@@ -314,6 +314,38 @@ export default async function HomePage({
     ? getSpotifyEmbedUrl(profile.widget_spotify)
     : null;
 
+  // Vimeo oEmbed — server-side fetch
+  let vimeoHtml: string | null = null;
+  if (profile.widget_vimeo) {
+    try {
+      const oembedRes = await fetch(
+        `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(profile.widget_vimeo as string)}&width=640`
+      );
+      if (oembedRes.ok) {
+        const oembedData = await oembedRes.json();
+        vimeoHtml = oembedData.html ?? null;
+      }
+    } catch {
+      vimeoHtml = null;
+    }
+  }
+
+  // Mixcloud embed URL
+  let mixcloudEmbedUrl: string | null = null;
+  if (profile.widget_mixcloud) {
+    try {
+      const u = new URL(profile.widget_mixcloud as string);
+      mixcloudEmbedUrl = `https://www.mixcloud.com/widget/iframe/?hide_cover=1&feed=${encodeURIComponent(u.pathname)}`;
+    } catch {
+      mixcloudEmbedUrl = null;
+    }
+  }
+
+  // Photo gallery
+  const photoGallery: string[] = Array.isArray(profile.widget_photo_gallery)
+    ? (profile.widget_photo_gallery as string[])
+    : [];
+
   const servicesActive =
     profile.services_active === true && (profile.profile_services?.length ?? 0) > 0;
 
@@ -618,6 +650,44 @@ const ticket = {
 
         {soundcloudEmbed && (
           <iframe src={soundcloudEmbed} width="100%" height="300" />
+        )}
+
+        {vimeoHtml && (
+          <div
+            style={{ width: "100%", aspectRatio: "16/9", overflow: "hidden", borderRadius: 8 }}
+            dangerouslySetInnerHTML={{ __html: vimeoHtml }}
+          />
+        )}
+
+        {mixcloudEmbedUrl && (
+          <iframe
+            src={mixcloudEmbedUrl}
+            width="100%"
+            height="120"
+            frameBorder="0"
+            allow="autoplay"
+            style={{ borderRadius: 8 }}
+          />
+        )}
+
+        {photoGallery.length > 0 && (
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, 1fr)",
+            gap: 8,
+          }}>
+            {photoGallery.map((url, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={i}
+                src={url}
+                alt=""
+                loading="lazy"
+                style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8, display: "block" }}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            ))}
+          </div>
         )}
 
        {profile.muso?.profile_url && (
