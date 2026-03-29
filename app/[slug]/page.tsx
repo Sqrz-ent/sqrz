@@ -390,6 +390,13 @@ export default async function PrivateLinkPage({
               Buy Now →
             </CtaButton>
           )}
+          {link.external_url && (
+            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
+              <CtaButton href={link.external_url} accent={accent}>
+                {link.external_url_label || "Download"}
+              </CtaButton>
+            </div>
+          )}
           <PoweredBy />
         </div>
       </div>
@@ -398,7 +405,6 @@ export default async function PrivateLinkPage({
 
   // ─── EVENT ──────────────────────────────────────────────────────────────────
   if (pageType === "event") {
-    const ticketUrl = link.stripe_payment_link_url ?? link.external_ticket_url;
     return (
       <div style={shell}>
         <div style={container}>
@@ -426,10 +432,17 @@ export default async function PrivateLinkPage({
               {link.description}
             </p>
           )}
-          {ticketUrl && (
-            <CtaButton href={ticketUrl} accent={accent}>
+          {link.stripe_payment_link_url && (
+            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
               Get Tickets →
             </CtaButton>
+          )}
+          {link.external_url && (
+            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
+              <CtaButton href={link.external_url} accent={accent}>
+                {link.external_url_label || "Download"}
+              </CtaButton>
+            </div>
           )}
           <PoweredBy />
         </div>
@@ -470,6 +483,13 @@ export default async function PrivateLinkPage({
             <CtaButton href={link.stripe_payment_link_url} accent={accent}>
               Buy Now →
             </CtaButton>
+          )}
+          {link.external_url && (
+            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
+              <CtaButton href={link.external_url} accent={accent}>
+                {link.external_url_label || "Download"}
+              </CtaButton>
+            </div>
           )}
           <PoweredBy />
         </div>
@@ -545,22 +565,10 @@ export default async function PrivateLinkPage({
             </p>
           )}
 
-          {link.file_path && (
+          {link.external_url && (
             <div style={{ marginBottom: 20 }}>
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  color: "#888",
-                  marginBottom: 10,
-                }}
-              >
-                Downloads
-              </div>
-              <CtaButton href={link.file_path} accent={accent}>
-                Download Press Kit →
+              <CtaButton href={link.external_url} accent={accent}>
+                {link.external_url_label || "Download"}
               </CtaButton>
             </div>
           )}
