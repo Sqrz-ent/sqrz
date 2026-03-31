@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { getBandsintownArtistFromUrl } from "@/lib/bandsintown";
+import { useEffect, useRef } from "react";
 
 type BandsintownWidgetProps = {
   bandsintownUrl: string;
@@ -10,15 +9,11 @@ type BandsintownWidgetProps = {
 export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const artist = useMemo(() => {
-    return getBandsintownArtistFromUrl(bandsintownUrl);
-  }, [bandsintownUrl]);
-
   useEffect(() => {
     if (!containerRef.current) return;
     containerRef.current.innerHTML = "";
 
-    if (!artist) return;
+    if (!bandsintownUrl) return;
 
     const script = document.createElement("script");
     script.src = "https://widget.bandsintown.com/main.min.js";
@@ -26,7 +21,7 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
 
     const a = document.createElement("a");
     a.setAttribute("class", "bit-widget-initializer");
-    a.setAttribute("data-artist-name", artist);
+    a.setAttribute("data-artist-name", bandsintownUrl);
     a.setAttribute("data-text-color", "#ffffff");
     a.setAttribute("data-link-color", "var(--accent-color)"); // brand CTA color
     a.setAttribute("data-background-color", "transparent");
@@ -43,7 +38,7 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     return () => {
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
-  }, [artist]);
+  }, [bandsintownUrl]);
 
   return <div ref={containerRef} />;
 }
