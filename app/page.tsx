@@ -340,10 +340,18 @@ export default async function HomePage({
   let photoGallery: string[] = [];
   try {
     const raw = profile.widget_photo_gallery;
-    const arr = Array.isArray(raw) ? raw : (typeof raw === "string" ? JSON.parse(raw) : []);
-    photoGallery = (arr as unknown[])
-      .filter((url): url is string => typeof url === "string" && url.length > 0)
-      .map(transformGalleryUrl);
+    if (Array.isArray(raw)) {
+      photoGallery = raw
+        .filter((u): u is string => typeof u === "string" && u.startsWith("http"))
+        .map(transformGalleryUrl);
+    } else if (typeof raw === "string" && raw.length > 0) {
+      const parsed = JSON.parse(raw);
+      photoGallery = Array.isArray(parsed)
+        ? parsed
+            .filter((u): u is string => typeof u === "string" && u.startsWith("http"))
+            .map(transformGalleryUrl)
+        : [];
+    }
   } catch {
     photoGallery = [];
   }
@@ -666,7 +674,7 @@ const ticket = {
         )}
 
         {photoGallery.length > 0 && (
-          <div style={{
+          <div className="photo-gallery" style={{
             display: "grid",
             gridTemplateColumns: "repeat(2, 1fr)",
             gap: 8,
@@ -679,7 +687,7 @@ const ticket = {
                 alt=""
                 loading="lazy"
                 style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8, display: "block" }}
-                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                onError={(e) => { e.currentTarget.style.display = "none"; }}
               />
             ))}
           </div>
