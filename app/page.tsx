@@ -33,6 +33,7 @@ import ViewTracker from "@/components/ViewTracker";
 import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
+import PhotoGallery from "@/components/PhotoGallery";
 
 
 
@@ -673,25 +674,7 @@ const ticket = {
           />
         )}
 
-        {photoGallery.length > 0 && (
-          <div className="photo-gallery" style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: 8,
-          }}>
-            {photoGallery.map((url, i) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={i}
-                src={url}
-                alt=""
-                loading="lazy"
-                style={{ width: "100%", aspectRatio: "1", objectFit: "cover", borderRadius: 8, display: "block" }}
-                onError={(e) => { e.currentTarget.style.display = "none"; }}
-              />
-            ))}
-          </div>
-        )}
+        {photoGallery.length > 0 && <PhotoGallery urls={photoGallery} />}
 
        {profile.muso?.profile_url && (
         <MusoWidget profile={profile.muso} />
