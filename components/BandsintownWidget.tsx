@@ -1,30 +1,49 @@
 "use client";
-import { useEffect, useRef } from "react";
 
-type BandsintownWidgetProps = { bandsintownUrl: string; };
+import { useEffect, useMemo, useRef } from "react";
+import { getBandsintownArtistFromUrl } from "@/lib/bandsintown";
+
+type BandsintownWidgetProps = {
+  bandsintownUrl: string;
+};
 
 export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const artist = useMemo(() => {
+    return getBandsintownArtistFromUrl(bandsintownUrl);
+  }, [bandsintownUrl]);
+
   useEffect(() => {
-    if (!containerRef.current || !bandsintownUrl) return;
+    if (!containerRef.current) return;
     containerRef.current.innerHTML = "";
-    const a = document.createElement("a");
-    a.className = "bit-widget-initializer";
-    a.setAttribute("data-artist-name", bandsintownUrl);
-    a.setAttribute("data-display-local-dates", "false");
-    a.setAttribute("data-display-past-dates", "false");
-    a.setAttribute("data-auto-style", "true");
-    a.setAttribute("data-language", "en");
-    a.setAttribute("data-widget-width", "100%");
-    a.setAttribute("data-background-color", "transparent");
-    containerRef.current.appendChild(a);
-    document.querySelectorAll('script[src*="bandsintown"]').forEach(function(s) { s.remove(); });
-    if ((window as any).BIT) delete (window as any).BIT;
+
+    if (!artist) return;
+
     const script = document.createElement("script");
     script.src = "https://widget.bandsintown.com/main.min.js";
-    script.charset = "utf-8";
-    document.body.appendChild(script);
-    return () => { if (containerRef.current) containerRef.current.innerHTML = ""; };
-  }, [bandsintownUrl]);
+    script.async = true;
+
+    const a = document.createElement("a");
+    a.setAttribute("class", "bit-widget-initializer");
+    a.setAttribute("data-artist-name", artist);
+    a.setAttribute("data-text-color", "#ffffff");
+    a.setAttribute("data-link-color", "var(--accent-color)"); // brand CTA color
+    a.setAttribute("data-background-color", "transparent");
+    a.setAttribute("data-separator-color", "rgba(255, 255, 255, 0.73)");
+    a.setAttribute("data-auto-style", "false");
+    a.setAttribute("data-text-alignment", "left");
+    a.setAttribute("data-display-limit", "4");
+
+
+
+    containerRef.current.appendChild(a);
+    containerRef.current.appendChild(script);
+
+    return () => {
+      if (containerRef.current) containerRef.current.innerHTML = "";
+    };
+  }, [artist]);
+
   return <div ref={containerRef} />;
 }
