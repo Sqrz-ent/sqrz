@@ -19,13 +19,9 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     a.setAttribute("data-display-local-dates", "false");
     a.setAttribute("data-display-past-dates", "false");
     a.setAttribute("data-auto-style", "true");
-    a.setAttribute("data-font-color", "#FFFFFF");
-    a.setAttribute("data-button-label-capitalization", "capitalize");
-    a.setAttribute("data-header-capitalization", "uppercase");
-    a.setAttribute("data-background-color", "transparent");
-    a.setAttribute("data-separator-color", "rgba(255,255,255,0.1)");
     a.setAttribute("data-language", "en");
     a.setAttribute("data-widget-width", "100%");
+    a.setAttribute("data-background-color", "transparent");
 
     const script = document.createElement("script");
     script.src = "https://widget.bandsintown.com/main.min.js";
@@ -40,5 +36,5 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     };
   }, [bandsintownUrl]);
 
-  return <div ref={containerRef} />;
+  return <div className="bit-widget-container" ref={containerRef} />;
 }
