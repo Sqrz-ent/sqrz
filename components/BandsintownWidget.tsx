@@ -22,19 +22,26 @@ export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetP
     a.setAttribute("data-language", "en");
     a.setAttribute("data-widget-width", "100%");
     a.setAttribute("data-background-color", "transparent");
+    containerRef.current.appendChild(a);
 
+    // Remove any existing BIT script first
+    const existingScript = document.querySelector('script[src*="bandsintown"]');
+    if (existingScript) existingScript.remove();
+
+    // Also remove any existing widget state BIT may have cached
+    if ((window as any).BIT) delete (window as any).BIT;
+
+    // Load script AFTER anchor is in DOM
     const script = document.createElement("script");
     script.src = "https://widget.bandsintown.com/main.min.js";
     script.charset = "utf-8";
-    script.async = true;
-
-    containerRef.current.appendChild(a);
-    containerRef.current.appendChild(script);
+    // NOT async — must execute synchronously after anchor is ready
+    document.body.appendChild(script);
 
     return () => {
       if (containerRef.current) containerRef.current.innerHTML = "";
     };
   }, [bandsintownUrl]);
 
-  return <div className="bit-widget-container" ref={containerRef} />;
+  return <div ref={containerRef} />;
 }
