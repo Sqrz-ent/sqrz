@@ -1,49 +1,22 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { getBandsintownArtistFromUrl } from "@/lib/bandsintown";
-
-type BandsintownWidgetProps = {
-  bandsintownUrl: string;
-};
+type BandsintownWidgetProps = { bandsintownUrl: string; };
 
 export default function BandsintownWidget({ bandsintownUrl }: BandsintownWidgetProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  if (!bandsintownUrl) return null;
 
-  const artist = useMemo(() => {
-    return getBandsintownArtistFromUrl(bandsintownUrl);
-  }, [bandsintownUrl]);
+  const html = `
+    <a class="bit-widget-initializer"
+      data-artist-name="${bandsintownUrl}"
+      data-display-local-dates="false"
+      data-display-past-dates="false"
+      data-auto-style="true"
+      data-language="en"
+      data-widget-width="100%"
+      data-background-color="transparent">
+    </a>
+    <script src="https://widget.bandsintown.com/main.min.js" charset="utf-8" async><\/script>
+  `;
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    containerRef.current.innerHTML = "";
-
-    if (!artist) return;
-
-    const script = document.createElement("script");
-    script.src = "https://widget.bandsintown.com/main.min.js";
-    script.async = true;
-
-    const a = document.createElement("a");
-    a.setAttribute("class", "bit-widget-initializer");
-    a.setAttribute("data-artist-name", artist);
-    a.setAttribute("data-text-color", "#ffffff");
-    a.setAttribute("data-link-color", "var(--accent-color)"); // brand CTA color
-    a.setAttribute("data-background-color", "transparent");
-    a.setAttribute("data-separator-color", "rgba(255, 255, 255, 0.73)");
-    a.setAttribute("data-auto-style", "false");
-    a.setAttribute("data-text-alignment", "left");
-    a.setAttribute("data-display-limit", "4");
-
-
-
-    containerRef.current.appendChild(a);
-    containerRef.current.appendChild(script);
-
-    return () => {
-      if (containerRef.current) containerRef.current.innerHTML = "";
-    };
-  }, [artist]);
-
-  return <div ref={containerRef} />;
+  return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
