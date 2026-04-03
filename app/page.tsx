@@ -28,7 +28,7 @@ import {
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
-import CookieBanner from "@/components/tracking/CookieBanner";
+import CookieBanner from "@/components/CookieBanner";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import ChatBubble from "@/components/ChatBubble";
