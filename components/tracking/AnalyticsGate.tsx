@@ -49,10 +49,10 @@ export default function AnalyticsGate({
     return () => window.removeEventListener("sqrz_consent_updated", checkConsent);
   }, []);
 
-  const gaId = googleAnalyticsId || process.env.NEXT_PUBLIC_SQRZ_GOOGLE;
-  const fbId = facebookPixelId || process.env.NEXT_PUBLIC_SQRZ_FACEBOOK;
+  const gaId = googleAnalyticsId || process.env.NEXT_PUBLIC_SQRZ_GA_ID;
+  const fbId = facebookPixelId || process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL;
+  const hsId = hubspotPortalId || process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL;
   const liId = linkedinPartnerId || process.env.NEXT_PUBLIC_SQRZ_LINKEDIN;
-  const hsId = hubspotPortalId || process.env.NEXT_PUBLIC_SQRZ_HUBSPOT;
 
   if (isPreview) return null;
 
