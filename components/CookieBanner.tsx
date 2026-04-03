@@ -34,6 +34,15 @@ export default function CookieBanner({ templateId }: Props) {
     setHasConsent(true);
     // Notify AnalyticsGate immediately
     window.dispatchEvent(new Event("sqrz_consent_updated"));
+    // Log to Supabase
+    fetch('/api/cookie-consent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        decision: analytics ? 'accepted' : 'declined',
+        domain: window.location.hostname
+      })
+    }).catch(() => {}); // fire and forget
   };
 
   return (
