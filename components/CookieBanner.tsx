@@ -32,6 +32,8 @@ export default function CookieBanner({ templateId }: Props) {
     )}; path=/; max-age=${60 * 60 * 24 * 180}`;
     setVisible(false);
     setHasConsent(true);
+    // Notify AnalyticsGate immediately
+    window.dispatchEvent(new Event("sqrz_consent_updated"));
   };
 
   return (

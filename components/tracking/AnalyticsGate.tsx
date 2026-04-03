@@ -25,26 +25,28 @@ export default function AnalyticsGate({
 
   useEffect(() => {
     const checkConsent = () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const cb = (window as any).Cookiebot;
-      if (cb?.consent) {
-        setAnalyticsConsent(!!cb.consent.statistics);
-        setMarketingConsent(!!cb.consent.marketing);
+      const raw = document.cookie
+        .split("; ")
+        .find(r => r.startsWith("sqrz_cookie_consent="));
+
+      if (raw) {
+        try {
+          const consent = JSON.parse(decodeURIComponent(raw.split("=")[1]));
+          setAnalyticsConsent(consent.analytics === true);
+          setMarketingConsent(consent.marketing === true);
+        } catch {
+          setAnalyticsConsent(false);
+          setMarketingConsent(false);
+        }
       }
     };
 
-    // Cookiebot may already be loaded by the time this component mounts
+    // Check immediately
     checkConsent();
 
-    window.addEventListener("CookiebotOnAccept", checkConsent);
-    window.addEventListener("CookiebotOnDecline", checkConsent);
-    window.addEventListener("CookiebotOnLoad", checkConsent);
-
-    return () => {
-      window.removeEventListener("CookiebotOnAccept", checkConsent);
-      window.removeEventListener("CookiebotOnDecline", checkConsent);
-      window.removeEventListener("CookiebotOnLoad", checkConsent);
-    };
+    // Also listen for cookie changes (when user accepts/declines banner)
+    window.addEventListener("sqrz_consent_updated", checkConsent);
+    return () => window.removeEventListener("sqrz_consent_updated", checkConsent);
   }, []);
 
   // ✅ sanitize IDs (removes accidental double quotes like ""123"" or "G-XXXX")
