@@ -31,8 +31,6 @@ export const LEGACY_TEMPLATE_MAP: Record<string, TemplateKey> = {
   dj_dark: "midnight",
   dj_dark_normalized: "midnight",
   "dj-dark": "midnight",
-  dancer_light: "neon",
-  "dancer-light": "neon",
   tech_clean: "studio",
   "tech-clean": "studio",
 };

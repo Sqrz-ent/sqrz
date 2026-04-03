@@ -28,6 +28,7 @@ import {
 } from "@/lib/profileTemplates";
 import FloatingSQRZButton from "@/components/FloatingSQRZButton";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+import CookieBanner from "@/components/tracking/CookieBanner";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
 import ChatBubble from "@/components/ChatBubble";
@@ -297,7 +298,7 @@ export default async function HomePage({
     if (!rawTemplateKey) return DEFAULT_TEMPLATE;
     // Direct match (new keys: midnight, neon, studio)
     if (rawTemplateKey in PROFILE_TEMPLATES) return rawTemplateKey as TemplateKey;
-    // Legacy key match (dj-dark, dancer-light, tech-clean, underscore variants)
+    // Legacy key match (dj-dark, tech-clean, and underscore variants)
     if (rawTemplateKey in LEGACY_TEMPLATE_MAP) return LEGACY_TEMPLATE_MAP[rawTemplateKey];
     // Underscore-normalized legacy (dj_dark, dancer_light, tech_clean)
     const normalized = rawTemplateKey.replace(/-/g, "_");
@@ -705,6 +706,7 @@ const ticket = {
 
       </div>
     </main>
+    <CookieBanner templateId={profile.template_id as string} />
     </>
   );
 }

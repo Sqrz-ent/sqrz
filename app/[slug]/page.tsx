@@ -7,9 +7,9 @@ export const revalidate = 0;
 
 // Matches PROFILE_TEMPLATES in lib/profileTemplates.ts
 const TEMPLATE_ACCENTS: Record<string, string> = {
-  "dj-dark": "#F3B130",
-  "dancer-light": "#FD69D1",
-  "tech-clean": "#7E6E6E",
+  midnight: "#F3B130",
+  neon: "#A855F7",
+  studio: "#38BDF8",
 };
 const DEFAULT_ACCENT = "#F5A623";
 

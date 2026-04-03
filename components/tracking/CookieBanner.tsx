@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 
 const COOKIE_NAME = "sqrz_cookie_consent";
 
-export default function CookieBanner() {
+const THEMES: Record<string, { bg: string; text: string; accent: string; border: string }> = {
+  midnight: { bg: "#0a0a0a", text: "#ffffff", accent: "#F3B130", border: "rgba(255,255,255,0.12)" },
+  neon:     { bg: "#0d0d1a", text: "#ffffff", accent: "#A855F7", border: "rgba(255,255,255,0.12)" },
+  studio:   { bg: "#080f1a", text: "#ffffff", accent: "#38BDF8", border: "rgba(255,255,255,0.12)" },
+};
+const DEFAULT = THEMES["midnight"];
+
+export default function CookieBanner({ templateId }: { templateId?: string | null }) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -47,6 +54,8 @@ export default function CookieBanner() {
 
   if (!visible) return null;
 
+  const theme = (templateId && THEMES[templateId]) ? THEMES[templateId] : DEFAULT;
+
   return (
     <div
       style={{
@@ -54,20 +63,49 @@ export default function CookieBanner() {
         bottom: 16,
         left: 16,
         right: 16,
-        background: "#111",
-        color: "#fff",
+        background: theme.bg,
+        color: theme.text,
+        border: `1px solid ${theme.border}`,
         padding: 16,
         borderRadius: 12,
         zIndex: 9999,
       }}
     >
-      <p style={{ marginBottom: 12 }}>
+      <p style={{ marginBottom: 12, fontSize: 13, lineHeight: 1.5, margin: "0 0 12px" }}>
         We use cookies for analytics and marketing to help you get booked.
       </p>
 
       <div style={{ display: "flex", gap: 8 }}>
-        <button onClick={onAcceptAll}>Accept all</button>
-        <button onClick={onRejectAll}>Reject</button>
+        <button
+          onClick={onAcceptAll}
+          style={{
+            padding: "8px 16px",
+            background: theme.accent,
+            color: "#111",
+            border: "none",
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 700,
+            cursor: "pointer",
+          }}
+        >
+          Accept all
+        </button>
+        <button
+          onClick={onRejectAll}
+          style={{
+            padding: "8px 16px",
+            background: "transparent",
+            color: theme.text,
+            border: `1px solid ${theme.border}`,
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Reject
+        </button>
       </div>
     </div>
   );
