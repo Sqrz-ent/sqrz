@@ -5,23 +5,28 @@ import type { Service } from "@/types/service";
 import { getServicePriceLabel } from "@/utils/serviceLabel";
 import { supabase } from "@/lib/supabase";
 
+type Step = 0 | 1 | "otp" | 2 | 3 | 4;
+
 export default function BookingModal({
   open,
   onClose,
   username,
   services,
+  profileId,
 }: {
   open: boolean;
   onClose: () => void;
   username: string;
   services: Service[];
+  profileId: string;
 }) {
-const [step, setStep] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
-
-const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [step, setStep] = useState<Step>(0);
+  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -34,76 +39,108 @@ const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  // ✅ MUST be here — before any return
   useEffect(() => {
     if (!open) return;
-
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = originalOverflow;
     };
   }, [open]);
 
-  // ✅ Safe now
   if (!open) return null;
 
-
-  function nextFromStep1() {
+  // ─── Step 1 → OTP: send magic code ───────────────────────────────────────
+  async function nextFromStep1() {
     if (!name || !email) {
-      setError("Please enter name and email.");
+      setError("Please enter your name and email.");
       return;
     }
     setError(null);
-    setStep(2);
-  }
-
-function nextFromStep2() {
-  if (!message) {
-    setError("Please add a short description.");
-    return;
-  }
-
-  setError(null);
-  setStep(3); // date/time
-}
-
-  async function handleSubmit(e: React.FormEvent) {
-  e.preventDefault();
-  setError(null);
-  setLoading(true);
-
-  try {
-    const { data, error: rpcError } = await supabase.rpc("create_booking_request", {
-      p_to_slug: username,
-      p_from_name: name,
-      p_from_email: email,
-      p_message: message,
-      p_service: selectedService?.title ?? null,
-      p_budget_min: null,
-      p_budget_max: null,
-      p_currency: "eur",
-      p_event_date: date || null,
-      p_event_location: null,
-      p_source: "profile_page",
-    });
-
-    if (rpcError) throw rpcError;
-
-    if (data?.success) {
-      setSuccess(true);
-    } else {
-      throw new Error("Booking request failed");
+    setLoading(true);
+    try {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+      if (otpError) throw otpError;
+      setStep("otp");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to send code. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error(err);
-    setError("Something went wrong. Please try again.");
-  } finally {
-    setLoading(false);
   }
-}
 
+  // ─── OTP → Step 2: verify code ───────────────────────────────────────────
+  async function verifyOtp() {
+    if (!otpCode || otpCode.length < 6) {
+      setError("Please enter the 6-digit code.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const { data, error: verifyError } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: "email",
+      });
+      if (verifyError) throw verifyError;
+      setUserId(data.user?.id ?? null);
+      setStep(2);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ─── Step 2 → Step 3 ─────────────────────────────────────────────────────
+  function nextFromStep2() {
+    if (!message) {
+      setError("Please add a short description.");
+      return;
+    }
+    setError(null);
+    setStep(3);
+  }
+
+  // ─── Final submit ─────────────────────────────────────────────────────────
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          profile_id: profileId,
+          visitor_name: name,
+          visitor_email: email,
+          message,
+          budget: null,
+          user_id: userId,
+          service: selectedService?.title ?? null,
+          project_title: projectTitle || null,
+          event_date: date || null,
+          event_time: time || null,
+          location: [street, city, zip, country].filter(Boolean).join(", ") || null,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Booking request failed");
+      setSuccess(true);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ─── Success screen ───────────────────────────────────────────────────────
   if (success) {
     return (
       <div style={overlayStyle}>
@@ -119,247 +156,183 @@ function nextFromStep2() {
     );
   }
 
+  const stepNumber = step === 0 ? 1 : step === 1 ? 2 : step === "otp" ? 3 : step === 2 ? 4 : step === 3 ? 5 : 6;
+  const totalSteps = 6;
+
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
-        <button onClick={onClose} style={closeStyle}>
-          ✕
-        </button>
+        <button onClick={onClose} style={closeStyle}>✕</button>
 
         <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
 
-<div
-  style={{
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    paddingBottom: 40, // space for step indicator
-  }}
->
-  <form onSubmit={handleSubmit}>
-    {/* STEP 0 – Select Service */}
-    {step === 0 && (
-      <>
-        <h3 style={{ marginBottom: 12 }}>Select a service</h3>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 40 }}>
+          <form onSubmit={handleSubmit}>
 
-        {services.length === 0 ? (
-          <p style={{ opacity: 0.6, fontSize: 14 }}>
-            Currently no services available.
-          </p>
-        ) : (
-          services.map((service) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              onClick={() => {
-                setSelectedService(service);
-                setStep(1);
-              }}
-            />
-          ))
-        )}
-      </>
-    )}
+            {/* STEP 0 — Select service */}
+            {step === 0 && (
+              <>
+                <h3 style={{ marginBottom: 12 }}>Select a service</h3>
+                {services.length === 0 ? (
+                  <p style={{ opacity: 0.6, fontSize: 14 }}>Currently no services available.</p>
+                ) : (
+                  services.map((service) => (
+                    <ServiceCard
+                      key={service.id}
+                      service={service}
+                      onClick={() => { setSelectedService(service); setStep(1); }}
+                    />
+                  ))
+                )}
+              </>
+            )}
 
-
-          {/* STEP 1 */}
-          {step === 1 && (
-            <>
-              <input
-                type="text"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={inputStyle}
-                required
-              />
-
-              <input
-                type="email"
-                placeholder="Your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                style={inputStyle}
-                required
-              />
-
-              {error && <p style={errorStyle}>{error}</p>}
-
-              <button
-                type="button"
-                style={submitStyle}
-                onClick={nextFromStep1}
-              >
-                Continue
-              </button>
-            </>
-          )}
-
-          {/* STEP 2 */}
-          {step === 2 && (
-            <>
-               <input
-      type="text"
-      placeholder="Project name"
-      value={projectTitle}
-      onChange={(e) => setProjectTitle(e.target.value)}
-      style={inputStyle}
-    />
-
-
-              <textarea
-                placeholder="Tell us about your event, location, requirements…"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                style={textareaStyle}
-                rows={5}
-                required
-              />
-
-              {error && <p style={errorStyle}>{error}</p>}
-
-              <div style={buttonRowStyle}>
-                <button
-                  type="button"
-                  style={secondaryButtonStyle}
-                  onClick={() => setStep(1)}
-                >
-                  Back
+            {/* STEP 1 — Name + email */}
+            {step === 1 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Your name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  style={inputStyle}
+                  required
+                />
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  style={inputStyle}
+                  required
+                />
+                {error && <p style={errorStyle}>{error}</p>}
+                <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
+                  {loading ? "Sending code…" : "Continue"}
                 </button>
+              </>
+            )}
 
-                <button
-                  type="button"
-                  style={submitStyle}
-                  onClick={nextFromStep2}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* STEP 3 */}
-          {step === 3 && (
-            <>
-              <label style={labelStyle}>Event date *</label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                style={inputStyle}
-                required
-              />
-
-              <label style={labelStyle}>Event time (optional)</label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                style={inputStyle}
-              />
-
-              {error && <p style={errorStyle}>{error}</p>}
-
-              <div style={buttonRowStyle}>
-                <button
-                  type="button"
-                  style={secondaryButtonStyle}
-                  onClick={() => setStep(2)}
-                >
-                  Back
-                </button>
-
-                <button
-                type="button"
-                style={submitStyle}
-                 onClick={() => setStep(4)}
-                  >
-                   Continue
+            {/* STEP OTP — verify email */}
+            {step === "otp" && (
+              <>
+                <p style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.6, color: "#444" }}>
+                  We sent a 6-digit code to <strong>{email}</strong>. Check your inbox and enter it below.
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="6-digit code"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  style={{ ...inputStyle, letterSpacing: "0.2em", fontSize: 20, textAlign: "center" }}
+                  autoFocus
+                  maxLength={6}
+                />
+                {error && <p style={errorStyle}>{error}</p>}
+                <div style={buttonRowStyle}>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => { setStep(1); setOtpCode(""); setError(null); }}>
+                    Back
                   </button>
+                  <button type="button" style={submitStyle} onClick={verifyOtp} disabled={loading}>
+                    {loading ? "Verifying…" : "Verify"}
+                  </button>
+                </div>
+                <p style={{ fontSize: 12, color: "#888", marginTop: 12, textAlign: "center" }}>
+                  Didn&apos;t get it?{" "}
+                  <button
+                    type="button"
+                    onClick={nextFromStep1}
+                    style={{ background: "none", border: "none", color: "var(--accent-color, #F3B130)", cursor: "pointer", fontSize: 12, padding: 0 }}
+                  >
+                    Resend code
+                  </button>
+                </p>
+              </>
+            )}
 
-              </div>
-            </>
-          )}
-          {/* STEP 4 */}
-          {step === 4 && (
-          <>
-          <input
-      type="text"
-      placeholder="Street & number"
-      value={street}
-      onChange={(e) => setStreet(e.target.value)}
-      style={inputStyle}
-    />
+            {/* STEP 2 — Project + description */}
+            {step === 2 && (
+              <>
+                <input
+                  type="text"
+                  placeholder="Project name"
+                  value={projectTitle}
+                  onChange={(e) => setProjectTitle(e.target.value)}
+                  style={inputStyle}
+                />
+                <textarea
+                  placeholder="Tell us about your event, location, requirements…"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  style={textareaStyle}
+                  rows={5}
+                  required
+                />
+                {error && <p style={errorStyle}>{error}</p>}
+                <div style={buttonRowStyle}>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep("otp")}>Back</button>
+                  <button type="button" style={submitStyle} onClick={nextFromStep2}>Continue</button>
+                </div>
+              </>
+            )}
 
-    <input
-      type="text"
-      placeholder="City"
-      value={city}
-      onChange={(e) => setCity(e.target.value)}
-      style={inputStyle}
-    />
+            {/* STEP 3 — Date + time */}
+            {step === 3 && (
+              <>
+                <label style={labelStyle}>Event date *</label>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  style={inputStyle}
+                  required
+                />
+                <label style={labelStyle}>Event time (optional)</label>
+                <input
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  style={inputStyle}
+                />
+                {error && <p style={errorStyle}>{error}</p>}
+                <div style={buttonRowStyle}>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(2)}>Back</button>
+                  <button type="button" style={submitStyle} onClick={() => setStep(4)}>Continue</button>
+                </div>
+              </>
+            )}
 
-    <input
-      type="text"
-      placeholder="ZIP / Postal code"
-      value={zip}
-      onChange={(e) => setZip(e.target.value)}
-      style={inputStyle}
-    />
+            {/* STEP 4 — Location + submit */}
+            {step === 4 && (
+              <>
+                <input type="text" placeholder="Street & number" value={street} onChange={(e) => setStreet(e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="ZIP / Postal code" value={zip} onChange={(e) => setZip(e.target.value)} style={inputStyle} />
+                <input type="text" placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} />
+                {error && <p style={errorStyle}>{error}</p>}
+                <div style={buttonRowStyle}>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(3)}>Back</button>
+                  <button type="submit" style={submitStyle} disabled={loading}>
+                    {loading ? "Sending…" : "Send request"}
+                  </button>
+                </div>
+              </>
+            )}
 
-    <input
-      type="text"
-      placeholder="Country"
-      value={country}
-      onChange={(e) => setCountry(e.target.value)}
-      style={inputStyle}
-    />
+          </form>
+        </div>
 
-    <div style={buttonRowStyle}>
-      <button
-        type="button"
-        style={secondaryButtonStyle}
-        onClick={() => setStep(3)}
-      >
-        Back
-      </button>
-
-      <button
-        type="submit"
-        style={submitStyle}
-        disabled={loading}
-      >
-        {loading ? "Sending…" : "Send request"}
-      </button>
-    </div>
-  </>
-)}
-
-        </form>
-</div>
-
-{/* Step indicator (bottom of modal) */}
-<p
-  style={{
-    position: "absolute",
-    bottom: 16,
-    left: "50%",
-    transform: "translateX(-50%)",
-    opacity: 0.5,
-    fontSize: 13,
-    whiteSpace: "nowrap",
-  }}
->
-  Step {step + 1} of 4
-</p>
-
+        {/* Step indicator */}
+        <p style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", opacity: 0.5, fontSize: 13, whiteSpace: "nowrap" }}>
+          Step {stepNumber} of {totalSteps}
+        </p>
       </div>
     </div>
   );
 }
 
-// ─── Service card with hover ───────────────────────────────────────────────────
+// ─── Service card ─────────────────────────────────────────────────────────────
 
 function ServiceCard({ service, onClick }: { service: Service; onClick: () => void }) {
   const [hovered, setHovered] = useState(false);
@@ -374,21 +347,17 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
         textAlign: "left",
         cursor: "pointer",
         background: "#f5f5f5",
-        border: hovered
-          ? `1px solid var(--accent-color, #F3B130)`
-          : `1px solid #e0e0e0`,
+        border: hovered ? "1px solid var(--accent-color, #F3B130)" : "1px solid #e0e0e0",
         transition: "border-color 0.15s",
       }}
     >
       <strong>{service.title}</strong>
-      <div style={{ opacity: 0.7, fontSize: 13 }}>
-        {getServicePriceLabel(service)}
-      </div>
+      <div style={{ opacity: 0.7, fontSize: 13 }}>{getServicePriceLabel(service)}</div>
     </button>
   );
 }
 
-/* styles */
+/* ─── Styles ─────────────────────────────────────────────────────────────── */
 
 const overlayStyle = {
   position: "fixed" as const,
@@ -434,6 +403,8 @@ const inputStyle = {
   border: "1px solid #e0e0e0",
   background: "#f5f5f5",
   color: "#111111",
+  boxSizing: "border-box" as const,
+  fontSize: 14,
 };
 
 const textareaStyle = {
@@ -457,6 +428,7 @@ const submitStyle = {
   color: "#000",
   fontWeight: 600,
   cursor: "pointer",
+  fontSize: 14,
 };
 
 const secondaryButtonStyle = {
@@ -466,6 +438,7 @@ const secondaryButtonStyle = {
   background: "transparent",
   color: "#666666",
   cursor: "pointer",
+  fontSize: 14,
 };
 
 const buttonRowStyle = {
@@ -476,4 +449,5 @@ const buttonRowStyle = {
 const errorStyle = {
   color: "#ff6b6b",
   marginBottom: 12,
+  fontSize: 13,
 };
