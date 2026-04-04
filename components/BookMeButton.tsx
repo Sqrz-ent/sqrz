@@ -7,9 +7,11 @@ import BookingModal from "./BookingModal";
 export default function BookMeButton({
   username,
   services,
+  profileId,
 }: {
   username: string;
   services: Service[];
+  profileId: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -40,6 +42,7 @@ export default function BookMeButton({
         onClose={() => setOpen(false)}
         username={username}
         services={services}
+        profileId={profileId}
       />
     </>
   );
