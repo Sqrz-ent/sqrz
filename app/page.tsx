@@ -704,6 +704,35 @@ const ticket = {
 
 
 
+      {/* Powered by SQRZ — subtle footer */}
+      <div style={{
+        textAlign: "center",
+        padding: "2rem 0 1.5rem",
+        opacity: 0.35,
+      }}>
+        <a
+          href="https://sqrz.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontSize: "12px",
+            letterSpacing: "0.08em",
+            textDecoration: "none",
+            color: "inherit",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <img
+            src="/brand/sqrz_logo.png"
+            alt="SQRZ"
+            style={{ height: "14px", width: "auto", opacity: 0.8 }}
+          />
+          <span>powered by SQRZ</span>
+        </a>
+      </div>
+
       </div>
     </main>
     <CookieBanner templateId={profile.template_id as string} />
