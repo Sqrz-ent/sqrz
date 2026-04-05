@@ -1,0 +1,43 @@
+import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function POST(req: NextRequest) {
+  const { name, email, booking_id, invite_token } = await req.json();
+
+  if (!email || !booking_id || !invite_token) {
+    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  const bookingUrl = `https://dashboard.sqrz.com/booking/${booking_id}?token=${invite_token}`;
+
+  const { error } = await resend.emails.send({
+    from: "SQRZ <bookings@sqrz.com>",
+    to: email,
+    subject: "Your booking request has been received",
+    html: `
+      <div style="font-family: 'DM Sans', sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; color: #111111;">
+        <p style="font-size: 18px; font-weight: 600; margin: 0 0 12px;">Hi ${name || "there"},</p>
+        <p style="font-size: 15px; line-height: 1.6; margin: 0 0 24px; color: #444444;">
+          Your booking request has been received. You can track its status and communicate with the artist using the link below.
+        </p>
+        <a href="${bookingUrl}"
+           style="display: inline-block; padding: 14px 24px; background: #F5A623; color: #111111; font-weight: 700; font-size: 15px; border-radius: 10px; text-decoration: none;">
+          View your booking →
+        </a>
+        <p style="font-size: 13px; color: #888888; margin: 28px 0 0; line-height: 1.5;">
+          Or copy this link: <a href="${bookingUrl}" style="color: #F5A623;">${bookingUrl}</a>
+        </p>
+        <hr style="border: none; border-top: 1px solid #eeeeee; margin: 28px 0;" />
+        <p style="font-size: 12px; color: #aaaaaa; margin: 0;">SQRZ · sqrz.com</p>
+      </div>
+    `,
+  });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ ok: true });
+}

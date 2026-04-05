@@ -89,7 +89,7 @@ export default function BookingModal({
     setLoading(true);
 
     try {
-      const { error: rpcError } = await supabase.rpc("create_booking_request", {
+      const { data: rpcData, error: rpcError } = await supabase.rpc("create_booking_request", {
         p_to_slug: username,
         p_from_name: name,
         p_from_email: email,
@@ -110,10 +110,13 @@ export default function BookingModal({
 
       if (rpcError) throw rpcError;
 
-      // Send magic link after booking is created (no OTP interruption mid-flow)
-      await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: true },
+      const { booking_id, invite_token } = rpcData as { success: boolean; booking_id: string; invite_token: string };
+
+      // Send confirmation email with guest access link
+      await fetch("/api/booking-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, booking_id, invite_token }),
       });
 
       setSuccess(true);
