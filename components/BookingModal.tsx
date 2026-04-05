@@ -83,9 +83,13 @@ export default function BookingModal({
         p_service: selectedService?.title ?? null,
         p_message: message,
         p_event_date: date || null,
-        p_location: [street, city, zip, country].filter(Boolean).join(", ") || null,
+        p_event_location: [city, country].filter(Boolean).join(", ") || null,
         p_budget_min: null,
         p_budget_max: null,
+        p_currency: "EUR",
+        p_source: "profile",
+        p_utm_source: null,
+        p_utm_campaign: null,
       });
 
       if (rpcError) throw rpcError;
