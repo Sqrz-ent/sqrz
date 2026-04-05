@@ -94,7 +94,6 @@ export default function BookingModal({
         p_from_name: name,
         p_from_email: email,
         p_service: selectedService?.title ?? null,
-        // simplified: use link description as message; normal: use what user typed
         p_message: simplified
           ? (prefilledDescription ?? prefilledTitle ?? "")
           : message,
@@ -112,35 +111,44 @@ export default function BookingModal({
 
       console.log("[BookingModal] rpcData raw:", JSON.stringify(rpcData));
 
-      // Handle string JSON, array-wrapped, or plain object responses
-      let parsed = rpcData;
-      if (typeof parsed === "string") {
-        try { parsed = JSON.parse(parsed); } catch { /* leave as-is */ }
-      }
-      if (Array.isArray(parsed)) parsed = parsed[0];
-      const result = parsed as Record<string, unknown> | null;
-
-      // Support both 'invite_token' and 'token' field names
-      const booking_id = result?.booking_id as string | undefined;
-      const invite_token = (result?.invite_token ?? result?.token) as string | undefined;
-
-      console.log("[BookingModal] booking_id:", booking_id, "invite_token:", invite_token);
-
-      if (!booking_id || !invite_token) {
-        console.error("[BookingModal] missing booking_id or invite_token — rpcData was:", JSON.stringify(rpcData));
-        // Still show success to the user; email will be missing but booking was created
-        setSuccess(true);
-        return;
+      // Normalise: handle string JSON, array-wrapped, or plain object
+      let result: Record<string, unknown> = {};
+      if (typeof rpcData === "string") {
+        try { result = JSON.parse(rpcData); } catch { result = {}; }
+      } else if (Array.isArray(rpcData)) {
+        result = (rpcData[0] as Record<string, unknown>) ?? {};
+      } else if (rpcData && typeof rpcData === "object") {
+        result = rpcData as Record<string, unknown>;
       }
 
-      // Send confirmation email with guest access link
-      const confirmRes = await fetch("/api/booking-confirm", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, booking_id, invite_token }),
-      });
-      const confirmJson = await confirmRes.json().catch(() => ({}));
-      console.log("[BookingModal] booking-confirm response:", confirmRes.status, JSON.stringify(confirmJson));
+      const booking_id = result.booking_id as string | undefined;
+      const invite_token = (result.invite_token ?? result.token) as string | undefined;
+
+      console.log("[BookingModal] extracted — booking_id:", booking_id, "invite_token:", invite_token);
+
+      // Always attempt email — let the route surface errors if fields missing
+      try {
+        const confirmRes = await fetch("/api/booking-confirm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            booking_id,
+            invite_token,
+            requester_name: name,
+            requester_email: email,
+            artist_name: username,
+            service: selectedService?.title ?? null,
+          }),
+        });
+        const confirmJson = await confirmRes.json().catch(() => ({}));
+        if (!confirmRes.ok) {
+          console.error("[BookingModal] booking-confirm error:", confirmRes.status, confirmJson);
+        } else {
+          console.log("[BookingModal] booking-confirm ok:", confirmJson);
+        }
+      } catch (emailErr) {
+        console.error("[BookingModal] booking-confirm fetch threw:", emailErr);
+      }
 
       setSuccess(true);
     } catch (err: unknown) {
