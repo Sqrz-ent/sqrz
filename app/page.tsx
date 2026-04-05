@@ -245,9 +245,6 @@ export default async function HomePage({
     console.log("[views] insert error:", viewError?.message || "none");
     console.log("[views] service key defined:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-    adminSupabase.rpc("increment_profile_view_count", {
-      p_slug: profile.slug,
-    }).then(() => {});
   }
 
   // Claim banner — verify token matches this profile and hasn't been claimed yet
@@ -337,25 +334,15 @@ export default async function HomePage({
     return url;
   }
 
-  // Photo gallery — bulletproof parse, never crash the page
-  let photoGallery: string[] = [];
-  try {
-    const raw = profile.widget_photo_gallery;
-    if (Array.isArray(raw)) {
-      photoGallery = raw
-        .filter((u): u is string => typeof u === "string" && u.startsWith("http"))
-        .map(transformGalleryUrl);
-    } else if (typeof raw === "string" && raw.length > 0) {
-      const parsed = JSON.parse(raw);
-      photoGallery = Array.isArray(parsed)
-        ? parsed
-            .filter((u): u is string => typeof u === "string" && u.startsWith("http"))
-            .map(transformGalleryUrl)
-        : [];
-    }
-  } catch {
-    photoGallery = [];
-  }
+  // Photo gallery — fetched from profile_photos table
+  const { data: photosData } = await supabase
+    .from("profile_photos")
+    .select("url")
+    .eq("profile_id", profile.id as string)
+    .order("sort_order", { ascending: true });
+  const photoGallery = (photosData ?? [])
+    .map((p: { url: string }) => transformGalleryUrl(p.url))
+    .filter((u: string) => u.startsWith("http"));
 
   const servicesActive =
     profile.services_active === true && (profile.profile_services?.length ?? 0) > 0;
