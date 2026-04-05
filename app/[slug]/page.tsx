@@ -289,6 +289,8 @@ export default async function PrivateLinkPage({
             profileId={profile.id as string}
             accent={accent}
             prefillService={prefillServiceTitle}
+            prefilledTitle={link.title as string | null}
+            prefilledDescription={link.description as string | null}
           />
 
           <PoweredBy />

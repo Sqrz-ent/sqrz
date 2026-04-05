@@ -14,6 +14,9 @@ export default function BookingModal({
   services,
   profileId,
   initialService = null,
+  simplified = false,
+  prefilledTitle = null,
+  prefilledDescription = null,
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,8 +24,16 @@ export default function BookingModal({
   services: Service[];
   profileId: string;
   initialService?: Service | null;
+  simplified?: boolean;
+  prefilledTitle?: string | null;
+  prefilledDescription?: string | null;
 }) {
-  const [step, setStep] = useState<Step>(initialService ? 1 : 0);
+  // simplified: start at step 1 (skip service selection)
+  // normal with initialService: start at step 1
+  // normal without: start at step 0
+  const initialStep: Step = simplified || initialService ? 1 : 0;
+
+  const [step, setStep] = useState<Step>(initialStep);
   const [selectedService, setSelectedService] = useState<Service | null>(initialService ?? null);
 
   const [name, setName] = useState("");
@@ -50,17 +61,18 @@ export default function BookingModal({
 
   if (!open) return null;
 
-  // ─── Step 1 → Step 2: validate name + email ───────────────────────────────
+  // ─── Step navigation ──────────────────────────────────────────────────────
+
   function nextFromStep1() {
     if (!name || !email) {
       setError("Please enter your name and email.");
       return;
     }
     setError(null);
-    setStep(2);
+    // simplified: skip step 2 (project/description), go straight to date
+    setStep(simplified ? 3 : 2);
   }
 
-  // ─── Step 2 → Step 3 ─────────────────────────────────────────────────────
   function nextFromStep2() {
     if (!message) {
       setError("Please add a short description.");
@@ -77,26 +89,28 @@ export default function BookingModal({
     setLoading(true);
 
     try {
-      // 1. Create booking request via RPC (status = 'requested')
       const { error: rpcError } = await supabase.rpc("create_booking_request", {
         p_to_slug: username,
         p_from_name: name,
         p_from_email: email,
         p_service: selectedService?.title ?? null,
-        p_message: message,
+        // simplified: use link description as message; normal: use what user typed
+        p_message: simplified
+          ? (prefilledDescription ?? prefilledTitle ?? "")
+          : message,
         p_event_date: date || null,
         p_event_location: [city, country].filter(Boolean).join(", ") || null,
         p_budget_min: null,
         p_budget_max: null,
         p_currency: "EUR",
-        p_source: "profile",
+        p_source: "private_link",
         p_utm_source: null,
         p_utm_campaign: null,
       });
 
       if (rpcError) throw rpcError;
 
-      // 2. Send magic link so guest can access their booking later
+      // Send magic link after booking is created (no OTP interruption mid-flow)
       await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true },
@@ -126,21 +140,28 @@ export default function BookingModal({
     );
   }
 
-  const stepNumber = step + 1;
-  const totalSteps = 5;
+  // ─── Step indicator ───────────────────────────────────────────────────────
+  // simplified: steps 1,3,4 → display 1,2,3 of 3
+  // normal:     steps 0-4   → display 1-5 of 5
+  const totalSteps = simplified ? 3 : 5;
+  const stepNumber = simplified
+    ? (step === 1 ? 1 : step === 3 ? 2 : 3)
+    : step + 1;
 
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <button onClick={onClose} style={closeStyle}>✕</button>
 
-        <h2 style={{ marginBottom: 8 }}>Booking Request</h2>
+        <h2 style={{ marginBottom: 8 }}>
+          {simplified ? (prefilledTitle ?? "Booking Request") : "Booking Request"}
+        </h2>
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", paddingBottom: 40 }}>
           <form onSubmit={handleSubmit}>
 
-            {/* STEP 0 — Select service */}
-            {step === 0 && (
+            {/* STEP 0 — Select service (normal mode only) */}
+            {step === 0 && !simplified && (
               <>
                 <h3 style={{ marginBottom: 12 }}>Select a service</h3>
                 {services.length === 0 ? (
@@ -183,8 +204,8 @@ export default function BookingModal({
               </>
             )}
 
-            {/* STEP 2 — Project + description */}
-            {step === 2 && (
+            {/* STEP 2 — Project + description (normal mode only) */}
+            {step === 2 && !simplified && (
               <>
                 <input
                   type="text"
@@ -229,13 +250,14 @@ export default function BookingModal({
                 />
                 {error && <p style={errorStyle}>{error}</p>}
                 <div style={buttonRowStyle}>
-                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(2)}>Back</button>
+                  {/* Back goes to step 1 in simplified, step 2 in normal */}
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(simplified ? 1 : 2)}>Back</button>
                   <button type="button" style={submitStyle} onClick={() => setStep(4)}>Continue</button>
                 </div>
               </>
             )}
 
-            {/* STEP 4 — Location + submit */}
+            {/* STEP 4 — Address + submit */}
             {step === 4 && (
               <>
                 <input type="text" placeholder="Street & number" value={street} onChange={(e) => setStreet(e.target.value)} style={inputStyle} />
