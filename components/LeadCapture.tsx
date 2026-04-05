@@ -24,12 +24,11 @@ export default function LeadCapture({
     setStatus("loading");
 
     try {
-      const { error } = await supabase.from("booking_requests").insert({
-        to_profile_id: profileId,
-        from_profile_id: null,
-        message: email,
-        source: "lead_capture",
-        status: "new",
+      const { error } = await supabase.from("intent_events").insert({
+        profile_id: profileId,
+        event_type: "form_submit",
+        partial_email: email,
+        converted_to_request: false,
       });
 
       if (error) throw error;
