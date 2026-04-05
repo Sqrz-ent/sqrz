@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import BookingLinkForm from "./BookingLinkForm";
 
 export const revalidate = 0;
 
@@ -12,8 +11,6 @@ const TEMPLATE_ACCENTS: Record<string, string> = {
   studio: "#38BDF8",
 };
 const DEFAULT_ACCENT = "#F5A623";
-
-type PageType = "booking" | "download" | "event" | "merch" | "press";
 
 function getInitials(name: string): string {
   return name
@@ -39,7 +36,7 @@ function getUsernameFromHost(host: string): string | null {
     return username;
   }
 
-  return null; // custom domains handled below via DB lookup
+  return null;
 }
 
 async function getUsernameFromCustomDomain(host: string): Promise<string | null> {
@@ -53,7 +50,7 @@ async function getUsernameFromCustomDomain(host: string): Promise<string | null>
   return data?.slug ?? null;
 }
 
-// ─── Shared layout pieces ─────────────────────────────────────────────────────
+// ─── Shared layout ────────────────────────────────────────────────────────────
 
 const shell: React.CSSProperties = {
   minHeight: "100vh",
@@ -68,15 +65,6 @@ const container: React.CSSProperties = {
   width: "100%",
   maxWidth: 520,
   padding: "32px 20px 80px",
-};
-
-const coverImg: React.CSSProperties = {
-  width: "100%",
-  aspectRatio: "16/9",
-  objectFit: "cover",
-  borderRadius: 16,
-  marginBottom: 24,
-  display: "block",
 };
 
 function PoweredBy() {
@@ -128,20 +116,6 @@ function CtaButton({
   );
 }
 
-function formatEventDate(dateStr: string | null) {
-  if (!dateStr) return null;
-  try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default async function PrivateLinkPage({
@@ -173,25 +147,16 @@ export default async function PrivateLinkPage({
   // 1. Find profile
   const { data: profile } = await supabase
     .from("profiles")
-    .select(
-      "id, slug, name, avatar_url, template_id, email, bio, profile_services(*)"
-    )
+    .select("id, slug, name, avatar_url, template_id")
     .eq("slug", username)
     .single();
 
   if (!profile) return notFound();
 
-  const hasRealAvatar =
-    profile.avatar_url &&
-    !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
-    !String(profile.avatar_url).includes("placeholder.");
-
-  const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
-
   // 2. Find the active private link
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("*")
+    .select("id, link_slug, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -205,8 +170,7 @@ export default async function PrivateLinkPage({
   }
 
   // 4. Check max uses
-  const maxUsesReached =
-    link.max_uses != null && link.use_count >= link.max_uses;
+  const maxUsesReached = link.max_uses != null && link.use_count >= link.max_uses;
 
   // 5. Increment use_count
   if (!maxUsesReached) {
@@ -216,9 +180,13 @@ export default async function PrivateLinkPage({
       .eq("id", link.id);
   }
 
-  const accent =
-    TEMPLATE_ACCENTS[profile.template_id as string ?? ""] ?? DEFAULT_ACCENT;
-  const pageType = link.page_type as PageType;
+  const accent = TEMPLATE_ACCENTS[profile.template_id as string ?? ""] ?? DEFAULT_ACCENT;
+
+  const hasRealAvatar =
+    profile.avatar_url &&
+    !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
+    !String(profile.avatar_url).includes("placeholder.");
+  const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
 
   // Max uses exhausted
   if (maxUsesReached) {
@@ -240,374 +208,98 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── BOOKING ────────────────────────────────────────────────────────────────
-  if (pageType === "booking") {
-    const services = (profile.profile_services ?? []) as Array<{
-      id: string;
-      title: string;
-      price_min: number | null;
-      price_max: number | null;
-      price_label: string | null;
-      currency: string | null;
-    }>;
-
-    return (
-      <div style={shell}>
-        <div style={container}>
-          {/* Profile header */}
-          <div
+  return (
+    <div style={shell}>
+      <div style={container}>
+        {/* Cover image */}
+        {link.cover_image_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={link.cover_image_url}
+            alt={link.title ?? "Cover"}
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
+              width: "100%",
+              aspectRatio: "16/9",
+              objectFit: "cover",
+              borderRadius: 16,
               marginBottom: 24,
+              display: "block",
             }}
-          >
-            {profileAvatarSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profileAvatarSrc}
-                alt={profile.name ?? username}
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  background: "#F5A623",
-                  color: "white",
-                  fontSize: 18,
-                  fontWeight: 800,
-                  fontFamily: "Barlow Condensed, sans-serif",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                {getInitials(profile.name ?? username)}
-              </div>
-            )}
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 16, color: "#111" }}>
-                {profile.name ?? username}
-              </div>
-              {profile.bio && (
-                <div style={{ fontSize: 13, color: "#666", marginTop: 2 }}>
-                  {profile.bio}
-                </div>
-              )}
-            </div>
-          </div>
+          />
+        )}
 
-          {link.title && (
-            <h1
-              style={{
-                fontSize: 28,
-                fontWeight: 800,
-                color: "#111",
-                margin: "0 0 8px",
-                lineHeight: 1.2,
-              }}
-            >
-              {link.title}
-            </h1>
-          )}
-          {link.description && (
-            <p
-              style={{
-                fontSize: 15,
-                color: "#555",
-                margin: "0 0 24px",
-                lineHeight: 1.6,
-              }}
-            >
-              {link.description}
-            </p>
-          )}
-
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: "24px 20px",
-              boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
-            }}
-          >
-            <BookingLinkForm
-              username={username}
-              accent={accent}
-              prefillService={link.prefill_service}
-              prefillEventDate={link.prefill_event_date}
-              prefillBudgetMin={link.prefill_budget_min}
-              prefillBudgetMax={link.prefill_budget_max}
-              prefillMessage={link.prefill_message}
-              prefillLocation={link.prefill_location}
-              services={services}
+        {/* Profile attribution */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+          {profileAvatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profileAvatarSrc}
+              alt={profile.name ?? username}
+              style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
             />
-          </div>
-
-          <PoweredBy />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── DOWNLOAD ───────────────────────────────────────────────────────────────
-  if (pageType === "download") {
-    return (
-      <div style={shell}>
-        <div style={container}>
-          {link.cover_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={link.cover_image_url} alt={link.title ?? "Cover"} style={coverImg} />
-          )}
-          {link.title && (
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#111", margin: "0 0 8px", lineHeight: 1.2 }}>
-              {link.title}
-            </h1>
-          )}
-          {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 16px", lineHeight: 1.6 }}>
-              {link.description}
-            </p>
-          )}
-          {link.price && (
-            <div style={{ fontSize: 24, fontWeight: 700, color: accent, marginBottom: 20 }}>
-              {link.price}
-            </div>
-          )}
-          {link.stripe_payment_link_url && (
-            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
-              Buy Now →
-            </CtaButton>
-          )}
-          {link.external_url && (
-            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
-              <CtaButton href={link.external_url} accent={accent}>
-                {link.external_url_label || "Download"}
-              </CtaButton>
-            </div>
-          )}
-          <PoweredBy />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── EVENT ──────────────────────────────────────────────────────────────────
-  if (pageType === "event") {
-    return (
-      <div style={shell}>
-        <div style={container}>
-          {link.cover_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={link.cover_image_url} alt={link.event_name ?? "Event"} style={coverImg} />
-          )}
-          {link.event_name && (
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.2 }}>
-              {link.event_name}
-            </h1>
-          )}
-          {formatEventDate(link.event_date) && (
-            <div style={{ fontSize: 15, fontWeight: 600, color: accent, marginBottom: 4 }}>
-              {formatEventDate(link.event_date)}
-            </div>
-          )}
-          {(link.event_venue || link.event_city) && (
-            <div style={{ fontSize: 14, color: "#666", marginBottom: 16 }}>
-              {[link.event_venue, link.event_city].filter(Boolean).join(" · ")}
-            </div>
-          )}
-          {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 24px", lineHeight: 1.6 }}>
-              {link.description}
-            </p>
-          )}
-          {link.stripe_payment_link_url && (
-            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
-              Get Tickets →
-            </CtaButton>
-          )}
-          {link.external_url && (
-            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
-              <CtaButton href={link.external_url} accent={accent}>
-                {link.external_url_label || "Download"}
-              </CtaButton>
-            </div>
-          )}
-          <PoweredBy />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── MERCH ──────────────────────────────────────────────────────────────────
-  if (pageType === "merch") {
-    return (
-      <div style={shell}>
-        <div style={container}>
-          {link.cover_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={link.cover_image_url} alt={link.title ?? "Product"} style={coverImg} />
-          )}
-          {link.title && (
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#111", margin: "0 0 8px", lineHeight: 1.2 }}>
-              {link.title}
-            </h1>
-          )}
-          {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 12px", lineHeight: 1.6 }}>
-              {link.description}
-            </p>
-          )}
-          {link.price && (
-            <div style={{ fontSize: 24, fontWeight: 700, color: accent, marginBottom: 8 }}>
-              {link.price}
-            </div>
-          )}
-          {link.inventory_count != null && (
-            <div style={{ fontSize: 13, color: "#888", marginBottom: 20 }}>
-              {link.inventory_count} remaining
-            </div>
-          )}
-          {link.stripe_payment_link_url && (
-            <CtaButton href={link.stripe_payment_link_url} accent={accent}>
-              Buy Now →
-            </CtaButton>
-          )}
-          {link.external_url && (
-            <div style={{ marginTop: link.stripe_payment_link_url ? 12 : 0 }}>
-              <CtaButton href={link.external_url} accent={accent}>
-                {link.external_url_label || "Download"}
-              </CtaButton>
-            </div>
-          )}
-          <PoweredBy />
-        </div>
-      </div>
-    );
-  }
-
-  // ─── PRESS ──────────────────────────────────────────────────────────────────
-  if (pageType === "press") {
-    return (
-      <div style={shell}>
-        <div style={container}>
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 16,
-              padding: "24px 20px",
-              marginBottom: 20,
-              boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
-              display: "flex",
-              alignItems: "center",
-              gap: 16,
-            }}
-          >
-            {profileAvatarSrc ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profileAvatarSrc}
-                alt={profile.name ?? username}
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  flexShrink: 0,
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 72,
-                  height: 72,
-                  borderRadius: "50%",
-                  background: "#F5A623",
-                  color: "white",
-                  fontSize: 28,
-                  fontWeight: 800,
-                  fontFamily: "Barlow Condensed, sans-serif",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                {getInitials(profile.name ?? username)}
-              </div>
-            )}
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 20, color: "#111" }}>
-                {profile.name ?? username}
-              </div>
-              {profile.bio && (
-                <div style={{ fontSize: 14, color: "#555", marginTop: 4, lineHeight: 1.5 }}>
-                  {profile.bio}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 24px", lineHeight: 1.6 }}>
-              {link.description}
-            </p>
-          )}
-
-          {link.external_url && (
-            <div style={{ marginBottom: 20 }}>
-              <CtaButton href={link.external_url} accent={accent}>
-                {link.external_url_label || "Download"}
-              </CtaButton>
-            </div>
-          )}
-
-          {profile.email && (
+          ) : (
             <div
               style={{
-                background: "#fff",
-                borderRadius: 12,
-                padding: "16px 20px",
-                boxShadow: "0 2px 16px rgba(0,0,0,0.07)",
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                background: accent,
+                color: "white",
+                fontSize: 15,
+                fontWeight: 800,
+                fontFamily: "Barlow Condensed, sans-serif",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
-                  color: "#888",
-                  marginBottom: 4,
-                }}
-              >
-                Contact
-              </div>
-              <a
-                href={`mailto:${profile.email}`}
-                style={{ fontSize: 15, fontWeight: 600, color: accent, textDecoration: "none" }}
-              >
-                {profile.email}
-              </a>
+              {getInitials(profile.name ?? username)}
             </div>
           )}
-
-          <PoweredBy />
+          <span style={{ fontWeight: 600, fontSize: 15, color: "#333" }}>
+            {profile.name ?? username}
+          </span>
         </div>
-      </div>
-    );
-  }
 
-  return notFound();
+        {/* Title */}
+        {link.title && (
+          <h1
+            style={{
+              fontSize: 28,
+              fontWeight: 800,
+              color: "#111",
+              margin: "0 0 10px",
+              lineHeight: 1.2,
+            }}
+          >
+            {link.title}
+          </h1>
+        )}
+
+        {/* Description */}
+        {link.description && (
+          <p
+            style={{
+              fontSize: 15,
+              color: "#555",
+              margin: "0 0 28px",
+              lineHeight: 1.6,
+            }}
+          >
+            {link.description}
+          </p>
+        )}
+
+        {/* CTA */}
+        {link.external_url && (
+          <CtaButton href={link.external_url} accent={accent}>
+            {link.external_url_label || "Learn More →"}
+          </CtaButton>
+        )}
+
+        <PoweredBy />
+      </div>
+    </div>
+  );
 }
