@@ -4,15 +4,23 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
-  const { name, email, booking_id, invite_token } = await req.json();
+  console.log("[booking-confirm] route called");
+  console.log("[booking-confirm] RESEND_API_KEY present:", !!process.env.RESEND_API_KEY);
+
+  const body = await req.json();
+  console.log("[booking-confirm] received body:", JSON.stringify(body));
+
+  const { name, email, booking_id, invite_token } = body;
 
   if (!email || !booking_id || !invite_token) {
+    console.log("[booking-confirm] missing fields — email:", !!email, "booking_id:", !!booking_id, "invite_token:", !!invite_token);
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   const bookingUrl = `https://dashboard.sqrz.com/booking/${booking_id}?token=${invite_token}`;
+  console.log("[booking-confirm] sending to:", email, "url:", bookingUrl);
 
-  const { error } = await resend.emails.send({
+  const { data: resendData, error } = await resend.emails.send({
     from: "SQRZ <bookings@sqrz.com>",
     to: email,
     subject: "Your booking request has been received",
@@ -35,7 +43,10 @@ export async function POST(req: NextRequest) {
     `,
   });
 
+  console.log("[booking-confirm] resend response — data:", resendData, "error:", error);
+
   if (error) {
+    console.error("[booking-confirm] resend error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
