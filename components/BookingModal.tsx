@@ -112,12 +112,26 @@ export default function BookingModal({
 
       console.log("[BookingModal] rpcData raw:", JSON.stringify(rpcData));
 
-      // RPC may return an array or object depending on Supabase function return type
-      const result = (Array.isArray(rpcData) ? rpcData[0] : rpcData) as { success: boolean; booking_id: string; invite_token: string } | null;
-      const booking_id = result?.booking_id;
-      const invite_token = result?.invite_token;
+      // Handle string JSON, array-wrapped, or plain object responses
+      let parsed = rpcData;
+      if (typeof parsed === "string") {
+        try { parsed = JSON.parse(parsed); } catch { /* leave as-is */ }
+      }
+      if (Array.isArray(parsed)) parsed = parsed[0];
+      const result = parsed as Record<string, unknown> | null;
+
+      // Support both 'invite_token' and 'token' field names
+      const booking_id = result?.booking_id as string | undefined;
+      const invite_token = (result?.invite_token ?? result?.token) as string | undefined;
 
       console.log("[BookingModal] booking_id:", booking_id, "invite_token:", invite_token);
+
+      if (!booking_id || !invite_token) {
+        console.error("[BookingModal] missing booking_id or invite_token — rpcData was:", JSON.stringify(rpcData));
+        // Still show success to the user; email will be missing but booking was created
+        setSuccess(true);
+        return;
+      }
 
       // Send confirmation email with guest access link
       const confirmRes = await fetch("/api/booking-confirm", {
@@ -125,7 +139,7 @@ export default function BookingModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, booking_id, invite_token }),
       });
-      const confirmJson = await confirmRes.json();
+      const confirmJson = await confirmRes.json().catch(() => ({}));
       console.log("[BookingModal] booking-confirm response:", confirmRes.status, JSON.stringify(confirmJson));
 
       setSuccess(true);
