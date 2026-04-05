@@ -5,7 +5,7 @@ import type { Service } from "@/types/service";
 import { getServicePriceLabel } from "@/utils/serviceLabel";
 import { supabase } from "@/lib/supabase";
 
-type Step = 0 | 1 | "otp" | 2 | 3 | 4;
+type Step = 0 | 1 | 2 | 3 | 4;
 
 export default function BookingModal({
   open,
@@ -25,8 +25,6 @@ export default function BookingModal({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [otpCode, setOtpCode] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -50,50 +48,14 @@ export default function BookingModal({
 
   if (!open) return null;
 
-  // ─── Step 1 → OTP: send magic code ───────────────────────────────────────
-  async function nextFromStep1() {
+  // ─── Step 1 → Step 2: validate name + email ───────────────────────────────
+  function nextFromStep1() {
     if (!name || !email) {
       setError("Please enter your name and email.");
       return;
     }
     setError(null);
-    setLoading(true);
-    try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: true },
-      });
-      if (otpError) throw otpError;
-      setStep("otp");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to send code. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // ─── OTP → Step 2: verify code ───────────────────────────────────────────
-  async function verifyOtp() {
-    if (!otpCode || otpCode.length < 6) {
-      setError("Please enter the 6-digit code.");
-      return;
-    }
-    setError(null);
-    setLoading(true);
-    try {
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email",
-      });
-      if (verifyError) throw verifyError;
-      setUserId(data.user?.id ?? null);
-      setStep(2);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Invalid code. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    setStep(2);
   }
 
   // ─── Step 2 → Step 3 ─────────────────────────────────────────────────────
@@ -113,6 +75,7 @@ export default function BookingModal({
     setLoading(true);
 
     try {
+      // 1. Create the booking request
       const res = await fetch("/api/leads", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -122,7 +85,7 @@ export default function BookingModal({
           visitor_email: email,
           message,
           budget: null,
-          user_id: userId,
+          user_id: null,
           service: selectedService?.title ?? null,
           project_title: projectTitle || null,
           event_date: date || null,
@@ -132,6 +95,13 @@ export default function BookingModal({
       });
 
       if (!res.ok) throw new Error("Booking request failed");
+
+      // 2. Send magic link so guest can access their booking later
+      await supabase.auth.signInWithOtp({
+        email,
+        options: { shouldCreateUser: true },
+      });
+
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -148,16 +118,16 @@ export default function BookingModal({
           <button onClick={onClose} style={closeStyle}>✕</button>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: 12, textAlign: "center" }}>
             <div style={{ fontSize: 40 }}>🎉</div>
-            <h2>Request sent!</h2>
-            <p style={{ opacity: 0.7 }}>You'll hear back soon.</p>
+            <h2>Your request has been sent!</h2>
+            <p style={{ opacity: 0.7 }}>Check your email to confirm your booking request.</p>
           </div>
         </div>
       </div>
     );
   }
 
-  const stepNumber = step === 0 ? 1 : step === 1 ? 2 : step === "otp" ? 3 : step === 2 ? 4 : step === 3 ? 5 : 6;
-  const totalSteps = 6;
+  const stepNumber = step + 1;
+  const totalSteps = 5;
 
   return (
     <div style={overlayStyle}>
@@ -208,46 +178,8 @@ export default function BookingModal({
                 />
                 {error && <p style={errorStyle}>{error}</p>}
                 <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
-                  {loading ? "Sending code…" : "Continue"}
+                  Continue
                 </button>
-              </>
-            )}
-
-            {/* STEP OTP — verify email */}
-            {step === "otp" && (
-              <>
-                <p style={{ fontSize: 14, marginBottom: 16, lineHeight: 1.6, color: "#444" }}>
-                  We sent a 6-digit code to <strong>{email}</strong>. Check your inbox and enter it below.
-                </p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="6-digit code"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  style={{ ...inputStyle, letterSpacing: "0.2em", fontSize: 20, textAlign: "center" }}
-                  autoFocus
-                  maxLength={6}
-                />
-                {error && <p style={errorStyle}>{error}</p>}
-                <div style={buttonRowStyle}>
-                  <button type="button" style={secondaryButtonStyle} onClick={() => { setStep(1); setOtpCode(""); setError(null); }}>
-                    Back
-                  </button>
-                  <button type="button" style={submitStyle} onClick={verifyOtp} disabled={loading}>
-                    {loading ? "Verifying…" : "Verify"}
-                  </button>
-                </div>
-                <p style={{ fontSize: 12, color: "#888", marginTop: 12, textAlign: "center" }}>
-                  Didn&apos;t get it?{" "}
-                  <button
-                    type="button"
-                    onClick={nextFromStep1}
-                    style={{ background: "none", border: "none", color: "var(--accent-color, #F3B130)", cursor: "pointer", fontSize: 12, padding: 0 }}
-                  >
-                    Resend code
-                  </button>
-                </p>
               </>
             )}
 
@@ -271,7 +203,7 @@ export default function BookingModal({
                 />
                 {error && <p style={errorStyle}>{error}</p>}
                 <div style={buttonRowStyle}>
-                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep("otp")}>Back</button>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(1)}>Back</button>
                   <button type="button" style={submitStyle} onClick={nextFromStep2}>Continue</button>
                 </div>
               </>
