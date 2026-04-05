@@ -75,26 +75,20 @@ export default function BookingModal({
     setLoading(true);
 
     try {
-      // 1. Create the booking request
-      const res = await fetch("/api/leads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          profile_id: profileId,
-          visitor_name: name,
-          visitor_email: email,
-          message,
-          budget: null,
-          user_id: null,
-          service: selectedService?.title ?? null,
-          project_title: projectTitle || null,
-          event_date: date || null,
-          event_time: time || null,
-          location: [street, city, zip, country].filter(Boolean).join(", ") || null,
-        }),
+      // 1. Create booking request via RPC (status = 'requested')
+      const { error: rpcError } = await supabase.rpc("create_booking_request", {
+        p_to_slug: username,
+        p_from_name: name,
+        p_from_email: email,
+        p_service: selectedService?.title ?? null,
+        p_message: message,
+        p_event_date: date || null,
+        p_location: [street, city, zip, country].filter(Boolean).join(", ") || null,
+        p_budget_min: null,
+        p_budget_max: null,
       });
 
-      if (!res.ok) throw new Error("Booking request failed");
+      if (rpcError) throw rpcError;
 
       // 2. Send magic link so guest can access their booking later
       await supabase.auth.signInWithOtp({
