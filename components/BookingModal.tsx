@@ -13,15 +13,17 @@ export default function BookingModal({
   username,
   services,
   profileId,
+  initialService = null,
 }: {
   open: boolean;
   onClose: () => void;
   username: string;
   services: Service[];
   profileId: string;
+  initialService?: Service | null;
 }) {
-  const [step, setStep] = useState<Step>(0);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [step, setStep] = useState<Step>(initialService ? 1 : 0);
+  const [selectedService, setSelectedService] = useState<Service | null>(initialService ?? null);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

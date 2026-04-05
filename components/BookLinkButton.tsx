@@ -1,0 +1,58 @@
+"use client";
+
+import { useState } from "react";
+import type { Service } from "@/types/service";
+import BookingModal from "./BookingModal";
+
+export default function BookLinkButton({
+  username,
+  services,
+  profileId,
+  accent,
+  prefillService,
+}: {
+  username: string;
+  services: Service[];
+  profileId: string;
+  accent: string;
+  prefillService?: string | null;
+}) {
+  const [open, setOpen] = useState(false);
+
+  const initialService = prefillService
+    ? (services.find((s) => s.title === prefillService) ?? null)
+    : null;
+
+  return (
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          display: "block",
+          width: "100%",
+          padding: "14px",
+          background: accent,
+          color: "#fff",
+          borderRadius: 12,
+          fontSize: 16,
+          fontWeight: 700,
+          textAlign: "center",
+          border: "none",
+          cursor: "pointer",
+          fontFamily: "'DM Sans', ui-sans-serif, sans-serif",
+          boxSizing: "border-box",
+        }}
+      >
+        Book Me →
+      </button>
+      <BookingModal
+        open={open}
+        onClose={() => setOpen(false)}
+        username={username}
+        services={services}
+        profileId={profileId}
+        initialService={initialService}
+      />
+    </>
+  );
+}
