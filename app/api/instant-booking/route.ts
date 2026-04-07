@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 1. Create booking via RPC ──────────────────────────────────────────────
-  const { data: rpcData, error: rpcError } = await supabase.rpc("create_booking_request", {
+  const { data, error: rpcError } = await supabase.rpc("create_booking_request", {
     p_to_slug: to_slug,
     p_from_name: from_name,
     p_from_email: from_email,
@@ -48,43 +48,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
 
-  // Normalise RPC result
-  let result: Record<string, unknown> = {};
-  if (typeof rpcData === "string") {
-    try { result = JSON.parse(rpcData); } catch { result = {}; }
-  } else if (Array.isArray(rpcData)) {
-    result = (rpcData[0] as Record<string, unknown>) ?? {};
-  } else if (rpcData && typeof rpcData === "object") {
-    result = rpcData as Record<string, unknown>;
-  }
+  console.log("[instant-booking] RPC result:", JSON.stringify(data));
+  console.log("[instant-booking] invite_token:", data?.invite_token);
 
-  const booking_id = result.booking_id as string | undefined;
-  const invite_token = (result.invite_token ?? result.token) as string | undefined;
-
-  console.log("[instant-booking] RPC result — booking_id:", booking_id, "invite_token:", invite_token);
+  const booking_id = data?.booking_id as string | undefined;
+  const invite_token = data?.invite_token as string | undefined;
 
   if (!booking_id) {
-    console.error("[instant-booking] no booking_id in RPC result:", JSON.stringify(rpcData));
+    console.error("[instant-booking] no booking_id in RPC result — full data:", JSON.stringify(data));
     return NextResponse.json({ error: "Booking creation failed" }, { status: 500 });
   }
 
   // ── 2. Create Stripe Checkout Session ─────────────────────────────────────
   const currency = (instant_currency || "EUR").toLowerCase();
 
-  // Token in success_url so the guest lands on their booking after payment
   const successUrl = invite_token
     ? `https://dashboard.sqrz.com/booking/${booking_id}?token=${invite_token}&payment=success`
     : `https://dashboard.sqrz.com/booking/${booking_id}?payment=success`;
 
-  const metadata = {
+  console.log("[instant-booking] success_url:", successUrl);
+
+  const metadata: Record<string, string> = {
     booking_id,
-    invite_token: invite_token ?? "",
-    profile_id: profile_id ?? "",
     booking_type: "instant",
+    owner_profile_id: profile_id ?? "",
   };
+  if (invite_token) metadata.invite_token = invite_token;
 
   console.log("[instant-booking] creating checkout with metadata:", JSON.stringify(metadata));
-  console.log("[instant-booking] success_url:", successUrl);
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -107,7 +98,7 @@ export async function POST(req: NextRequest) {
     cancel_url: `https://${to_slug}.sqrz.com`,
   });
 
-  console.log("[instant-booking] checkout session created:", session.id);
+  console.log("[instant-booking] Stripe session created:", session.id, "url:", session.url);
 
   return NextResponse.json({ checkout_url: session.url });
 }
