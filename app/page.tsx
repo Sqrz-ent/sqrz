@@ -16,6 +16,7 @@ import {
   Youtube,
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
+import PaymentSuccessBanner from "@/components/PaymentSuccessBanner";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Skills from "@/components/Skills";
 import Services from "@/components/Services";
@@ -173,6 +174,8 @@ export default async function HomePage({
     preview?: string;
     username?: string;
     claim?: string;
+    payment?: string;
+    service?: string;
     utm_source?: string;
     utm_medium?: string;
     utm_campaign?: string;
@@ -383,8 +386,11 @@ const ticket = {
     backgroundColor: "#1a1a1a",
   };
 
+  const showPaymentBanner = params.payment === "success";
+
   return (
     <>
+    {showPaymentBanner && <PaymentSuccessBanner />}
     {showClaimBanner && (
       <div style={{
         position: "sticky",

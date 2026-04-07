@@ -71,9 +71,7 @@ export async function POST(req: NextRequest) {
   // ── 2. Create Stripe Checkout Session ─────────────────────────────────────
   const currency = (instant_currency || "EUR").toLowerCase();
 
-  const successUrl = inviteToken
-    ? `https://dashboard.sqrz.com/booking/${bookingId}?token=${inviteToken}&payment=success`
-    : `https://dashboard.sqrz.com/booking/${bookingId}?payment=success`;
+  const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
 
   console.log("[instant-booking] successUrl:", successUrl);
 
