@@ -50,10 +50,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
 
-  console.log("[instant-booking] raw RPC data:", JSON.stringify(data));
+  console.log("[instant-booking] raw data:", JSON.stringify(data));
 
-  const bookingId = data?.booking_id as string | undefined;
-  const inviteToken = data?.invite_token as string | undefined;
+  // Handle both array and object response shapes from Supabase RPC
+  const result = Array.isArray(data) ? data[0] : data;
+
+  console.log("[instant-booking] result:", JSON.stringify(result));
+
+  const bookingId = result?.booking_id as string | undefined;
+  const inviteToken = result?.invite_token as string | undefined;
 
   console.log("[instant-booking] bookingId:", bookingId);
   console.log("[instant-booking] inviteToken:", inviteToken);
