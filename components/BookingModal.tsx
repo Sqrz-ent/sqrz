@@ -50,6 +50,8 @@ export default function BookingModal({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const isInstant = selectedService?.booking_type === "instant";
+
   useEffect(() => {
     if (!open) return;
     const originalOverflow = document.body.style.overflow;
@@ -71,6 +73,38 @@ export default function BookingModal({
     setError(null);
     // simplified: skip step 2 (project/description), go straight to date
     setStep(simplified ? 3 : 2);
+  }
+
+  // ─── Instant booking pay ──────────────────────────────────────────────────
+  async function handleInstantPay() {
+    if (!name || !email) {
+      setError("Please enter your name and email.");
+      return;
+    }
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/instant-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to_slug: username,
+          from_name: name,
+          from_email: email,
+          message,
+          service_title: selectedService?.title ?? null,
+          instant_price: selectedService?.instant_price ?? 0,
+          instant_currency: selectedService?.instant_currency ?? "EUR",
+          profile_id: profileId,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Payment setup failed");
+      window.location.href = json.checkout_url;
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setLoading(false);
+    }
   }
 
   function nextFromStep2() {
@@ -212,7 +246,7 @@ export default function BookingModal({
               </>
             )}
 
-            {/* STEP 1 — Name + email */}
+            {/* STEP 1 — Name + email (+ project details if instant) */}
             {step === 1 && (
               <>
                 <input
@@ -231,10 +265,25 @@ export default function BookingModal({
                   style={inputStyle}
                   required
                 />
+                {isInstant && (
+                  <textarea
+                    placeholder="Project details (optional)"
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    style={textareaStyle}
+                    rows={4}
+                  />
+                )}
                 {error && <p style={errorStyle}>{error}</p>}
-                <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
-                  Continue
-                </button>
+                {isInstant ? (
+                  <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
+                    {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService)}`}
+                  </button>
+                ) : (
+                  <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
+                    Continue
+                  </button>
+                )}
               </>
             )}
 
@@ -311,10 +360,12 @@ export default function BookingModal({
           </form>
         </div>
 
-        {/* Step indicator */}
-        <p style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", opacity: 0.5, fontSize: 13, whiteSpace: "nowrap" }}>
-          Step {stepNumber} of {totalSteps}
-        </p>
+        {/* Step indicator — hidden for instant bookings */}
+        {!isInstant && (
+          <p style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)", opacity: 0.5, fontSize: 13, whiteSpace: "nowrap" }}>
+            Step {stepNumber} of {totalSteps}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -343,6 +394,22 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
       <div style={{ opacity: 0.7, fontSize: 13 }}>{getServicePriceLabel(service)}</div>
     </button>
   );
+}
+
+// ─── Instant price formatter ──────────────────────────────────────────────────
+
+function formatInstantPrice(service: Service | null): string {
+  if (!service?.instant_price) return "";
+  const currency = (service.instant_currency || "EUR").toUpperCase();
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0,
+    }).format(service.instant_price);
+  } catch {
+    return `${service.instant_price} ${currency}`;
+  }
 }
 
 /* ─── Styles ─────────────────────────────────────────────────────────────── */
