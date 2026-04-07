@@ -344,8 +344,10 @@ export default async function HomePage({
     .map((p: { url: string }) => transformGalleryUrl(p.url))
     .filter((u: string) => u.startsWith("http"));
 
-  const servicesActive =
-    profile.services_active === true && (profile.profile_services?.length ?? 0) > 0;
+  const activeServices = (profile.profile_services ?? []).filter(
+    (s: { is_active: boolean }) => s.is_active === true
+  );
+  const hasActiveServices = activeServices.length > 0;
 
 const ticket = {
     label: "Tickets on Eventim",
@@ -432,8 +434,8 @@ const ticket = {
       isPreview={isPreview}
     />
 
-{servicesActive && (
-  <BookMeButton username={profile.slug} services={profile.profile_services} profileId={profile.id} />
+{hasActiveServices && (
+  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} />
 )}
 <ViewTracker username={profile.slug} />
 
@@ -623,7 +625,7 @@ const ticket = {
 
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
-        {servicesActive && <Services services={profile.profile_services} />}
+        {hasActiveServices && <Services services={activeServices} />}
 
 
          {spotifyEmbed && (
