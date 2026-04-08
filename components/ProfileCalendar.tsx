@@ -11,7 +11,6 @@ type BookingEvent = {
   title: string | null;
   start: string;
   end?: string;
-  show_label?: boolean | null;
 };
 
 type AvailabilityBlock = {
@@ -32,7 +31,7 @@ export default function ProfileCalendar({
   if (bookingEvents.length === 0 && availabilityBlocks.length === 0) return null;
 
   const mappedBookings = bookingEvents.map((b) => ({
-    title: b.show_label ? (b.title || "Booked") : "Unavailable",
+    title: b.title || "Booked",
     start: b.start,
     end: b.end,
     backgroundColor: EVENT_BG,
