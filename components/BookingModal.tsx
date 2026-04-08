@@ -108,6 +108,10 @@ export default function BookingModal({
   }
 
   function nextFromStep2() {
+    if (!projectTitle) {
+      setError("Please enter a project name.");
+      return;
+    }
     if (!message) {
       setError("Please add a short description.");
       return;
@@ -128,6 +132,7 @@ export default function BookingModal({
         p_from_name: name,
         p_from_email: email,
         p_service: selectedService?.title ?? null,
+        p_title: projectTitle || null,
         p_message: simplified
           ? (prefilledDescription ?? prefilledTitle ?? "")
           : message,
@@ -290,19 +295,22 @@ export default function BookingModal({
             {/* STEP 2 — Project + description (normal mode only) */}
             {step === 2 && !simplified && (
               <>
+                <label style={labelStyle}>Project name *</label>
                 <input
                   type="text"
-                  placeholder="Project name"
+                  placeholder="e.g. Club Night Berlin, Wedding Reception, Album Mix..."
                   value={projectTitle}
                   onChange={(e) => setProjectTitle(e.target.value)}
                   style={inputStyle}
+                  required
                 />
+                <label style={labelStyle}>Tell us more</label>
                 <textarea
-                  placeholder="Tell us about your event, location, requirements…"
+                  placeholder="Event details, location, special requirements…"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   style={textareaStyle}
-                  rows={5}
+                  rows={4}
                   required
                 />
                 {error && <p style={errorStyle}>{error}</p>}
