@@ -733,6 +733,8 @@ const ticket = {
     </main>
     <LegalFooter
       profileName={(profile.name as string) ?? null}
+      companyName={(profile.company_name as string) ?? null}
+      legalForm={(profile.legal_form as string) ?? null}
       companyAddress={(profile.company_address as string) ?? null}
       vatId={(profile.vat_id as string) ?? null}
       tradeRegisterCourt={(profile.trade_register_court as string) ?? null}

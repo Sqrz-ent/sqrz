@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 
 type Props = {
   profileName: string | null;
+  companyName: string | null;
+  legalForm: string | null;
   companyAddress: string | null;
   vatId: string | null;
   tradeRegisterCourt: string | null;
@@ -16,6 +18,8 @@ type Props = {
 
 export default function LegalFooter({
   profileName,
+  companyName,
+  legalForm,
   companyAddress,
   vatId,
   tradeRegisterCourt,
@@ -28,22 +32,18 @@ export default function LegalFooter({
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
 
-  // Animate in/out
   useEffect(() => {
     if (open) {
-      // Mount then slide up
       requestAnimationFrame(() => setVisible(true));
     } else {
       setVisible(false);
     }
   }, [open]);
 
-  // Close on hash link click
   useEffect(() => {
     function onHashChange() {
       if (window.location.hash === "#legal") {
         setOpen(true);
-        // Clear hash without scroll
         history.replaceState(null, "", window.location.pathname + window.location.search);
       }
     }
@@ -51,10 +51,19 @@ export default function LegalFooter({
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
 
-  const hasLegalFields = !!(responsiblePerson || vatId);
-  const displayName = responsiblePerson || profileName || "";
+  const displayName = companyName || profileName || "";
   const privacyUrl = externalPrivacyUrl || "https://sqrz.com/privacy";
   const year = new Date().getFullYear();
+
+  // Section 2: Business Details
+  const hasBusinessDetails = !!(vatId || tradeRegisterCourt || tradeRegisterNumber || regulatoryBody || responsiblePerson);
+  const tradeRegister = [tradeRegisterCourt, tradeRegisterNumber].filter(Boolean).join(" · ");
+
+  // Section 3: Data Protection
+  const hasDataProtection = !!(dpoEmail || externalPrivacyUrl);
+
+  // Section 1: Identity
+  const hasIdentity = !!(displayName || legalForm || companyAddress);
 
   return (
     <>
@@ -65,7 +74,7 @@ export default function LegalFooter({
         opacity: 0.45,
       }}>
         <span style={{ fontSize: 12, color: "inherit", fontFamily: "ui-sans-serif, system-ui, sans-serif" }}>
-          © {year} {profileName}
+          © {year} {displayName || profileName}
           {" · "}
           <button
             onClick={() => setOpen(true)}
@@ -113,7 +122,7 @@ export default function LegalFooter({
               color: "#111",
               borderRadius: "16px 16px 0 0",
               padding: "24px 24px 40px",
-              maxHeight: "75vh",
+              maxHeight: "80vh",
               overflowY: "auto",
               transform: visible ? "translateY(0)" : "translateY(100%)",
               transition: "transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
@@ -142,68 +151,78 @@ export default function LegalFooter({
               </button>
             </div>
 
-            {hasLegalFields ? (
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#999", margin: "0 0 20px" }}>
+              Legal Information
+            </p>
+
+            {/* Section 1: Identity */}
+            {hasIdentity && (
+              <section style={{ marginBottom: 20 }}>
+                {displayName && <p style={nameStyle}>{displayName}</p>}
+                {legalForm && <p style={lineStyle}>{legalForm}</p>}
+                {companyAddress && <p style={lineStyle}>{companyAddress}</p>}
+              </section>
+            )}
+
+            {/* Section 2: Business Details */}
+            {hasBusinessDetails && (
               <>
-                {/* User Impressum */}
-                <section style={{ marginBottom: 24 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#999", margin: "0 0 12px" }}>
-                    Impressum
-                  </p>
-                  {displayName && (
-                    <p style={lineStyle}>{displayName}</p>
-                  )}
-                  {companyAddress && (
-                    <p style={lineStyle}>{companyAddress}</p>
-                  )}
-                  {vatId && (
-                    <p style={lineStyle}>VAT ID: {vatId}</p>
-                  )}
-                  {(tradeRegisterCourt || tradeRegisterNumber) && (
-                    <p style={lineStyle}>
-                      Trade Register: {[tradeRegisterCourt, tradeRegisterNumber].filter(Boolean).join(" · ")}
-                    </p>
-                  )}
-                  {regulatoryBody && (
-                    <p style={lineStyle}>Regulatory Body: {regulatoryBody}</p>
-                  )}
+                <div style={divider} />
+                <section style={{ marginTop: 16, marginBottom: 20 }}>
+                  <p style={sectionLabel}>Business Information</p>
+                  {vatId && <p style={lineStyle}>VAT ID: {vatId}</p>}
+                  {tradeRegister && <p style={lineStyle}>Trade Register: {tradeRegister}</p>}
+                  {regulatoryBody && <p style={lineStyle}>Regulatory Body: {regulatoryBody}</p>}
+                  {responsiblePerson && <p style={lineStyle}>Responsible Person: {responsiblePerson}</p>}
+                </section>
+              </>
+            )}
+
+            {/* Section 3: Data & Privacy */}
+            {hasDataProtection && (
+              <>
+                <div style={divider} />
+                <section style={{ marginTop: 16, marginBottom: 20 }}>
+                  <p style={sectionLabel}>Data &amp; Privacy</p>
                   {dpoEmail && (
                     <p style={lineStyle}>
-                      DPO: <a href={`mailto:${dpoEmail}`} style={linkStyle}>{dpoEmail}</a>
+                      Data Protection Officer:{" "}
+                      <a href={`mailto:${dpoEmail}`} style={linkStyle}>{dpoEmail}</a>
                     </p>
                   )}
-                  <p style={{ ...lineStyle, marginTop: 8 }}>
+                  <p style={lineStyle}>
+                    Privacy Policy:{" "}
                     <a href={privacyUrl} target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                      Privacy Policy ↗
+                      {externalPrivacyUrl ? "View Privacy Policy ↗" : "SQRZ Privacy Policy ↗"}
                     </a>
                   </p>
                 </section>
-
-                <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: 16 }}>
-                  <p style={{ fontSize: 12, color: "#999", margin: 0, lineHeight: 1.6 }}>
-                    This site uses tracking technologies.{" "}
-                    <a href="https://sqrz.com/privacy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                      SQRZ Privacy Policy
-                    </a>
-                  </p>
-                </div>
-              </>
-            ) : (
-              <>
-                <p style={{ fontSize: 13, color: "#555", margin: "0 0 12px" }}>
-                  Powered by{" "}
-                  <a href="https://sqrz.com" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                    SQRZ
-                  </a>
-                  {" · "}
-                  <a href="https://sqrz.com/privacy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                    Privacy Policy
-                  </a>
-                </p>
-                <p style={{ fontSize: 12, color: "#999", margin: 0, lineHeight: 1.6 }}>
-                  This site uses tracking technologies to improve your experience.
-                </p>
               </>
             )}
+
+            {/* Tracking disclosure */}
+            {(hasIdentity || hasBusinessDetails || hasDataProtection) && (
+              <div style={{ ...lineStyle, fontSize: 12, color: "#aaa", lineHeight: 1.6, marginBottom: 20 }}>
+                This page may use analytics and tracking technologies. See{" "}
+                <a href="https://sqrz.com/privacy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                  SQRZ Privacy Policy
+                </a>{" "}
+                for details.
+              </div>
+            )}
+
+            {/* Section 4: Powered by SQRZ — always shown */}
+            <div style={divider} />
+            <p style={{ fontSize: 12, color: "#bbb", margin: "16px 0 0", lineHeight: 1.6 }}>
+              Powered by{" "}
+              <a href="https://sqrz.com" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                SQRZ
+              </a>
+              {" · "}
+              <a href="https://sqrz.com/privacy" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                sqrz.com/privacy
+              </a>
+            </p>
           </div>
         </>
       )}
@@ -211,11 +230,32 @@ export default function LegalFooter({
   );
 }
 
+const nameStyle: React.CSSProperties = {
+  fontSize: 15,
+  fontWeight: 600,
+  color: "#111",
+  margin: "0 0 4px",
+  lineHeight: 1.4,
+};
+
 const lineStyle: React.CSSProperties = {
   fontSize: 13,
   color: "#444",
   margin: "0 0 4px",
   lineHeight: 1.6,
+};
+
+const sectionLabel: React.CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  color: "#999",
+  margin: "0 0 10px",
+};
+
+const divider: React.CSSProperties = {
+  borderTop: "1px solid #f0f0f0",
 };
 
 const linkStyle: React.CSSProperties = {
