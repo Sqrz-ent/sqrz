@@ -736,6 +736,7 @@ const ticket = {
       companyName={(profile.company_name as string) ?? null}
       legalForm={(profile.legal_form as string) ?? null}
       companyAddress={(profile.company_address as string) ?? null}
+      companyTaxId={(profile.company_tax_id as string) ?? null}
       vatId={(profile.vat_id as string) ?? null}
       tradeRegisterCourt={(profile.trade_register_court as string) ?? null}
       tradeRegisterNumber={(profile.trade_register_number as string) ?? null}

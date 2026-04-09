@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookLinkButton from "@/components/BookLinkButton";
+import LegalFooter from "@/components/LegalFooter";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -177,7 +178,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, avatar_url, template_id")
+    .select("id, slug, name, avatar_url, template_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
     .eq("slug", username)
     .single();
 
@@ -212,6 +213,21 @@ export default async function PrivateLinkPage({
   const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
   const pageType = (link.page_type as string) ?? "download";
 
+  const legalFooterProps = {
+    profileName: (profile.name as string) ?? null,
+    companyName: (profile.company_name as string) ?? null,
+    legalForm: (profile.legal_form as string) ?? null,
+    companyAddress: (profile.company_address as string) ?? null,
+    companyTaxId: (profile.company_tax_id as string) ?? null,
+    vatId: (profile.vat_id as string) ?? null,
+    tradeRegisterCourt: (profile.trade_register_court as string) ?? null,
+    tradeRegisterNumber: (profile.trade_register_number as string) ?? null,
+    regulatoryBody: (profile.regulatory_body as string) ?? null,
+    dpoEmail: (profile.dpo_email as string) ?? null,
+    externalPrivacyUrl: (profile.external_privacy_url as string) ?? null,
+    responsiblePerson: (profile.responsible_person as string) ?? null,
+  };
+
   if (maxUsesReached) {
     return (
       <div style={shell}>
@@ -221,7 +237,7 @@ export default async function PrivateLinkPage({
             <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111", margin: "0 0 8px" }}>No Longer Available</h1>
             <p style={{ color: "#666", fontSize: 15 }}>This link has reached its maximum number of uses.</p>
           </div>
-          <PoweredBy />
+          <LegalFooter {...legalFooterProps} />
         </div>
       </div>
     );
@@ -293,7 +309,7 @@ export default async function PrivateLinkPage({
             prefilledDescription={link.description as string | null}
           />
 
-          <PoweredBy />
+          <LegalFooter {...legalFooterProps} />
         </div>
       </div>
     );
@@ -354,7 +370,7 @@ export default async function PrivateLinkPage({
             </CtaButton>
           )}
 
-          <PoweredBy />
+          <LegalFooter {...legalFooterProps} />
         </div>
       </div>
     );
@@ -400,7 +416,7 @@ export default async function PrivateLinkPage({
           </CtaButton>
         )}
 
-        <PoweredBy />
+        <LegalFooter {...legalFooterProps} />
       </div>
     </div>
   );

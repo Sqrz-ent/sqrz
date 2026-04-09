@@ -7,6 +7,7 @@ type Props = {
   companyName: string | null;
   legalForm: string | null;
   companyAddress: string | null;
+  companyTaxId: string | null;
   vatId: string | null;
   tradeRegisterCourt: string | null;
   tradeRegisterNumber: string | null;
@@ -21,6 +22,7 @@ export default function LegalFooter({
   companyName,
   legalForm,
   companyAddress,
+  companyTaxId,
   vatId,
   tradeRegisterCourt,
   tradeRegisterNumber,
@@ -56,7 +58,7 @@ export default function LegalFooter({
   const year = new Date().getFullYear();
 
   // Section 2: Business Details
-  const hasBusinessDetails = !!(vatId || tradeRegisterCourt || tradeRegisterNumber || regulatoryBody || responsiblePerson);
+  const hasBusinessDetails = !!(vatId || tradeRegisterCourt || tradeRegisterNumber || regulatoryBody || responsiblePerson || companyTaxId);
   const tradeRegister = [tradeRegisterCourt, tradeRegisterNumber].filter(Boolean).join(" · ");
 
   // Section 3: Data Protection
@@ -172,6 +174,7 @@ export default function LegalFooter({
                   <p style={sectionLabel}>Business Information</p>
                   {vatId && <p style={lineStyle}>VAT ID: {vatId}</p>}
                   {tradeRegister && <p style={lineStyle}>Trade Register: {tradeRegister}</p>}
+                  {companyTaxId && <p style={lineStyle}>Tax Number: {companyTaxId}</p>}
                   {regulatoryBody && <p style={lineStyle}>Regulatory Body: {regulatoryBody}</p>}
                   {responsiblePerson && <p style={lineStyle}>Responsible Person: {responsiblePerson}</p>}
                 </section>
