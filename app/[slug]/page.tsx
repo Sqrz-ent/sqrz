@@ -214,6 +214,7 @@ export default async function PrivateLinkPage({
   const pageType = (link.page_type as string) ?? "download";
 
   const legalFooterProps = {
+    privacyHref: `/${profile.slug}/privacy`,
     profileName: (profile.name as string) ?? null,
     companyName: (profile.company_name as string) ?? null,
     legalForm: (profile.legal_form as string) ?? null,

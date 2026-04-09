@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 
 type Props = {
+  privacyHref: string;
   profileName: string | null;
   companyName: string | null;
   legalForm: string | null;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export default function LegalFooter({
+  privacyHref,
   profileName,
   companyName,
   legalForm,
@@ -194,7 +196,7 @@ export default function LegalFooter({
                   )}
                   <p style={lineStyle}>
                     Privacy Policy:{" "}
-                    <a href="/privacy" style={linkStyle}>
+                    <a href={privacyHref} style={linkStyle}>
                       View Privacy Policy →
                     </a>
                   </p>

@@ -1,55 +1,23 @@
-import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export const revalidate = 0;
 
-function getUsernameFromHost(host: string): string | null {
-  const cleanHost = host.toLowerCase().replace(/:\d+$/, "").replace(/^www\./, "").trim();
-  if (cleanHost.endsWith(".sqrz.com")) {
-    const username = cleanHost.replace(".sqrz.com", "");
-    if (!username || username === "www" || username === "sqrz") return null;
-    return username;
-  }
-  return null;
-}
-
-async function getUsernameFromCustomDomain(host: string): Promise<string | null> {
-  const cleanHost = host.toLowerCase().replace(/:\d+$/, "").trim();
-  const { data } = await supabase
-    .from("profiles")
-    .select("slug")
-    .eq("custom_domain", cleanHost)
-    .eq("custom_domain_verified", true)
-    .single();
-  return data?.slug ?? null;
-}
-
 export default async function PrivacyPage({
-  searchParams,
+  params,
 }: {
-  searchParams: Promise<{ username?: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const sp = await searchParams;
+  const { slug } = await params;
 
-  let username: string | null = null;
-  if (process.env.NODE_ENV === "development" && sp.username) {
-    username = sp.username;
-  } else {
-    const headersList = await headers();
-    const rawHost = headersList.get("host") ?? "";
-    username = getUsernameFromHost(rawHost);
-    if (!username) username = await getUsernameFromCustomDomain(rawHost);
-  }
-
-  if (!username) return notFound();
+  if (!slug) return notFound();
 
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, slug, name, email, company_name, legal_form, company_address, responsible_person, vat_id, dpo_email, external_privacy_url, widget_spotify, widget_soundcloud, widget_mixcloud, social_youtube, social_instagram, social_facebook, social_linkedin, plan_id, custom_domain, pixel_google, pixel_facebook, pixel_linkedin"
+      "id, slug, name, email, company_name, legal_form, company_address, responsible_person, vat_id, trade_register_court, trade_register_number, company_tax_id, regulatory_body, dpo_email, external_privacy_url, widget_spotify, widget_soundcloud, widget_mixcloud, social_youtube, social_instagram, social_facebook, social_linkedin, plan_id, custom_domain, pixel_google, pixel_facebook, pixel_linkedin"
     )
-    .eq("slug", username)
+    .eq("slug", slug)
     .single();
 
   if (!profile) return notFound();
@@ -62,9 +30,11 @@ export default async function PrivacyPage({
     redirect(url);
   }
 
-  const controllerName = (profile.company_name as string) || (profile.name as string) || username;
+  const controllerName = (profile.company_name as string) || (profile.name as string) || slug;
   const contactEmail = (profile.dpo_email as string) || (profile.email as string) || null;
-  const profileUrl = `https://${username}.sqrz.com`;
+  const profileUrl = profile.custom_domain
+    ? `https://${profile.custom_domain}`
+    : `https://${slug}.sqrz.com`;
   const year = new Date().getFullYear();
 
   const hasGA = !!(profile.pixel_google as string);
@@ -84,7 +54,7 @@ export default async function PrivacyPage({
       {/* Back link */}
       <div style={topBar}>
         <a href={profileUrl} style={backLink}>
-          ← {username}.sqrz.com
+          ← {slug}.sqrz.com
         </a>
       </div>
 
@@ -103,11 +73,27 @@ export default async function PrivacyPage({
             {controllerName && <span>{controllerName}<br /></span>}
             {(profile.legal_form as string) && <span>{profile.legal_form as string}<br /></span>}
             {(profile.company_address as string) && <span>{profile.company_address as string}<br /></span>}
-            {(profile.email as string) && <span><a href={`mailto:${profile.email}`} style={link}>{profile.email as string}</a><br /></span>}
+            {(profile.email as string) && (
+              <span><a href={`mailto:${profile.email}`} style={link}>{profile.email as string}</a><br /></span>
+            )}
             {(profile.responsible_person as string) && (
               <span>Responsible person: {profile.responsible_person as string}<br /></span>
             )}
-            {(profile.vat_id as string) && <span>VAT / Tax ID: {profile.vat_id as string}<br /></span>}
+            {(profile.vat_id as string) && (
+              <span>VAT / Tax ID: {profile.vat_id as string}<br /></span>
+            )}
+            {(profile.company_tax_id as string) && (
+              <span>Tax Number: {profile.company_tax_id as string}<br /></span>
+            )}
+            {(profile.trade_register_court as string) && (profile.trade_register_number as string) && (
+              <span>
+                Trade Register: {profile.trade_register_court as string} · {profile.trade_register_number as string}
+                <br />
+              </span>
+            )}
+            {(profile.regulatory_body as string) && (
+              <span>Regulatory Body: {profile.regulatory_body as string}<br /></span>
+            )}
           </address>
         </section>
 
@@ -231,7 +217,8 @@ export default async function PrivacyPage({
           )}
           {(profile.dpo_email as string) && (
             <p style={body}>
-              Data Protection Officer: <a href={`mailto:${profile.dpo_email}`} style={link}>{profile.dpo_email as string}</a>
+              Data Protection Officer:{" "}
+              <a href={`mailto:${profile.dpo_email}`} style={link}>{profile.dpo_email as string}</a>
             </p>
           )}
         </section>

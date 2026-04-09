@@ -732,6 +732,7 @@ const ticket = {
       </div>
     </main>
     <LegalFooter
+      privacyHref={`/${profile.slug}/privacy`}
       profileName={(profile.name as string) ?? null}
       companyName={(profile.company_name as string) ?? null}
       legalForm={(profile.legal_form as string) ?? null}
