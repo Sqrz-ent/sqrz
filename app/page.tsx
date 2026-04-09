@@ -35,6 +35,7 @@ import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
+import LegalFooter from "@/components/LegalFooter";
 
 
 
@@ -730,6 +731,17 @@ const ticket = {
 
       </div>
     </main>
+    <LegalFooter
+      profileName={(profile.name as string) ?? null}
+      companyAddress={(profile.company_address as string) ?? null}
+      vatId={(profile.vat_id as string) ?? null}
+      tradeRegisterCourt={(profile.trade_register_court as string) ?? null}
+      tradeRegisterNumber={(profile.trade_register_number as string) ?? null}
+      regulatoryBody={(profile.regulatory_body as string) ?? null}
+      dpoEmail={(profile.dpo_email as string) ?? null}
+      externalPrivacyUrl={(profile.external_privacy_url as string) ?? null}
+      responsiblePerson={(profile.responsible_person as string) ?? null}
+    />
     <CookieBanner templateId={profile.template_id as string} />
     </>
   );
