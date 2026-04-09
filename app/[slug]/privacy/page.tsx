@@ -40,6 +40,7 @@ export default async function PrivacyPage({
   const hasGA = !!(profile.pixel_google as string);
   const hasMeta = !!(profile.pixel_facebook as string);
   const hasLinkedIn = !!(profile.pixel_linkedin as string);
+  const hasCustomPixels = hasGA || hasMeta || hasLinkedIn;
 
   const activeEmbeds: string[] = [];
   if (profile.widget_spotify) activeEmbeds.push("Spotify (Spotify AB, Sweden)");
@@ -115,49 +116,66 @@ export default async function PrivacyPage({
           </p>
         </section>
 
-        {/* 3. Analytics */}
-        {hasGA && (
+        {/* 3. Analytics & Tracking */}
+        {hasCustomPixels ? (
+          <>
+            {hasGA && (
+              <section style={section}>
+                <h2 style={h2}>3. Analytics</h2>
+                <p style={body}>
+                  This site uses <strong>Google Analytics</strong> (Google LLC, 1600 Amphitheatre
+                  Parkway, Mountain View, CA 94043, USA) to analyze visitor traffic. Data collected
+                  includes pages visited, time on site, approximate location (country/city), and
+                  device type. Data is processed in the USA under Google&rsquo;s Standard
+                  Contractual Clauses.
+                </p>
+                <p style={body}>
+                  Opt out:{" "}
+                  <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" style={link}>
+                    tools.google.com/dlpage/gaoptout
+                  </a>
+                </p>
+              </section>
+            )}
+            {(hasMeta || hasLinkedIn) && (
+              <section style={section}>
+                <h2 style={h2}>{hasGA ? "4" : "3"}. Advertising &amp; Remarketing</h2>
+                {hasMeta && (
+                  <p style={body}>
+                    This site uses the <strong>Meta Pixel</strong> (Meta Platforms Inc., 1 Hacker
+                    Way, Menlo Park, CA 94025, USA) for advertising measurement and remarketing
+                    purposes. Data may be used to show you relevant ads on Facebook and Instagram.{" "}
+                    <a href="https://www.facebook.com/privacy/explanation" target="_blank" rel="noopener noreferrer" style={link}>
+                      Meta Privacy Policy ↗
+                    </a>
+                  </p>
+                )}
+                {hasLinkedIn && (
+                  <p style={body}>
+                    This site uses the <strong>LinkedIn Insight Tag</strong> (LinkedIn Corporation,
+                    1000 W Maude Avenue, Sunnyvale, CA 94085, USA) for advertising analytics and
+                    campaign measurement.{" "}
+                    <a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" style={link}>
+                      LinkedIn Privacy Policy ↗
+                    </a>
+                  </p>
+                )}
+              </section>
+            )}
+          </>
+        ) : (
           <section style={section}>
             <h2 style={h2}>3. Analytics</h2>
             <p style={body}>
-              This site uses <strong>Google Analytics</strong> (Google LLC, 1600 Amphitheatre Parkway,
-              Mountain View, CA 94043, USA) to analyze visitor traffic. Data collected includes
-              pages visited, time on site, approximate location (country/city), and device type.
-              Data is processed in the USA under Google&rsquo;s Standard Contractual Clauses.
+              Analytics on this page are operated by SQRZ on behalf of the profile owner.
+              No additional tracking pixels are active on this profile.
             </p>
             <p style={body}>
-              Opt out:{" "}
-              <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener noreferrer" style={link}>
-                tools.google.com/dlpage/gaoptout
+              See SQRZ Privacy Policy:{" "}
+              <a href="https://sqrz.com/privacy" target="_blank" rel="noopener noreferrer" style={link}>
+                sqrz.com/privacy
               </a>
             </p>
-          </section>
-        )}
-
-        {/* 4. Advertising pixels */}
-        {(hasMeta || hasLinkedIn) && (
-          <section style={section}>
-            <h2 style={h2}>{hasGA ? "4" : "3"}. Advertising &amp; Remarketing</h2>
-            {hasMeta && (
-              <p style={body}>
-                This site uses the <strong>Meta Pixel</strong> (Meta Platforms Inc., 1 Hacker Way,
-                Menlo Park, CA 94025, USA) for advertising measurement and remarketing purposes.
-                Data may be used to show you relevant ads on Facebook and Instagram.{" "}
-                <a href="https://www.facebook.com/privacy/explanation" target="_blank" rel="noopener noreferrer" style={link}>
-                  Meta Privacy Policy ↗
-                </a>
-              </p>
-            )}
-            {hasLinkedIn && (
-              <p style={body}>
-                This site uses the <strong>LinkedIn Insight Tag</strong> (LinkedIn Corporation,
-                1000 W Maude Avenue, Sunnyvale, CA 94085, USA) for advertising analytics and
-                campaign measurement.{" "}
-                <a href="https://www.linkedin.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" style={link}>
-                  LinkedIn Privacy Policy ↗
-                </a>
-              </p>
-            )}
           </section>
         )}
 
