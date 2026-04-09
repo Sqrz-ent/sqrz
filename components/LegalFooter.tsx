@@ -54,15 +54,14 @@ export default function LegalFooter({
   }, []);
 
   const displayName = companyName || profileName || "";
-  const privacyUrl = externalPrivacyUrl || "https://sqrz.com/privacy";
   const year = new Date().getFullYear();
 
   // Section 2: Business Details
   const hasBusinessDetails = !!(vatId || tradeRegisterCourt || tradeRegisterNumber || regulatoryBody || responsiblePerson || companyTaxId);
   const tradeRegister = [tradeRegisterCourt, tradeRegisterNumber].filter(Boolean).join(" · ");
 
-  // Section 3: Data Protection
-  const hasDataProtection = !!(dpoEmail || externalPrivacyUrl);
+  // Section 3: Data Protection — always show (privacy page link is always available)
+  const hasDataProtection = true;
 
   // Section 1: Identity
   const hasIdentity = !!(displayName || legalForm || companyAddress);
@@ -195,8 +194,8 @@ export default function LegalFooter({
                   )}
                   <p style={lineStyle}>
                     Privacy Policy:{" "}
-                    <a href={privacyUrl} target="_blank" rel="noopener noreferrer" style={linkStyle}>
-                      {externalPrivacyUrl ? "View Privacy Policy ↗" : "SQRZ Privacy Policy ↗"}
+                    <a href="/privacy" style={linkStyle}>
+                      View Privacy Policy →
                     </a>
                   </p>
                 </section>
