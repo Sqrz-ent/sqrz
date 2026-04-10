@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const resend = new Resend(process.env.RESEND_API_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY_TEST!);
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,7 +50,6 @@ export async function POST(req: NextRequest) {
 
   console.log("[instant-booking] raw data:", JSON.stringify(data));
 
-  // Handle both array and object response shapes from Supabase RPC
   const result = Array.isArray(data) ? data[0] : data;
 
   console.log("[instant-booking] result:", JSON.stringify(result));
@@ -68,17 +65,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Booking creation failed" }, { status: 500 });
   }
 
-  // ── 2. Create Stripe Checkout Session ─────────────────────────────────────
+  // ── 2. Fetch member's Connect account + plan fee ───────────────────────────
+  let connectId: string | null = null;
+  let feePct = 8;
+
+  if (profile_id) {
+    const { data: ownerProfile } = await supabase
+      .from("profiles")
+      .select("stripe_connect_id, plan_id, plans(booking_fee_pct)")
+      .eq("id", profile_id)
+      .single();
+
+    connectId = ownerProfile?.stripe_connect_id ?? null;
+    feePct = (ownerProfile?.plans as { booking_fee_pct?: number } | null)?.booking_fee_pct ?? 8;
+  }
+
+  // ── 3. Create Stripe Checkout Session ─────────────────────────────────────
   const currency = (instant_currency || "EUR").toLowerCase();
+  const rate = Number(instant_price);
+  const feeAmount = Math.round(rate * feePct / 100 * 100); // cents
+  const totalAmount = Math.round(rate * 100) + feeAmount;  // cents
+
+  console.log("[instant-booking] rate:", rate, "feePct:", feePct, "total:", totalAmount / 100, "connectId:", connectId);
 
   const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
-
-  console.log("[instant-booking] successUrl:", successUrl);
 
   const metadata: Record<string, string> = {
     booking_id: bookingId,
     booking_type: "instant",
     owner_profile_id: profile_id ?? "",
+    rate: rate.toString(),
+    fee_pct: feePct.toString(),
   };
   if (inviteToken) metadata.invite_token = inviteToken;
 
@@ -92,7 +109,7 @@ export async function POST(req: NextRequest) {
         quantity: 1,
         price_data: {
           currency,
-          unit_amount: Math.round(Number(instant_price) * 100),
+          unit_amount: totalAmount,
           product_data: {
             name: service_title ?? "Booking",
             description: `Instant booking with ${to_slug}`,
@@ -100,42 +117,18 @@ export async function POST(req: NextRequest) {
         },
       },
     ],
+    payment_intent_data: connectId
+      ? {
+          application_fee_amount: feeAmount,
+          transfer_data: { destination: connectId },
+        }
+      : undefined,
     metadata,
     success_url: successUrl,
     cancel_url: `https://${to_slug}.sqrz.com`,
   });
 
   console.log("[instant-booking] Stripe session created:", session.id, "url:", session.url);
-
-  // ── 3. Send confirmation email via Resend ─────────────────────────────────
-  try {
-    await resend.emails.send({
-      from: "SQRZ <noreply@sqrz.com>",
-      to: from_email,
-      subject: `Your ${service_title ?? "booking"} is being processed`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 32px 24px; color: #111111;">
-          <p style="font-size: 18px; font-weight: 600; margin: 0 0 12px;">Hi ${from_name},</p>
-          <p style="font-size: 15px; line-height: 1.6; margin: 0 0 16px; color: #444444;">
-            Thanks for your order! Once payment is complete your booking will be confirmed.
-          </p>
-          <p style="font-size: 15px; line-height: 1.6; margin: 0 0 24px; color: #444444;">
-            You can track your booking here:
-          </p>
-          <a href="${successUrl}"
-             style="display: inline-block; padding: 14px 24px; background: #F5A623; color: #111111; font-weight: 700; font-size: 15px; border-radius: 10px; text-decoration: none;">
-            View your booking →
-          </a>
-          <hr style="border: none; border-top: 1px solid #eeeeee; margin: 28px 0;" />
-          <p style="font-size: 12px; color: #aaaaaa; margin: 0;">SQRZ · sqrz.com</p>
-        </div>
-      `,
-    });
-    console.log("[instant-booking] confirmation email sent to:", from_email);
-  } catch (emailErr) {
-    console.error("[instant-booking] confirmation email failed:", emailErr);
-    // Non-fatal — Stripe session was already created
-  }
 
   return NextResponse.json({ checkout_url: session.url });
 }
