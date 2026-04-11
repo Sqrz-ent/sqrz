@@ -22,22 +22,28 @@ export async function POST(request: Request) {
     if (!profile_id || !visitor_name || !visitor_email || !message) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
-
-    const { error } = await supabaseAdmin.from("bookings").insert({
-      owner_id: profile_id,
-      type: "lead",
-      channel_auth: "public",
-      status: "lead",
-      guest_name: visitor_name,
-      guest_email: visitor_email,
-      description: message,
-      budget_range: budget ?? null,
-    });
+const { data: booking, error } = await supabaseAdmin
+      .from("bookings")
+      .insert({
+        owner_id: profile_id,
+        status: "requested",
+        title: `Message from ${visitor_name}`,
+        description: message,
+      })
+      .select("id")
+      .single();
 
     if (error) {
       console.error("[api/leads] insert error:", error.message, error.details, error.hint);
       return NextResponse.json({ error: error.message, details: error.details }, { status: 500 });
     }
+
+    await supabaseAdmin.from("booking_participants").insert({
+      booking_id: booking.id,
+      email: visitor_email,
+      name: visitor_name,
+      role: "buyer",
+    });
 
     return NextResponse.json({ ok: true });
   } catch (err) {

@@ -13,7 +13,6 @@ export default function ChatBubble({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [budget, setBudget] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
 
   async function submit(e: React.FormEvent) {
@@ -29,7 +28,6 @@ export default function ChatBubble({
           visitor_name: name.trim(),
           visitor_email: email.trim(),
           message: message.trim(),
-          budget: budget.trim() || null,
         }),
       });
       if (!res.ok) throw new Error("Failed");
@@ -151,13 +149,7 @@ export default function ChatBubble({
                     lineHeight: 1.5,
                   }}
                 />
-                <input
-                  type="text"
-                  placeholder="Budget range (optional, e.g. €500–€1000)"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  style={inputStyle}
-                />
+          
                 {status === "error" && (
                   <p style={{ color: "#f87171", fontSize: 12, margin: 0 }}>
                     Something went wrong — please try again.
