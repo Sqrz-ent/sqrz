@@ -272,7 +272,7 @@ export default async function PrivateLinkPage({
 
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
-            name={profile.name ?? null}
+            name={(profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string ?? null}
             username={username}
             accent={accent}
           />
@@ -336,7 +336,7 @@ export default async function PrivateLinkPage({
 
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
-            name={profile.name ?? null}
+            name={(profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string ?? null}
             username={username}
             accent={accent}
           />
