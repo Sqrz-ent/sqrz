@@ -178,7 +178,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, avatar_url, template_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
     .eq("slug", username)
     .single();
 
@@ -204,6 +204,8 @@ export default async function PrivateLinkPage({
       .update({ use_count: (link.use_count || 0) + 1 })
       .eq("id", link.id);
   }
+
+  const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
 
   const accent = TEMPLATE_ACCENTS[profile.template_id as string ?? ""] ?? DEFAULT_ACCENT;
   const hasRealAvatar =
@@ -272,7 +274,7 @@ export default async function PrivateLinkPage({
 
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
-            name={(profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string ?? null}
+            name={displayName}
             username={username}
             accent={accent}
           />
@@ -336,7 +338,7 @@ export default async function PrivateLinkPage({
 
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
-            name={(profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string ?? null}
+            name={displayName}
             username={username}
             accent={accent}
           />
@@ -394,7 +396,7 @@ export default async function PrivateLinkPage({
 
         <ProfileAttribution
           profileAvatarSrc={profileAvatarSrc}
-          name={profile.name ?? null}
+          name={displayName}
           username={username}
           accent={accent}
         />
