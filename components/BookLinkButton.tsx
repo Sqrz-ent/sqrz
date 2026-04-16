@@ -8,6 +8,7 @@ export default function BookLinkButton({
   username,
   services,
   profileId,
+  planId = null,
   accent,
   prefillService,
   prefilledTitle,
@@ -16,6 +17,7 @@ export default function BookLinkButton({
   username: string;
   services: Service[];
   profileId: string;
+  planId?: number | null;
   accent: string;
   prefillService?: string | null;
   prefilledTitle?: string | null;
@@ -55,6 +57,7 @@ export default function BookLinkButton({
         username={username}
         services={services}
         profileId={profileId}
+        planId={planId}
         initialService={initialService}
         simplified={true}
         prefilledTitle={prefilledTitle}

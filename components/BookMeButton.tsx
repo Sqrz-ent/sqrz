@@ -8,10 +8,12 @@ export default function BookMeButton({
   username,
   services,
   profileId,
+  planId = null,
 }: {
   username: string;
   services: Service[];
   profileId: string;
+  planId?: number | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -43,6 +45,7 @@ export default function BookMeButton({
         username={username}
         services={services}
         profileId={profileId}
+        planId={planId}
       />
     </>
   );

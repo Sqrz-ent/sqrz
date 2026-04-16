@@ -13,6 +13,7 @@ export default function BookingModal({
   username,
   services,
   profileId,
+  planId = null,
   initialService = null,
   simplified = false,
   prefilledTitle = null,
@@ -23,6 +24,7 @@ export default function BookingModal({
   username: string;
   services: Service[];
   profileId: string;
+  planId?: number | null;
   initialService?: Service | null;
   simplified?: boolean;
   prefilledTitle?: string | null;
@@ -276,7 +278,7 @@ export default function BookingModal({
                 {error && <p style={errorStyle}>{error}</p>}
                 {isInstant ? (
                   <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
-                    {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService)}`}
+                    {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService, planId)}`}
                   </button>
                 ) : (
                   <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
@@ -400,17 +402,21 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
 
 // ─── Instant price formatter ──────────────────────────────────────────────────
 
-function formatInstantPrice(service: Service | null): string {
+function formatInstantPrice(service: Service | null, planId: number | null = null): string {
   if (!service?.instant_price) return "";
+  const net = service.instant_price;
+  const taxRate = service.instant_tax_rate ?? 0;
+  const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.00;
+  const total = net + net * (taxRate / 100) + net * sqrzFeeRate;
   const currency = (service.instant_currency || "EUR").toUpperCase();
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
       currency,
-      maximumFractionDigits: 0,
-    }).format(service.instant_price);
+      maximumFractionDigits: 2,
+    }).format(total);
   } catch {
-    return `${service.instant_price} ${currency}`;
+    return `${total.toFixed(2)} ${currency}`;
   }
 }
 

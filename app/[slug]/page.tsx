@@ -178,7 +178,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
     .eq("slug", username)
     .single();
 
@@ -250,7 +250,7 @@ export default async function PrivateLinkPage({
   if (pageType === "book") {
     const { data: servicesData } = await supabase
       .from("profile_services")
-      .select("id, title, description, price_min, price_max, price_label, currency, booking_type")
+      .select("id, title, description, price_min, price_max, price_label, currency, booking_type, instant_price, instant_currency, instant_tax_rate")
       .eq("profile_id", profile.id)
       .order("sort_order", { ascending: true });
 
@@ -306,6 +306,7 @@ export default async function PrivateLinkPage({
             username={username}
             services={services}
             profileId={profile.id as string}
+            planId={profile.plan_id as number | null}
             accent={accent}
             prefillService={prefillServiceTitle}
             prefilledTitle={link.title as string | null}

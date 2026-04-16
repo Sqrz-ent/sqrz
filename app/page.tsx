@@ -446,7 +446,7 @@ const ticket = {
     />
 
 {hasActiveServices && (
-  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} />
+  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} />
 )}
 <ViewTracker username={profile.slug} />
 

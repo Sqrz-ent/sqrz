@@ -9,4 +9,5 @@ export type Service = {
   booking_type?: "instant" | "quote";
   instant_price?: number;
   instant_currency?: string;
+  instant_tax_rate?: number | null;
 };

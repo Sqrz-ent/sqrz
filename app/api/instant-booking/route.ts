@@ -59,28 +59,44 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Booking creation failed" }, { status: 500 });
   }
 
-  // ── 2. Fetch member's Connect account + plan fee ───────────────────────────
+  // ── 2. Fetch member's Connect account, plan_id, and service tax rate ────────
   let connectId: string | null = null;
-  let feePct = 8;
+  let planId: number | null = null;
+  let instantTaxRate = 0;
 
   if (profile_id) {
     const { data: ownerProfile } = await supabase
       .from("profiles")
-      .select("stripe_connect_id, plan_id, plans(booking_fee_pct)")
+      .select("stripe_connect_id, plan_id")
       .eq("id", profile_id)
       .single();
 
     connectId = ownerProfile?.stripe_connect_id ?? null;
-    feePct = (ownerProfile?.plans as { booking_fee_pct?: number } | null)?.booking_fee_pct ?? 8;
+    planId = (ownerProfile?.plan_id as number | null) ?? null;
+
+    if (service_title) {
+      const { data: svc } = await supabase
+        .from("profile_services")
+        .select("instant_tax_rate")
+        .eq("profile_id", profile_id)
+        .eq("title", service_title)
+        .single();
+      instantTaxRate = (svc?.instant_tax_rate as number | null) ?? 0;
+    }
   }
 
   // ── 3. Create Stripe Checkout Session ─────────────────────────────────────
   const currency = (instant_currency || "EUR").toLowerCase();
-  const rate = Number(instant_price);
-  const feeAmount = Math.round(rate * feePct / 100 * 100); // cents
-  const totalAmount = Math.round(rate * 100) + feeAmount;  // cents
+  const net = Number(instant_price);
+  const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.00;
+  const tax = net * (instantTaxRate / 100);
+  const sqrzFee = net * sqrzFeeRate;
+  const total = net + tax + sqrzFee;
 
-  console.log("[instant-booking] rate:", rate, "feePct:", feePct, "total:", totalAmount / 100, "connectId:", connectId);
+  const feeAmount = Math.round(sqrzFee * 100);   // cents
+  const totalAmount = Math.round(total * 100);    // cents
+
+  console.log("[instant-booking] net:", net, "taxRate:", instantTaxRate, "sqrzFeeRate:", sqrzFeeRate, "total:", total, "connectId:", connectId);
 
   const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
 
@@ -88,8 +104,10 @@ export async function POST(req: NextRequest) {
     booking_id: bookingId,
     booking_type: "instant",
     owner_profile_id: profile_id ?? "",
-    rate: rate.toString(),
-    fee_pct: feePct.toString(),
+    rate: net.toString(),
+    fee_pct: (sqrzFeeRate * 100).toString(),
+    tax_pct: instantTaxRate.toString(),
+    tax_amount: tax.toFixed(2),
   };
   if (inviteToken) metadata.invite_token = inviteToken;
 
