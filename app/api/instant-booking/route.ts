@@ -142,5 +142,16 @@ export async function POST(req: NextRequest) {
 
   console.log("[instant-booking] Stripe session created:", session.id, "url:", session.url);
 
+  // ── 4. Mark booking as pending_payment ────────────────────────────────────
+  const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
+  await supabase
+    .from("bookings")
+    .update({
+      status: "pending_payment",
+      payment_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
+    })
+    .eq("id", bookingId);
+
   return NextResponse.json({ checkout_url: session.url });
 }
