@@ -636,7 +636,7 @@ const ticket = {
 
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
-        {hasActiveServices && <Services services={activeServices} />}
+        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} />}
 
 
          {spotifyEmbed && (
