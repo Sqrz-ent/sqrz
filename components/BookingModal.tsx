@@ -399,7 +399,25 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
         transition: "border-color 0.15s",
       }}
     >
-      <strong>{service.title}</strong>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <strong>{service.title}</strong>
+        {service.booking_type === "instant" && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+            color: "var(--accent-color, #F5A623)",
+            border: "1px solid var(--accent-color, #F5A623)",
+            borderRadius: 20,
+            padding: "1px 7px",
+            opacity: 0.85,
+            whiteSpace: "nowrap",
+          }}>
+            Instant Booking
+          </span>
+        )}
+      </div>
       <div style={{ opacity: 0.7, fontSize: 13 }}>{getServicePriceLabel(service)}</div>
     </button>
   );

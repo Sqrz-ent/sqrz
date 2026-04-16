@@ -12,9 +12,26 @@ export default function Services({ services }: { services: Service[] }) {
         {services.map((s, i) => (
           <div key={i} style={cardStyle}>
             <div style={headerStyle}>
-              <span style={serviceName}>{s.title}</span>
-
-              {/* ✅ THIS must be here */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+                <span style={serviceName}>{s.title}</span>
+                {s.booking_type === "instant" && (
+                  <span style={{
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase" as const,
+                    color: "var(--accent-color, #F5A623)",
+                    border: "1px solid var(--accent-color, #F5A623)",
+                    borderRadius: 20,
+                    padding: "1px 7px",
+                    opacity: 0.85,
+                    whiteSpace: "nowrap" as const,
+                    flexShrink: 0,
+                  }}>
+                    Instant Booking
+                  </span>
+                )}
+              </div>
               <span style={priceStyle}>{getServicePriceLabel(s)}</span>
             </div>
 
