@@ -19,47 +19,16 @@ export async function POST(req: NextRequest) {
     instant_price,
     instant_currency,
     profile_id,
+    event_date,
+    event_location,
+    title,
   } = body;
 
   if (!to_slug || !from_name || !from_email || !instant_price) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
-  // ── 1. Create booking via RPC ──────────────────────────────────────────────
-  const { data, error: rpcError } = await supabase.rpc("create_booking_request", {
-    p_to_slug: to_slug,
-    p_from_name: from_name,
-    p_from_email: from_email,
-    p_service: service_title ?? null,
-    p_message: message ?? null,
-    p_event_date: null,
-    p_event_location: null,
-    p_title: null,
-  });
-
-  if (rpcError) {
-    console.error("[instant-booking] RPC error:", rpcError);
-    return NextResponse.json({ error: rpcError.message }, { status: 500 });
-  }
-
-  console.log("[instant-booking] raw data:", JSON.stringify(data));
-
-  const result = Array.isArray(data) ? data[0] : data;
-
-  console.log("[instant-booking] result:", JSON.stringify(result));
-
-  const bookingId = result?.booking_id as string | undefined;
-  const inviteToken = result?.invite_token as string | undefined;
-
-  console.log("[instant-booking] bookingId:", bookingId);
-  console.log("[instant-booking] inviteToken:", inviteToken);
-
-  if (!bookingId) {
-    console.error("[instant-booking] no booking_id in RPC result");
-    return NextResponse.json({ error: "Booking creation failed" }, { status: 500 });
-  }
-
-  // ── 2. Fetch member's Connect account, plan_id, and service tax rate ────────
+  // ── 1. Fetch plan_id, connect account, and tax rate ───────────────────────
   let connectId: string | null = null;
   let planId: number | null = null;
   let instantTaxRate = 0;
@@ -85,7 +54,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── 3. Create Stripe Checkout Session ─────────────────────────────────────
+  // ── 2. Calculate total ────────────────────────────────────────────────────
   const currency = (instant_currency || "EUR").toLowerCase();
   const net = Number(instant_price);
   const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.00;
@@ -93,25 +62,30 @@ export async function POST(req: NextRequest) {
   const sqrzFee = net * sqrzFeeRate;
   const total = net + tax + sqrzFee;
 
-  const feeAmount = Math.round(sqrzFee * 100);   // cents
-  const totalAmount = Math.round(total * 100);    // cents
+  const feeAmount = Math.round(sqrzFee * 100);
+  const totalAmount = Math.round(total * 100);
 
   console.log("[instant-booking] net:", net, "taxRate:", instantTaxRate, "sqrzFeeRate:", sqrzFeeRate, "total:", total, "connectId:", connectId);
 
-  const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
-
+  // ── 3. Create Stripe Checkout Session ─────────────────────────────────────
   const metadata: Record<string, string> = {
-    booking_id: bookingId,
-    booking_type: "instant",
-    owner_profile_id: profile_id ?? "",
+    type: "instant_booking",
+    to_slug,
+    from_name,
+    from_email,
+    service: service_title ?? "",
+    message: message ?? "",
+    title: title ?? "",
+    event_date: event_date ?? "",
+    event_location: event_location ?? "",
     rate: net.toString(),
     fee_pct: (sqrzFeeRate * 100).toString(),
     tax_pct: instantTaxRate.toString(),
     tax_amount: tax.toFixed(2),
+    owner_profile_id: profile_id ?? "",
   };
-  if (inviteToken) metadata.invite_token = inviteToken;
 
-  console.log("[instant-booking] creating checkout with metadata:", JSON.stringify(metadata));
+  const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
@@ -130,28 +104,14 @@ export async function POST(req: NextRequest) {
       },
     ],
     payment_intent_data: connectId
-      ? {
-          application_fee_amount: feeAmount,
-          transfer_data: { destination: connectId },
-        }
+      ? { application_fee_amount: feeAmount, transfer_data: { destination: connectId } }
       : undefined,
     metadata,
     success_url: successUrl,
     cancel_url: `https://${to_slug}.sqrz.com`,
   });
 
-  console.log("[instant-booking] Stripe session created:", session.id, "url:", session.url);
+  console.log("[instant-booking] session created:", session.id);
 
-  // ── 4. Mark booking as pending_payment ────────────────────────────────────
-  const paymentIntentId = typeof session.payment_intent === "string" ? session.payment_intent : null;
-  await supabase
-    .from("bookings")
-    .update({
-      status: "pending_payment",
-      payment_expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-      ...(paymentIntentId ? { stripe_payment_intent_id: paymentIntentId } : {}),
-    })
-    .eq("id", bookingId);
-
-  return NextResponse.json({ checkout_url: session.url });
+  return NextResponse.json({ url: session.url });
 }

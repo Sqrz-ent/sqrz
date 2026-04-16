@@ -112,7 +112,7 @@ export default function BookingModal({
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Payment setup failed");
-      window.location.href = json.checkout_url;
+      window.location.href = json.url;
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
       setLoading(false);
