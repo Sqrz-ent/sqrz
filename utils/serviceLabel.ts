@@ -23,6 +23,11 @@ function formatMoney(amount: number, currency: string) {
 }
 
 export function getServicePriceLabel(service: Service) {
+  if (service.booking_type === "instant" && service.instant_price != null) {
+    const currency = safeCurrency(service.instant_currency);
+    return formatMoney(service.instant_price, currency);
+  }
+
   const currency = safeCurrency(service.currency);
 
   if (service.price_label) return service.price_label;

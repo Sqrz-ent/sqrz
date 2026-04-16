@@ -279,7 +279,7 @@ export default function BookingModal({
                 {isInstant ? (
                   <>
                     <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
-                      {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService, planId)}`}
+                      {loading ? "Redirecting…" : `Book Now — ${formatInstantPrice(selectedService, planId)}`}
                     </button>
                     {selectedService?.instant_price && (
                       <InstantPriceBreakdown service={selectedService} planId={planId} />
@@ -287,7 +287,7 @@ export default function BookingModal({
                   </>
                 ) : (
                   <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
-                    Continue
+                    Request Quote
                   </button>
                 )}
               </>
