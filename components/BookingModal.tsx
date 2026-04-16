@@ -138,12 +138,6 @@ export default function BookingModal({
           : message,
         p_event_date: date || null,
         p_event_location: [city, country].filter(Boolean).join(", ") || null,
-        p_budget_min: null,
-        p_budget_max: null,
-        p_currency: "EUR",
-        p_source: "private_link",
-        p_utm_source: null,
-        p_utm_campaign: null,
       });
 
       if (rpcError) throw rpcError;

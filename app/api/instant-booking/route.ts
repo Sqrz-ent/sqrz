@@ -31,15 +31,10 @@ export async function POST(req: NextRequest) {
     p_from_name: from_name,
     p_from_email: from_email,
     p_service: service_title ?? null,
-    p_message: message ?? "",
+    p_message: message ?? null,
     p_event_date: null,
     p_event_location: null,
-    p_budget_min: null,
-    p_budget_max: null,
-    p_currency: (instant_currency || "EUR").toUpperCase(),
-    p_source: "instant",
-    p_utm_source: null,
-    p_utm_campaign: null,
+    p_title: null,
   });
 
   if (rpcError) {
