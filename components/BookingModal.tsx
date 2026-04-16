@@ -277,9 +277,14 @@ export default function BookingModal({
                 )}
                 {error && <p style={errorStyle}>{error}</p>}
                 {isInstant ? (
-                  <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
-                    {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService, planId)}`}
-                  </button>
+                  <>
+                    <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
+                      {loading ? "Redirecting…" : `Pay Now — ${formatInstantPrice(selectedService, planId)}`}
+                    </button>
+                    {selectedService?.instant_price && (
+                      <InstantPriceBreakdown service={selectedService} planId={planId} />
+                    )}
+                  </>
                 ) : (
                   <button type="button" style={submitStyle} onClick={nextFromStep1} disabled={loading}>
                     Continue
@@ -397,6 +402,70 @@ function ServiceCard({ service, onClick }: { service: Service; onClick: () => vo
       <strong>{service.title}</strong>
       <div style={{ opacity: 0.7, fontSize: 13 }}>{getServicePriceLabel(service)}</div>
     </button>
+  );
+}
+
+// ─── Instant booking price breakdown ─────────────────────────────────────────
+
+function InstantPriceBreakdown({
+  service,
+  planId,
+}: {
+  service: Service;
+  planId: number | null;
+}) {
+  const net = service.instant_price ?? 0;
+  const taxRate = service.instant_tax_rate ?? 0;
+  const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.00;
+  const taxAmount = net * (taxRate / 100);
+  const sqrzFee = net * sqrzFeeRate;
+  const total = net + taxAmount + sqrzFee;
+  const currency = (service.instant_currency || "EUR").toUpperCase();
+
+  function fmt(amount: number) {
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 2,
+      }).format(amount);
+    } catch {
+      return `${amount.toFixed(2)} ${currency}`;
+    }
+  }
+
+  const rowStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: 12,
+    color: "#888",
+    lineHeight: 1.6,
+  };
+
+  return (
+    <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 2 }}>
+      <div style={rowStyle}>
+        <span>Net</span>
+        <span>{fmt(net)}</span>
+      </div>
+      {taxRate > 0 && (
+        <div style={rowStyle}>
+          <span>Tax ({taxRate}%)</span>
+          <span>{fmt(taxAmount)}</span>
+        </div>
+      )}
+      <div style={rowStyle}>
+        <span>SQRZ fee ({(sqrzFeeRate * 100).toFixed(0)}%)</span>
+        <span>{fmt(sqrzFee)}</span>
+      </div>
+      <div style={{ borderTop: "1px solid #e5e5e5", marginTop: 4, paddingTop: 4, ...rowStyle, fontWeight: 600, color: "#555" }}>
+        <span>Total</span>
+        <span>{fmt(total)}</span>
+      </div>
+      <p style={{ fontSize: 11, color: "#aaa", margin: "6px 0 0", lineHeight: 1.5 }}>
+        Incl. tax where applicable. VAT-registered buyers may reclaim tax.
+      </p>
+    </div>
   );
 }
 
