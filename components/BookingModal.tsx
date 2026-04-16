@@ -56,6 +56,16 @@ export default function BookingModal({
 
   useEffect(() => {
     if (!open) return;
+    // Reset to correct starting state each time modal opens
+    setStep(simplified || initialService ? 1 : 0);
+    setSelectedService(initialService ?? null);
+    setError(null);
+    setSuccess(false);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     return () => {
