@@ -687,6 +687,7 @@ const ticket = {
           <ProfileCalendar
             bookingEvents={bookingEvents}
             availabilityBlocks={profile.availability_blocks ?? []}
+            templateId={rawTemplateKey}
           />
         )}
 
