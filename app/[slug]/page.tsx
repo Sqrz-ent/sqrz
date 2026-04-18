@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
@@ -150,6 +151,84 @@ function ProfileAttribution({
       <span style={{ fontWeight: 600, fontSize: 15, color: "#333" }}>{name ?? username}</span>
     </div>
   );
+}
+
+// ─── Metadata ─────────────────────────────────────────────────────────────────
+
+const DEFAULT_OG_IMAGE = "https://sqrz.com/og.png";
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ username?: string }>;
+}): Promise<Metadata> {
+  const { slug: linkSlug } = await params;
+  const sp = await searchParams;
+
+  let username: string | null = null;
+  if (process.env.NODE_ENV === "development" && sp.username) {
+    username = sp.username;
+  } else {
+    const headersList = await headers();
+    const rawHost = headersList.get("host") ?? "";
+    username = getUsernameFromHost(rawHost);
+    if (!username) username = await getUsernameFromCustomDomain(rawHost);
+  }
+
+  if (!username) return {};
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url")
+    .eq("slug", username)
+    .single();
+
+  if (!profile) return {};
+
+  const { data: link } = await supabase
+    .from("private_booking_links")
+    .select("title, description")
+    .eq("profile_id", profile.id)
+    .eq("link_slug", linkSlug)
+    .eq("is_active", true)
+    .single();
+
+  if (!link) return {};
+
+  const displayName = (
+    profile.brand_name ||
+    profile.name ||
+    [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
+    profile.slug
+  ) as string;
+
+  const title = link.title ? `${link.title as string} — ${displayName}` : displayName;
+  const description = (link.description as string | null) ?? `A private link from ${displayName}`;
+  const ogImage = (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
+  const canonicalUrl = `https://${username}.sqrz.com/${linkSlug}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+      images: [{ url: ogImage }],
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+      images: [ogImage],
+    },
+  };
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
