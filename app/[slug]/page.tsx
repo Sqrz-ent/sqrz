@@ -71,7 +71,7 @@ function formatEventDate(dateStr: string | null): string | null {
 
 const shell: React.CSSProperties = {
   minHeight: "100vh",
-  background: "#f7f7f5",
+  background: "#111111",
   fontFamily: "'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif",
   display: "flex",
   flexDirection: "column",
@@ -149,7 +149,7 @@ function ProfileAttribution({
           {getInitials(name ?? username)}
         </div>
       )}
-      <span style={{ fontWeight: 600, fontSize: 15, color: "#333" }}>{name ?? username}</span>
+      <span style={{ fontWeight: 600, fontSize: 15, color: "#e5e5e5" }}>{name ?? username}</span>
     </div>
   );
 }
@@ -317,8 +317,8 @@ export default async function PrivateLinkPage({
         <div style={container}>
           <div style={{ textAlign: "center", paddingTop: 80 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#111", margin: "0 0 8px" }}>No Longer Available</h1>
-            <p style={{ color: "#666", fontSize: 15 }}>This link has reached its maximum number of uses.</p>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 8px" }}>No Longer Available</h1>
+            <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15 }}>This link has reached its maximum number of uses.</p>
           </div>
           <LegalFooter {...legalFooterProps} />
         </div>
@@ -359,8 +359,15 @@ export default async function PrivateLinkPage({
             accent={accent}
           />
 
+          <a
+            href={`https://${username}.sqrz.com`}
+            style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
+          >
+            ← View full profile
+          </a>
+
           {link.title && (
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
               {link.title}
             </h1>
           )}
@@ -376,9 +383,9 @@ export default async function PrivateLinkPage({
             </div>
           )}
 
-          {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 28px", lineHeight: 1.6 }}>
-              {link.description}
+          {(matchedService?.description || link.description) && (
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
+              {(matchedService?.description as string | null) || (link.description as string)}
             </p>
           )}
 
@@ -425,8 +432,15 @@ export default async function PrivateLinkPage({
             accent={accent}
           />
 
+          <a
+            href={`https://${username}.sqrz.com`}
+            style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
+          >
+            ← View full profile
+          </a>
+
           {link.title && (
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 12px", lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
               {link.title}
             </h1>
           )}
@@ -438,13 +452,13 @@ export default async function PrivateLinkPage({
           )}
 
           {venue && (
-            <div style={{ fontSize: 14, color: "#666", marginBottom: 20 }}>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", marginBottom: 20 }}>
               📍 {venue}
             </div>
           )}
 
           {link.description && (
-            <p style={{ fontSize: 15, color: "#555", margin: "0 0 28px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
               {link.description}
             </p>
           )}
@@ -484,14 +498,21 @@ export default async function PrivateLinkPage({
           accent={accent}
         />
 
+        <a
+          href={`https://${username}.sqrz.com`}
+          style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
+        >
+          ← View full profile
+        </a>
+
         {link.title && (
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: "#111", margin: "0 0 10px", lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
             {link.title}
           </h1>
         )}
 
         {link.description && (
-          <p style={{ fontSize: 15, color: "#555", margin: "0 0 28px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
             {link.description}
           </p>
         )}
