@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookLinkButton from "@/components/BookLinkButton";
 import LegalFooter from "@/components/LegalFooter";
+import ChatBubble from "@/components/ChatBubble";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -340,7 +341,7 @@ export default async function PrivateLinkPage({
       : null;
 
     return (
-      <div style={shell}>
+      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <div style={container}>
           {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -394,6 +395,7 @@ export default async function PrivateLinkPage({
 
           <LegalFooter {...legalFooterProps} />
         </div>
+        <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
   }
@@ -405,7 +407,7 @@ export default async function PrivateLinkPage({
     const ctaUrl = safeUrl(link.external_url as string | null);
 
     return (
-      <div style={shell}>
+      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <div style={container}>
           {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -455,6 +457,7 @@ export default async function PrivateLinkPage({
 
           <LegalFooter {...legalFooterProps} />
         </div>
+        <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
   }
@@ -463,7 +466,7 @@ export default async function PrivateLinkPage({
   const ctaUrl = safeUrl(link.external_url as string | null);
 
   return (
-    <div style={shell}>
+    <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
       <div style={container}>
         {link.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -501,6 +504,7 @@ export default async function PrivateLinkPage({
 
         <LegalFooter {...legalFooterProps} />
       </div>
+      <ChatBubble profileId={profile.id as string} profileName={displayName} />
     </div>
   );
 }
