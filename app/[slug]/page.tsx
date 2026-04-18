@@ -82,6 +82,9 @@ const container: React.CSSProperties = {
   width: "100%",
   maxWidth: 520,
   padding: "32px 20px 80px",
+  flex: 1,
+  display: "flex",
+  flexDirection: "column",
 };
 
 function PoweredBy() {
@@ -320,6 +323,7 @@ export default async function PrivateLinkPage({
             <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 8px" }}>No Longer Available</h1>
             <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15 }}>This link has reached its maximum number of uses.</p>
           </div>
+          <div style={{ flex: 1 }} />
           <LegalFooter {...legalFooterProps} />
         </div>
       </div>
@@ -400,6 +404,7 @@ export default async function PrivateLinkPage({
             prefilledDescription={link.description as string | null}
           />
 
+          <div style={{ flex: 1 }} />
           <LegalFooter {...legalFooterProps} />
         </div>
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
@@ -469,6 +474,7 @@ export default async function PrivateLinkPage({
             </CtaButton>
           )}
 
+          <div style={{ flex: 1 }} />
           <LegalFooter {...legalFooterProps} />
         </div>
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
@@ -523,6 +529,7 @@ export default async function PrivateLinkPage({
           </CtaButton>
         )}
 
+        <div style={{ flex: 1 }} />
         <LegalFooter {...legalFooterProps} />
       </div>
       <ChatBubble profileId={profile.id as string} profileName={displayName} />
