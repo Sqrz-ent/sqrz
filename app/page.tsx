@@ -269,13 +269,13 @@ export default async function HomePage({
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
-    .select("link_slug, title")
+    .select("link_slug, title, page_type")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string }[];
+  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string; page_type: string }[];
 
   // Fetch gig history — only when profile.show_gig_history is true
   let bookingEvents: { title: string; start: string; end?: string }[] = [];
@@ -601,6 +601,54 @@ const ticket = {
           gap: 64,
         }}
       >
+        {privateLinks.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Links</h2>
+            {privateLinks.map((pl) => {
+              const badgeLabel = pl.page_type === "book" ? "BOOK" : pl.page_type === "event" ? "EVENT" : "DOWNLOAD";
+              return (
+                <a
+                  key={pl.link_slug}
+                  href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "14px 18px",
+                    borderRadius: 12,
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: "rgba(255,255,255,0.04)",
+                    textDecoration: "none",
+                    color: "inherit",
+                    fontWeight: 500,
+                    fontSize: 15,
+                    transition: "background 0.15s",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      color: template.accent,
+                      background: `${template.accent}18`,
+                      border: `1px solid ${template.accent}44`,
+                      borderRadius: 4,
+                      padding: "2px 6px",
+                    }}>
+                      {badgeLabel}
+                    </span>
+                    <span>{pl.title}</span>
+                  </div>
+                  <span style={{ opacity: 0.5, marginLeft: 12 }}>→</span>
+                </a>
+              );
+            })}
+          </div>
+        )}
+
         {profile.bio && (
           <div>
             {(profile.bio as string).split('\n\n').map((paragraph, i) => (
@@ -613,43 +661,14 @@ const ticket = {
           </div>
         )}
 
-        {privateLinks.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Links</h2>
-            {privateLinks.map((pl) => (
-              <a
-                key={pl.link_slug}
-                href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  padding: "14px 18px",
-                  borderRadius: 12,
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  background: "rgba(255,255,255,0.04)",
-                  textDecoration: "none",
-                  color: "inherit",
-                  fontWeight: 500,
-                  fontSize: 15,
-                  transition: "background 0.15s",
-                }}
-              >
-                <span>{pl.title}</span>
-                <span style={{ opacity: 0.5, marginLeft: 12 }}>→</span>
-              </a>
-            ))}
-          </div>
-        )}
-
-
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
         {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} />}
 
+        {profile.profile_references?.length > 0 && (
+          <Experience jobs={profile.profile_references} />
+        )}
 
-         {spotifyEmbed && (
+        {spotifyEmbed && (
           <iframe src={spotifyEmbed} width="100%" height="152" />
         )}
 
@@ -660,9 +679,7 @@ const ticket = {
         </div>
         ) : null}
 
-
         {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
-
 
         {profile.profile_videos?.length > 0 && (
           <YouTubeGallery videos={profile.profile_videos} />
@@ -685,12 +702,8 @@ const ticket = {
 
         {photoGallery.length > 0 && <PhotoGallery urls={photoGallery} />}
 
-       {profile.muso?.profile_url && (
-        <MusoWidget profile={profile.muso} />
-        )}
-
-        {profile.profile_references?.length > 0 && (
-          <Experience jobs={profile.profile_references} />
+        {profile.muso?.profile_url && (
+          <MusoWidget profile={profile.muso} />
         )}
 
         {(bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0) && (
