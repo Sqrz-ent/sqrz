@@ -339,15 +339,6 @@ export default async function PrivateLinkPage({
     return (
       <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <div className="flex-1" style={container}>
-          {link.cover_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={link.cover_image_url}
-              alt={link.title ?? "Cover"}
-              style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 16, marginBottom: 24, display: "block" }}
-            />
-          )}
-
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
             name={displayName}
@@ -361,6 +352,21 @@ export default async function PrivateLinkPage({
           >
             ← View full profile
           </a>
+
+          {link.cover_image_url && (
+            <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={link.cover_image_url}
+                alt={link.title ?? "Cover"}
+                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
+              />
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
+                background: "linear-gradient(to bottom, transparent, #111111)",
+              }} />
+            </div>
+          )}
 
           {link.title && (
             <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
@@ -411,15 +417,6 @@ export default async function PrivateLinkPage({
     return (
       <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <div className="flex-1" style={container}>
-          {link.cover_image_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={link.cover_image_url}
-              alt={link.title ?? "Event"}
-              style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 16, marginBottom: 24, display: "block" }}
-            />
-          )}
-
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}
             name={displayName}
@@ -433,6 +430,21 @@ export default async function PrivateLinkPage({
           >
             ← View full profile
           </a>
+
+          {link.cover_image_url && (
+            <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={link.cover_image_url}
+                alt={link.title ?? "Event"}
+                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
+              />
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
+                background: "linear-gradient(to bottom, transparent, #111111)",
+              }} />
+            </div>
+          )}
 
           {link.title && (
             <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
@@ -465,7 +477,6 @@ export default async function PrivateLinkPage({
           )}
         </div>
         <LegalFooter {...legalFooterProps} />
-        <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
   }
@@ -476,15 +487,6 @@ export default async function PrivateLinkPage({
   return (
     <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
       <div className="flex-1" style={container}>
-        {link.cover_image_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={link.cover_image_url}
-            alt={link.title ?? "Cover"}
-            style={{ width: "100%", aspectRatio: "16/9", objectFit: "cover", borderRadius: 16, marginBottom: 24, display: "block" }}
-          />
-        )}
-
         <ProfileAttribution
           profileAvatarSrc={profileAvatarSrc}
           name={displayName}
@@ -498,6 +500,21 @@ export default async function PrivateLinkPage({
         >
           ← View full profile
         </a>
+
+        {link.cover_image_url && (
+          <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={link.cover_image_url}
+              alt={link.title ?? "Cover"}
+              style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
+            />
+            <div style={{
+              position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
+              background: "linear-gradient(to bottom, transparent, #111111)",
+            }} />
+          </div>
+        )}
 
         {link.title && (
           <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
@@ -518,7 +535,6 @@ export default async function PrivateLinkPage({
         )}
       </div>
       <LegalFooter {...legalFooterProps} />
-      <ChatBubble profileId={profile.id as string} profileName={displayName} />
     </div>
   );
 }
