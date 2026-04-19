@@ -75,6 +75,7 @@ async function getProfileByUsername(username: string) {
     .from("profiles")
     .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
     .eq("slug", username)
+    .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
 
   return data ?? null;
@@ -85,6 +86,7 @@ async function getProfileByDomain(domain: string) {
     .from("profiles")
     .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
     .eq("custom_domain", domain)
+    .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
 
   return data ?? null;
