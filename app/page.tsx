@@ -601,7 +601,17 @@ const ticket = {
           gap: 64,
         }}
       >
-        {profile.bio && <p>{profile.bio}</p>}
+        {profile.bio && (
+          <div>
+            {(profile.bio as string).split('\n\n').map((paragraph, i) => (
+              <p key={i} style={{ margin: i > 0 ? "1em 0 0" : 0 }}>
+                {paragraph.split('\n').map((line, j, arr) => (
+                  <span key={j}>{line}{j < arr.length - 1 && <br />}</span>
+                ))}
+              </p>
+            ))}
+          </div>
+        )}
 
         {privateLinks.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
