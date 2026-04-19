@@ -116,3 +116,12 @@ body {
 .text-accent-bg {
   background: var(--accent-color);
 }
+
+/* Prevent iOS Safari viewport zoom on input focus */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
