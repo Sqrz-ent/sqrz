@@ -580,53 +580,6 @@ const ticket = {
           gap: 64,
         }}
       >
-        {privateLinks.length > 0 && (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
-            {privateLinks.map((pl) => {
-              const badgeLabel = pl.page_type === "book" ? "BOOK" : pl.page_type === "event" ? "EVENT" : "DOWNLOAD";
-              return (
-                <a
-                  key={pl.link_slug}
-                  href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    padding: "14px 18px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    background: "rgba(255,255,255,0.04)",
-                    textDecoration: "none",
-                    color: "inherit",
-                    fontWeight: 500,
-                    fontSize: 15,
-                    transition: "background 0.15s",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                      color: template.accent,
-                      background: `${template.accent}18`,
-                      border: `1px solid ${template.accent}44`,
-                      borderRadius: 4,
-                      padding: "2px 6px",
-                    }}>
-                      {badgeLabel}
-                    </span>
-                    <span>{pl.title}</span>
-                  </div>
-                  <span style={{ opacity: 0.5, marginLeft: 12 }}>→</span>
-                </a>
-              );
-            })}
-          </div>
-        )}
-
         {profile.bio && (
           <div>
             {(profile.bio as string).split('\n\n').map((paragraph, i) => (
