@@ -532,57 +532,6 @@ const ticket = {
             );
           })()}
 
-          {/* Availability badge */}
-          {(() => {
-            const status = profile.availability_status as string | null;
-            if (!status || status === "available") return (
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 12px",
-                borderRadius: 20,
-                background: "rgba(34,197,94,0.15)",
-                border: "1px solid rgba(34,197,94,0.3)",
-                marginBottom: 8,
-              }}>
-                <span style={{ fontSize: 8, lineHeight: 1 }}>🟢</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#4ade80" }}>Available for bookings</span>
-              </div>
-            );
-            if (status === "limited") return (
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 12px",
-                borderRadius: 20,
-                background: "rgba(234,179,8,0.15)",
-                border: "1px solid rgba(234,179,8,0.3)",
-                marginBottom: 8,
-              }}>
-                <span style={{ fontSize: 8, lineHeight: 1 }}>🟡</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#facc15" }}>Limited availability</span>
-              </div>
-            );
-            if (status === "unavailable") return (
-              <div style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "4px 12px",
-                borderRadius: 20,
-                background: "rgba(239,68,68,0.15)",
-                border: "1px solid rgba(239,68,68,0.3)",
-                marginBottom: 8,
-              }}>
-                <span style={{ fontSize: 8, lineHeight: 1 }}>🔴</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#f87171" }}>Not taking bookings</span>
-              </div>
-            );
-            return null;
-          })()}
-
           <div
             className="social-bar"
             style={{
@@ -633,7 +582,6 @@ const ticket = {
       >
         {privateLinks.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left" }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Links</h2>
             {privateLinks.map((pl) => {
               const badgeLabel = pl.page_type === "book" ? "BOOK" : pl.page_type === "event" ? "EVENT" : "DOWNLOAD";
               return (
