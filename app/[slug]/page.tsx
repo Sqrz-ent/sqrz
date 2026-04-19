@@ -70,21 +70,14 @@ function formatEventDate(dateStr: string | null): string | null {
 // ─── Layout primitives ────────────────────────────────────────────────────────
 
 const shell: React.CSSProperties = {
-  minHeight: "100vh",
   background: "#111111",
   fontFamily: "'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
 };
 
 const container: React.CSSProperties = {
   width: "100%",
   maxWidth: 520,
-  padding: "32px 20px 80px",
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
+  padding: "32px 20px 32px",
 };
 
 function PoweredBy() {
@@ -316,16 +309,15 @@ export default async function PrivateLinkPage({
 
   if (maxUsesReached) {
     return (
-      <div style={shell}>
-        <div style={container}>
+      <div className="flex flex-col min-h-screen items-center" style={shell}>
+        <div className="flex-1" style={container}>
           <div style={{ textAlign: "center", paddingTop: 80 }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: "#fff", margin: "0 0 8px" }}>No Longer Available</h1>
             <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 15 }}>This link has reached its maximum number of uses.</p>
           </div>
-          <div style={{ flex: 1 }} />
-          <LegalFooter {...legalFooterProps} />
         </div>
+        <LegalFooter {...legalFooterProps} />
       </div>
     );
   }
@@ -345,8 +337,8 @@ export default async function PrivateLinkPage({
       : null;
 
     return (
-      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <div style={container}>
+      <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+        <div className="flex-1" style={container}>
           {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -403,10 +395,8 @@ export default async function PrivateLinkPage({
             prefilledTitle={link.title as string | null}
             prefilledDescription={link.description as string | null}
           />
-
-          <div style={{ flex: 1 }} />
-          <LegalFooter {...legalFooterProps} />
         </div>
+        <LegalFooter {...legalFooterProps} />
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
@@ -419,8 +409,8 @@ export default async function PrivateLinkPage({
     const ctaUrl = safeUrl(link.external_url as string | null);
 
     return (
-      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <div style={container}>
+      <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+        <div className="flex-1" style={container}>
           {link.cover_image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -473,10 +463,8 @@ export default async function PrivateLinkPage({
               {(link.external_url_label as string) || "Get Tickets →"}
             </CtaButton>
           )}
-
-          <div style={{ flex: 1 }} />
-          <LegalFooter {...legalFooterProps} />
         </div>
+        <LegalFooter {...legalFooterProps} />
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
@@ -486,8 +474,8 @@ export default async function PrivateLinkPage({
   const ctaUrl = safeUrl(link.external_url as string | null);
 
   return (
-    <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <div style={container}>
+    <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+      <div className="flex-1" style={container}>
         {link.cover_image_url && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -528,10 +516,8 @@ export default async function PrivateLinkPage({
             {(link.external_url_label as string) || "Download →"}
           </CtaButton>
         )}
-
-        <div style={{ flex: 1 }} />
-        <LegalFooter {...legalFooterProps} />
       </div>
+      <LegalFooter {...legalFooterProps} />
       <ChatBubble profileId={profile.id as string} profileName={displayName} />
     </div>
   );
