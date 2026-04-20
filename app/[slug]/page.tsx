@@ -460,6 +460,7 @@ export default async function PrivateLinkPage({
             prefillService={prefillServiceTitle}
             prefilledTitle={link.title as string | null}
             prefilledDescription={link.description as string | null}
+            profileName={displayName}
           />
           {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
         </div>

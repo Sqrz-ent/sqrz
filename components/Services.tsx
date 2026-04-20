@@ -124,11 +124,13 @@ export default function Services({
   username,
   profileId,
   planId = null,
+  profileName = null,
 }: {
   services: Service[];
   username: string;
   profileId: string;
   planId?: number | null;
+  profileName?: string | null;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -159,6 +161,7 @@ export default function Services({
         profileId={profileId}
         planId={planId}
         initialService={selectedService}
+        profileName={profileName}
       />
     </>
   );

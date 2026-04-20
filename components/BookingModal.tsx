@@ -18,6 +18,7 @@ export default function BookingModal({
   simplified = false,
   prefilledTitle = null,
   prefilledDescription = null,
+  profileName = null,
 }: {
   open: boolean;
   onClose: () => void;
@@ -29,6 +30,7 @@ export default function BookingModal({
   simplified?: boolean;
   prefilledTitle?: string | null;
   prefilledDescription?: string | null;
+  profileName?: string | null;
 }) {
   // simplified: start at step 1 (skip service selection)
   // normal with initialService: start at step 1
@@ -210,7 +212,10 @@ export default function BookingModal({
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: 12, textAlign: "center" }}>
             <div style={{ fontSize: 40 }}>🎉</div>
             <h2>Your request has been sent!</h2>
-            <p style={{ opacity: 0.7 }}>Check your email to confirm your booking request.</p>
+            <p style={{ opacity: 0.7, lineHeight: 1.6 }}>
+              {profileName ? `${profileName} will get back to you shortly.` : "We'll get back to you shortly."}<br />
+              Keep an eye on <strong>{email}</strong> for their response.
+            </p>
           </div>
         </div>
       </div>

@@ -13,6 +13,7 @@ export default function BookLinkButton({
   prefillService,
   prefilledTitle,
   prefilledDescription,
+  profileName = null,
 }: {
   username: string;
   services: Service[];
@@ -22,6 +23,7 @@ export default function BookLinkButton({
   prefillService?: string | null;
   prefilledTitle?: string | null;
   prefilledDescription?: string | null;
+  profileName?: string | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -62,6 +64,7 @@ export default function BookLinkButton({
         simplified={true}
         prefilledTitle={prefilledTitle}
         prefilledDescription={prefilledDescription}
+        profileName={profileName}
       />
     </>
   );

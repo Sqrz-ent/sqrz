@@ -448,7 +448,7 @@ const ticket = {
     />
 
 {hasActiveServices && (
-  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} />
+  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />
 )}
 <ViewTracker username={profile.slug} />
 
@@ -602,7 +602,7 @@ const ticket = {
         )}
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
-        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} />}
+        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
 
         {profile.profile_references?.length > 0 && (
           <Experience jobs={profile.profile_references} />
