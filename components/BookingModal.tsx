@@ -44,6 +44,8 @@ export default function BookingModal({
   const [message, setMessage] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [multiDay, setMultiDay] = useState(false);
+  const [dateEnd, setDateEnd] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
@@ -144,6 +146,7 @@ export default function BookingModal({
         p_venue_zip: zip || null,
         p_venue_country: country || null,
         p_phone: phone.trim() || null,
+        p_date_end: (multiDay && dateEnd) ? dateEnd : null,
       });
 
       if (rpcError) throw rpcError;
@@ -319,8 +322,29 @@ export default function BookingModal({
                   onChange={(e) => setTime(e.target.value)}
                   style={inputStyle}
                 />
+                <label style={{ ...labelStyle, display: "flex", alignItems: "center", gap: 8, cursor: "pointer", opacity: 1, marginBottom: 0 }}>
+                  <input
+                    type="checkbox"
+                    checked={multiDay}
+                    onChange={(e) => { setMultiDay(e.target.checked); if (!e.target.checked) setDateEnd(""); }}
+                    style={{ width: "auto", marginBottom: 0 }}
+                  />
+                  Multi-day booking
+                </label>
+                {multiDay && (
+                  <>
+                    <label style={{ ...labelStyle, marginTop: 12 }}>End date</label>
+                    <input
+                      type="date"
+                      value={dateEnd}
+                      min={date || undefined}
+                      onChange={(e) => setDateEnd(e.target.value)}
+                      style={inputStyle}
+                    />
+                  </>
+                )}
                 {error && <p style={errorStyle}>{error}</p>}
-                <div style={buttonRowStyle}>
+                <div style={{ ...buttonRowStyle, marginTop: 16 }}>
                   <button type="button" style={secondaryButtonStyle} onClick={() => setStep(1)}>Back</button>
                   <button type="button" style={submitStyle} onClick={() => { setError(null); setStep(3); }}>Continue</button>
                 </div>
