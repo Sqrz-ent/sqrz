@@ -139,6 +139,10 @@ export default function BookingModal({
         p_message: message || (simplified ? (prefilledDescription ?? prefilledTitle ?? "") : ""),
         p_event_date: date || null,
         p_event_location: [city, country].filter(Boolean).join(", ") || null,
+        p_venue_address: street || null,
+        p_venue_city: city || null,
+        p_venue_zip: zip || null,
+        p_venue_country: country || null,
       });
 
       if (rpcError) throw rpcError;
