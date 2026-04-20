@@ -143,6 +143,7 @@ export default function BookingModal({
         p_venue_city: city || null,
         p_venue_zip: zip || null,
         p_venue_country: country || null,
+        p_phone: phone.trim() || null,
       });
 
       if (rpcError) throw rpcError;
@@ -163,14 +164,6 @@ export default function BookingModal({
       const invite_token = (result.invite_token ?? result.token) as string | undefined;
 
       console.log("[BookingModal] extracted — booking_id:", booking_id, "invite_token:", invite_token);
-
-      // Save phone if provided
-      if (phone.trim() && invite_token) {
-        await supabase
-          .from("booking_participants")
-          .update({ phone: phone.trim() })
-          .eq("invite_token", invite_token);
-      }
 
       // Always attempt email — let the route surface errors if fields missing
       try {
