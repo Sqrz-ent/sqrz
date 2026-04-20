@@ -46,6 +46,7 @@ export default function BookingModal({
   const [time, setTime] = useState("");
   const [multiDay, setMultiDay] = useState(false);
   const [dateEnd, setDateEnd] = useState("");
+  const [timeEnd, setTimeEnd] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
   const [zip, setZip] = useState("");
@@ -139,14 +140,14 @@ export default function BookingModal({
         p_service: selectedService?.title ?? null,
         p_title: projectTitle || null,
         p_message: message || (simplified ? (prefilledDescription ?? prefilledTitle ?? "") : ""),
-        p_event_date: date || null,
+        p_event_date: date ? `${date}T${time || "00:00"}:00` : null,
         p_event_location: [city, country].filter(Boolean).join(", ") || null,
         p_venue_address: street || null,
         p_venue_city: city || null,
         p_venue_zip: zip || null,
         p_venue_country: country || null,
         p_phone: phone.trim() || null,
-        p_date_end: (multiDay && dateEnd) ? dateEnd : null,
+        p_date_end: (multiDay && dateEnd) ? `${dateEnd}T${timeEnd || "00:00"}:00` : null,
       });
 
       if (rpcError) throw rpcError;
@@ -315,9 +316,9 @@ export default function BookingModal({
                   onChange={(e) => setDate(e.target.value)}
                   style={inputStyle}
                 />
-                <label style={labelStyle}>Event time (optional)</label>
                 <input
                   type="time"
+                  placeholder="Start time (optional)"
                   value={time}
                   onChange={(e) => setTime(e.target.value)}
                   style={inputStyle}
@@ -326,7 +327,7 @@ export default function BookingModal({
                   <input
                     type="checkbox"
                     checked={multiDay}
-                    onChange={(e) => { setMultiDay(e.target.checked); if (!e.target.checked) setDateEnd(""); }}
+                    onChange={(e) => { setMultiDay(e.target.checked); if (!e.target.checked) { setDateEnd(""); setTimeEnd(""); } }}
                     style={{ width: "auto", marginBottom: 0 }}
                   />
                   Multi-day booking
@@ -339,6 +340,13 @@ export default function BookingModal({
                       value={dateEnd}
                       min={date || undefined}
                       onChange={(e) => setDateEnd(e.target.value)}
+                      style={inputStyle}
+                    />
+                    <input
+                      type="time"
+                      placeholder="End time (optional)"
+                      value={timeEnd}
+                      onChange={(e) => setTimeEnd(e.target.value)}
                       style={inputStyle}
                     />
                   </>
