@@ -84,8 +84,7 @@ export default function BookingModal({
       return;
     }
     setError(null);
-    // simplified: skip step 2 (project/description), go straight to date
-    setStep(simplified ? 3 : 2);
+    setStep(2);
   }
 
   // ─── Instant booking pay ──────────────────────────────────────────────────
@@ -120,22 +119,13 @@ export default function BookingModal({
     }
   }
 
-  function nextFromStep2() {
-    if (!projectTitle) {
-      setError("Please enter a project name.");
-      return;
-    }
-    if (!message) {
-      setError("Please add a short description.");
-      return;
-    }
-    setError(null);
-    setStep(3);
-  }
-
   // ─── Final submit ─────────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!simplified) {
+      if (!projectTitle) { setError("Please enter a project name."); return; }
+      if (!message) { setError("Please add a short description."); return; }
+    }
     setError(null);
     setLoading(true);
 
@@ -146,9 +136,7 @@ export default function BookingModal({
         p_from_email: email,
         p_service: selectedService?.title ?? null,
         p_title: projectTitle || null,
-        p_message: simplified
-          ? (prefilledDescription ?? prefilledTitle ?? "")
-          : message,
+        p_message: message || (simplified ? (prefilledDescription ?? prefilledTitle ?? "") : ""),
         p_event_date: date || null,
         p_event_location: [city, country].filter(Boolean).join(", ") || null,
       });
@@ -229,12 +217,10 @@ export default function BookingModal({
   }
 
   // ─── Step indicator ───────────────────────────────────────────────────────
-  // simplified: steps 1,3,4 → display 1,2,3 of 3
-  // normal:     steps 0-4   → display 1-5 of 5
-  const totalSteps = simplified ? 3 : 5;
-  const stepNumber = simplified
-    ? (step === 1 ? 1 : step === 3 ? 2 : 3)
-    : step + 1;
+  // simplified: steps 1-4 → display 1-4 of 4
+  // normal:     steps 0-4 → display 1-5 of 5
+  const totalSteps = simplified ? 4 : 5;
+  const stepNumber = simplified ? step : step + 1;
 
   return (
     <div style={overlayStyle}>
@@ -319,45 +305,15 @@ export default function BookingModal({
               </>
             )}
 
-            {/* STEP 2 — Project + description (normal mode only) */}
-            {step === 2 && !simplified && (
+            {/* STEP 2 — Date + time (optional) */}
+            {step === 2 && (
               <>
-                <label style={labelStyle}>Project name *</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Club Night Berlin, Wedding Reception, Album Mix..."
-                  value={projectTitle}
-                  onChange={(e) => setProjectTitle(e.target.value)}
-                  style={inputStyle}
-                  required
-                />
-                <label style={labelStyle}>Tell us more</label>
-                <textarea
-                  placeholder="Event details, location, special requirements…"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  style={textareaStyle}
-                  rows={4}
-                  required
-                />
-                {error && <p style={errorStyle}>{error}</p>}
-                <div style={buttonRowStyle}>
-                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(1)}>Back</button>
-                  <button type="button" style={submitStyle} onClick={nextFromStep2}>Continue</button>
-                </div>
-              </>
-            )}
-
-            {/* STEP 3 — Date + time */}
-            {step === 3 && (
-              <>
-                <label style={labelStyle}>Event date *</label>
+                <label style={labelStyle}>Event date (optional)</label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                   style={inputStyle}
-                  required
                 />
                 <label style={labelStyle}>Event time (optional)</label>
                 <input
@@ -368,20 +324,46 @@ export default function BookingModal({
                 />
                 {error && <p style={errorStyle}>{error}</p>}
                 <div style={buttonRowStyle}>
-                  {/* Back goes to step 1 in simplified, step 2 in normal */}
-                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(simplified ? 1 : 2)}>Back</button>
-                  <button type="button" style={submitStyle} onClick={() => setStep(4)}>Continue</button>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(1)}>Back</button>
+                  <button type="button" style={submitStyle} onClick={() => { setError(null); setStep(3); }}>Continue</button>
                 </div>
               </>
             )}
 
-            {/* STEP 4 — Address + submit */}
-            {step === 4 && (
+            {/* STEP 3 — Address (optional) */}
+            {step === 3 && (
               <>
                 <input type="text" placeholder="Street & number" value={street} onChange={(e) => setStreet(e.target.value)} style={inputStyle} />
                 <input type="text" placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} style={inputStyle} />
                 <input type="text" placeholder="ZIP / Postal code" value={zip} onChange={(e) => setZip(e.target.value)} style={inputStyle} />
                 <input type="text" placeholder="Country" value={country} onChange={(e) => setCountry(e.target.value)} style={inputStyle} />
+                {error && <p style={errorStyle}>{error}</p>}
+                <div style={buttonRowStyle}>
+                  <button type="button" style={secondaryButtonStyle} onClick={() => setStep(2)}>Back</button>
+                  <button type="button" style={submitStyle} onClick={() => { setError(null); setStep(4); }}>Continue</button>
+                </div>
+              </>
+            )}
+
+            {/* STEP 4 — Project + description + submit */}
+            {step === 4 && (
+              <>
+                <label style={labelStyle}>Project name{!simplified && " *"}</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Club Night Berlin, Wedding Reception, Album Mix..."
+                  value={projectTitle}
+                  onChange={(e) => setProjectTitle(e.target.value)}
+                  style={inputStyle}
+                />
+                <label style={labelStyle}>Tell us more</label>
+                <textarea
+                  placeholder="Event details, location, special requirements…"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  style={textareaStyle}
+                  rows={4}
+                />
                 {error && <p style={errorStyle}>{error}</p>}
                 <div style={buttonRowStyle}>
                   <button type="button" style={secondaryButtonStyle} onClick={() => setStep(3)}>Back</button>
