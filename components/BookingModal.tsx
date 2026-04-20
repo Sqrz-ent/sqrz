@@ -40,6 +40,7 @@ export default function BookingModal({
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -171,6 +172,14 @@ export default function BookingModal({
 
       console.log("[BookingModal] extracted — booking_id:", booking_id, "invite_token:", invite_token);
 
+      // Save phone if provided
+      if (phone.trim() && invite_token) {
+        await supabase
+          .from("booking_participants")
+          .update({ phone: phone.trim() })
+          .eq("invite_token", invite_token);
+      }
+
       // Always attempt email — let the route surface errors if fields missing
       try {
         const confirmRes = await fetch("/api/booking-confirm", {
@@ -275,6 +284,13 @@ export default function BookingModal({
                   onChange={(e) => setEmail(e.target.value)}
                   style={inputStyle}
                   required
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone number (optional — for a callback)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  style={inputStyle}
                 />
                 {isInstant && (
                   <textarea
