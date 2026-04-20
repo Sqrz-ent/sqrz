@@ -80,6 +80,66 @@ const container: React.CSSProperties = {
   padding: "32px 20px 32px",
 };
 
+function getCurrencySymbol(currency?: string): string {
+  if (!currency) return "€";
+  const map: Record<string, string> = { eur: "€", usd: "$", gbp: "£", chf: "CHF " };
+  return map[currency.toLowerCase()] ?? currency.toUpperCase() + " ";
+}
+
+function ServiceTerms({ service, accent }: { service: Service; accent: string }) {
+  const sym = getCurrencySymbol(service.currency);
+  const hasRange = service.price_min != null && service.price_max != null && service.price_min > 0 && service.price_max > 0;
+  const priceNode = hasRange ? (
+    <span style={{ fontSize: 15, fontWeight: 700, color: accent }}>
+      {sym}{service.price_min} – {sym}{service.price_max}
+    </span>
+  ) : service.price_label ? (
+    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>{service.price_label}</span>
+  ) : null;
+
+  const rawDesc = service.description?.trim();
+
+  // Parse description into segments: paragraph → line | bullet
+  type Segment = { type: "para"; lines: ({ type: "line"; text: string } | { type: "bullet"; text: string })[] };
+  const segments: Segment[] = rawDesc
+    ? rawDesc.split(/\n\n+/).map((para) => ({
+        type: "para" as const,
+        lines: para.split("\n").map((line) =>
+          line.trimStart().startsWith("* ")
+            ? { type: "bullet" as const, text: line.trimStart().slice(2) }
+            : { type: "line" as const, text: line }
+        ),
+      }))
+    : [];
+
+  if (!priceNode && segments.length === 0) return null;
+
+  return (
+    <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", display: "block", marginBottom: 10 }}>
+        Service Terms
+      </span>
+      {priceNode && <div style={{ marginBottom: segments.length > 0 ? 12 : 0 }}>{priceNode}</div>}
+      {segments.map((seg, i) => (
+        <div key={i} style={{ marginBottom: i < segments.length - 1 ? 10 : 0 }}>
+          {seg.lines.map((line, j) =>
+            line.type === "bullet" ? (
+              <div key={j} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 3 }}>
+                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, flexShrink: 0, lineHeight: "1.5" }}>•</span>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>{line.text}</span>
+              </div>
+            ) : (
+              <span key={j} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, display: "inline" }}>
+                {line.text}{j < seg.lines.length - 1 && <br />}
+              </span>
+            )
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function PoweredBy() {
   return (
     <div style={{ textAlign: "center", padding: "24px 0 32px", fontSize: 12, color: "#aaa", letterSpacing: "0.04em" }}>
@@ -401,6 +461,7 @@ export default async function PrivateLinkPage({
             prefilledTitle={link.title as string | null}
             prefilledDescription={link.description as string | null}
           />
+          {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
         </div>
         <LegalFooter {...legalFooterProps} />
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
