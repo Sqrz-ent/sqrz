@@ -445,9 +445,9 @@ export default async function PrivateLinkPage({
             </div>
           )}
 
-          {(matchedService?.description || link.description) && (
+          {(link.description as string | null) && (
             <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
-              {(matchedService?.description as string | null) || (link.description as string)}
+              {link.description as string}
             </p>
           )}
 
