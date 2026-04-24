@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     event_date,
     event_location,
     title,
+    booking_ref_code,
   } = body;
 
   if (!to_slug || !from_name || !from_email || !instant_price) {
@@ -83,6 +84,7 @@ export async function POST(req: NextRequest) {
     tax_pct: instantTaxRate.toString(),
     tax_amount: tax.toFixed(2),
     owner_profile_id: profile_id ?? "",
+    booking_ref_code: booking_ref_code ?? "",
   };
 
   const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;

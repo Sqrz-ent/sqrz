@@ -36,6 +36,7 @@ import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
+import RefCapture from "@/components/RefCapture";
 
 
 
@@ -397,6 +398,7 @@ const ticket = {
 
   return (
     <>
+    <RefCapture refCode={params.ref} />
     {showPaymentBanner && <PaymentSuccessBanner />}
     {showClaimBanner && (
       <div style={{

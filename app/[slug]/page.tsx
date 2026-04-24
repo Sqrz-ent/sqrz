@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import BookLinkButton from "@/components/BookLinkButton";
+import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
 import ChatBubble from "@/components/ChatBubble";
 import type { Service } from "@/types/service";
@@ -295,7 +296,7 @@ export default async function PrivateLinkPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ username?: string }>;
+  searchParams: Promise<{ username?: string; ref?: string }>;
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
@@ -398,6 +399,7 @@ export default async function PrivateLinkPage({
 
     return (
       <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+        <RefCapture refCode={sp.ref} />
         <div className="flex-1" style={container}>
           <ProfileAttribution
             profileAvatarSrc={profileAvatarSrc}

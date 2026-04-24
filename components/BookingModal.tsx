@@ -92,6 +92,19 @@ export default function BookingModal({
     setStep(2);
   }
 
+  // ─── Stored ref code ──────────────────────────────────────────────────────
+  function getStoredRef(): string | null {
+    const ref = localStorage.getItem("sqrz_booking_ref");
+    const expires = localStorage.getItem("sqrz_booking_ref_expires");
+    if (!ref || !expires) return null;
+    if (new Date(expires) < new Date()) {
+      localStorage.removeItem("sqrz_booking_ref");
+      localStorage.removeItem("sqrz_booking_ref_expires");
+      return null;
+    }
+    return ref;
+  }
+
   // ─── Instant booking pay ──────────────────────────────────────────────────
   async function handleInstantPay() {
     if (!name || !email) {
@@ -113,6 +126,7 @@ export default function BookingModal({
           instant_price: selectedService?.instant_price ?? 0,
           instant_currency: selectedService?.instant_currency ?? "EUR",
           profile_id: profileId,
+          booking_ref_code: getStoredRef(),
         }),
       });
       const json = await res.json();
@@ -150,6 +164,7 @@ export default function BookingModal({
         p_venue_country: country || null,
         p_phone: phone.trim() || null,
         p_date_end: (multiDay && dateEnd) ? `${dateEnd}T${timeEnd || "00:00"}:00` : null,
+        p_booking_ref_code: getStoredRef(),
       });
 
       if (rpcError) throw rpcError;
