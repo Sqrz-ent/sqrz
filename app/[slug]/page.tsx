@@ -7,6 +7,7 @@ import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
 import ChatBubble from "@/components/ChatBubble";
+import CookieBanner from "@/components/CookieBanner";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -502,6 +503,7 @@ export default async function PrivateLinkPage({
           {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
         </div>
         <LegalFooter {...legalFooterProps} />
+        <CookieBanner templateId={profile.template_id as string} />
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
     );
@@ -576,6 +578,7 @@ export default async function PrivateLinkPage({
           )}
         </div>
         <LegalFooter {...legalFooterProps} />
+        <CookieBanner templateId={profile.template_id as string} />
       </div>
     );
   }
@@ -634,6 +637,7 @@ export default async function PrivateLinkPage({
         )}
       </div>
       <LegalFooter {...legalFooterProps} />
+      <CookieBanner templateId={profile.template_id as string} />
     </div>
   );
 }
