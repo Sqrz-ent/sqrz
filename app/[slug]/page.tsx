@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
@@ -296,7 +297,7 @@ export default async function PrivateLinkPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ username?: string; ref?: string }>;
+  searchParams: Promise<{ username?: string; ref?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string }>;
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
@@ -340,6 +341,40 @@ export default async function PrivateLinkPage({
       .from("private_booking_links")
       .update({ use_count: (link.use_count || 0) + 1 })
       .eq("id", link.id);
+  }
+
+  // ── Link view logging ────────────────────────────────────────────────────────
+  {
+    const adminSupabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const headersList = await headers();
+    const referrer = headersList.get("referer");
+
+    const cookieHeader = headersList.get("cookie") || "";
+    const sessionMatch = cookieHeader.match(/sqrz_session=([^;]+)/);
+    const session_id = sessionMatch?.[1] || Math.random().toString(36).slice(2);
+
+    const userAgent = headersList.get("user-agent") || "";
+    const ip =
+      headersList.get("x-forwarded-for")?.split(",")[0] ||
+      headersList.get("x-real-ip") ||
+      "";
+    const visitor_fingerprint = Buffer.from(userAgent.slice(0, 50) + ip)
+      .toString("base64")
+      .slice(0, 16);
+
+    await adminSupabase.from("profile_views").insert({
+      profile_id: profile.id,
+      link_id: link.id,
+      session_id,
+      visitor_fingerprint,
+      utm_source: sp.utm_source || sp.ref || null,
+      utm_medium: sp.utm_medium || null,
+      utm_campaign: sp.utm_campaign || null,
+      referrer: referrer || null,
+    });
   }
 
   const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
