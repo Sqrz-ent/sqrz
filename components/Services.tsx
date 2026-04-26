@@ -90,9 +90,6 @@ function ServiceCard({
       <div className="sqrz-svc-header" style={headerStyle}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1, flexWrap: "wrap" }}>
           <span style={serviceNameStyle}>{s.title}</span>
-          {isInstant && (
-            <span style={instantBadgeStyle}>Instant Booking</span>
-          )}
         </div>
 
         {isInstant ? (
