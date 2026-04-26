@@ -74,7 +74,7 @@ import { supabaseServer as supabase } from "@/lib/supabase-server";
 async function getProfileByUsername(username: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
     .eq("slug", username)
     .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
@@ -85,7 +85,7 @@ async function getProfileByUsername(username: string) {
 async function getProfileByDomain(domain: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label)")
+    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
     .eq("custom_domain", domain)
     .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();

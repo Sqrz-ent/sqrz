@@ -50,7 +50,7 @@ export default function ProfileCalendar({
   }));
 
   const blockEvents = availabilityBlocks.map((block) => ({
-    title: block.show_label ? (block.label || "Unavailable") : "Unavailable",
+    title: (block.show_label && block.label) ? block.label : "",
     start: block.start_date,
     // FullCalendar all-day end dates are exclusive — add 1 day
     end: (() => {
