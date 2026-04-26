@@ -5,6 +5,7 @@ export type Service = {
   price_min?: number;
   price_max?: number;
   price_label?: string;
+  price_unit?: string;
   currency?: string;
   booking_type?: "instant" | "quote";
   instant_price?: number;

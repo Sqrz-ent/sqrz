@@ -21,13 +21,34 @@ function safeCurrency(input?: string | null) {
   return /^[A-Z]{3}$/.test(c) ? c : "EUR";
 }
 
-function getInstantTotal(s: Service, planId: number | null): string {
-  if (s.instant_price == null) return "";
+function unitLabel(unit?: string): string {
+  if (unit === "hour") return " / hr";
+  if (unit === "day") return " / day";
+  if (unit === "unit") return " / unit";
+  return ""; // flat = no label
+}
+
+function getPriceRangePill(s: Service): string | null {
+  if (s.booking_type === "instant") return null;
+  if (s.price_label === "Price on request") return null;
+  if (s.price_min == null && s.price_max == null) return null;
+  const currency = safeCurrency(s.currency);
+  const suffix = unitLabel(s.price_unit);
+  if (s.price_min != null && s.price_max != null) {
+    return `${formatMoney(s.price_min, currency)} – ${formatMoney(s.price_max, currency)}${suffix}`;
+  }
+  if (s.price_min != null) return `${formatMoney(s.price_min, currency)}${suffix}`;
+  if (s.price_max != null) return `${formatMoney(s.price_max, currency)}${suffix}`;
+  return null;
+}
+
+function getInstantPricePill(s: Service, planId: number | null): string | null {
+  if (s.instant_price == null) return null;
   const currency = safeCurrency(s.instant_currency);
   const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.0;
   const taxRate = (s.instant_tax_rate ?? 0) / 100;
   const total = s.instant_price * (1 + taxRate + sqrzFeeRate);
-  return formatMoney(total, currency);
+  return `${formatMoney(total, currency)} · Instant Booking`;
 }
 
 function ServiceCard({
@@ -62,12 +83,12 @@ function ServiceCard({
   }, [s.description]);
 
   const isInstant = s.booking_type === "instant";
-  const total = isInstant ? getInstantTotal(s, planId) : null;
+  const pricePill = isInstant ? getInstantPricePill(s, planId) : getPriceRangePill(s);
 
   return (
     <div style={cardStyle}>
-      <div style={headerStyle}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1 }}>
+      <div className="sqrz-svc-header" style={headerStyle}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, flex: 1, flexWrap: "wrap" }}>
           <span style={serviceNameStyle}>{s.title}</span>
           {isInstant && (
             <span style={instantBadgeStyle}>Instant Booking</span>
@@ -79,7 +100,7 @@ function ServiceCard({
             onClick={() => onBook(s)}
             style={filledBtnStyle}
           >
-            {total ? `Book Now · ${total}` : "Book Now"}
+            Book Now
           </button>
         ) : (
           <button
@@ -90,6 +111,12 @@ function ServiceCard({
           </button>
         )}
       </div>
+
+      {pricePill && (
+        <div style={{ marginBottom: 8 }}>
+          <span style={pricePillStyle}>{pricePill}</span>
+        </div>
+      )}
 
       {s.description && (
         <div>
@@ -144,6 +171,12 @@ export default function Services({
 
   return (
     <>
+      <style>{`
+        @media (max-width: 768px) {
+          .sqrz-svc-header { flex-direction: column !important; align-items: flex-start !important; }
+          .sqrz-svc-header > button { align-self: flex-start; }
+        }
+      `}</style>
       <section style={{ marginTop: 40 }}>
         <h3 style={titleStyle}>Services & Pricing</h3>
         <div style={listStyle}>
@@ -258,4 +291,15 @@ const toggleStyle = {
   fontSize: 12,
   color: "var(--text-muted, #888)",
   textDecoration: "underline",
+};
+
+const pricePillStyle = {
+  display: "inline-block",
+  fontSize: 12,
+  fontWeight: 600,
+  color: "var(--accent-color, #F5A623)",
+  border: "1px solid var(--accent-color, #F5A623)",
+  borderRadius: 20,
+  padding: "1px 9px",
+  opacity: 0.9,
 };
