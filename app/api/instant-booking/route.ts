@@ -68,7 +68,39 @@ export async function POST(req: NextRequest) {
 
   console.log("[instant-booking] net:", net, "taxRate:", instantTaxRate, "sqrzFeeRate:", sqrzFeeRate, "total:", total, "connectId:", connectId);
 
-  // ── 3. Create Stripe Checkout Session ─────────────────────────────────────
+  // ── 3. Create booking row before Stripe session so we have the ID ──────────
+  const { data: rpcData, error: rpcError } = await supabase.rpc("create_booking_request", {
+    p_to_slug: to_slug,
+    p_from_name: from_name,
+    p_from_email: from_email,
+    p_service: service_title || null,
+    p_message: message || null,
+    p_event_date: event_date || null,
+    p_event_location: event_location || null,
+    p_title: title || null,
+    p_booking_ref_code: booking_ref_code || null,
+  });
+
+  if (rpcError) {
+    console.error("[instant-booking] create_booking_request failed:", rpcError);
+    return NextResponse.json({ error: "Failed to create booking" }, { status: 500 });
+  }
+
+  let rpcResult: Record<string, unknown> = {};
+  if (typeof rpcData === "string") {
+    try { rpcResult = JSON.parse(rpcData); } catch { rpcResult = {}; }
+  } else if (Array.isArray(rpcData)) {
+    rpcResult = (rpcData[0] as Record<string, unknown>) ?? {};
+  } else if (rpcData && typeof rpcData === "object") {
+    rpcResult = rpcData as Record<string, unknown>;
+  }
+
+  const bookingId = rpcResult.booking_id as string | undefined;
+  const guestToken = (rpcResult.invite_token ?? rpcResult.token) as string | undefined;
+
+  console.log("[instant-booking] booking created — booking_id:", bookingId, "guest_token:", guestToken ? "present" : "missing");
+
+  // ── 4. Create Stripe Checkout Session ─────────────────────────────────────
   const metadata: Record<string, string> = {
     type: "instant_booking",
     to_slug,
@@ -85,9 +117,13 @@ export async function POST(req: NextRequest) {
     tax_amount: tax.toFixed(2),
     owner_profile_id: profile_id ?? "",
     booking_ref_code: booking_ref_code ?? "",
+    booking_id: bookingId ?? "",
+    guest_token: guestToken ?? "",
   };
 
-  const successUrl = `https://${to_slug}.sqrz.com?payment=success&service=${encodeURIComponent(service_title ?? "")}`;
+  const successUrl = bookingId
+    ? `https://${to_slug}.sqrz.com?payment=success&booking_id=${bookingId}&guest_token=${encodeURIComponent(guestToken ?? "")}`
+    : `https://${to_slug}.sqrz.com?payment=success`;
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",

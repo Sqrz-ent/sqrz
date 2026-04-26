@@ -1,7 +1,7 @@
 import React from "react";
 import { headers } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
 
@@ -179,6 +179,8 @@ export default async function HomePage({
     username?: string;
     claim?: string;
     payment?: string;
+    booking_id?: string;
+    guest_token?: string;
     service?: string;
     utm_source?: string;
     utm_medium?: string;
@@ -188,6 +190,15 @@ export default async function HomePage({
   }>;
 }) {
   const params = await searchParams;
+
+  // Instant booking post-payment redirect → take buyer directly to their booking page
+  if (params.payment === "success" && params.booking_id) {
+    const bookingUrl = params.guest_token
+      ? `https://dashboard.sqrz.com/booking/${params.booking_id}?token=${encodeURIComponent(params.guest_token)}`
+      : `https://dashboard.sqrz.com/booking/${params.booking_id}`;
+      // fallback: no token in params — buyer will need to authenticate via magic link
+    redirect(bookingUrl);
+  }
 
   console.log("[HomePage] params:", params);
   console.log("[HomePage] NODE_ENV:", process.env.NODE_ENV);

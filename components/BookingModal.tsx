@@ -311,6 +311,9 @@ export default function BookingModal({
                 {error && <p style={errorStyle}>{error}</p>}
                 {isInstant ? (
                   <>
+                    <p style={{ fontSize: 12, color: "var(--text-muted, #888)", margin: "4px 0 0", textAlign: "center" }}>
+                      After payment you'll be taken to your booking page to discuss details via chat.
+                    </p>
                     <button type="button" style={submitStyle} onClick={handleInstantPay} disabled={loading}>
                       {loading ? "Redirecting…" : `Book Now — ${formatInstantPrice(selectedService, planId)}`}
                     </button>
