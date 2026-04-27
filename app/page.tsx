@@ -186,6 +186,7 @@ export default async function HomePage({
     utm_source?: string;
     utm_medium?: string;
     utm_campaign?: string;
+    utm_content?: string;
     ref?: string;
     sid?: string;
   }>;
@@ -250,6 +251,17 @@ export default async function HomePage({
       .toString("base64")
       .slice(0, 16);
 
+    let boost_campaign_id: string | null = null;
+    if (params.utm_campaign?.startsWith("boost_")) {
+      const { data: campaign } = await adminSupabase
+        .from("boost_campaigns")
+        .select("id")
+        .eq("utm_campaign", params.utm_campaign)
+        .eq("profile_id", profile.id)
+        .maybeSingle();
+      boost_campaign_id = campaign?.id ?? null;
+    }
+
     const { error: viewError } = await adminSupabase.from("profile_views").insert({
       profile_id: profile.id,
       session_id,
@@ -257,6 +269,8 @@ export default async function HomePage({
       utm_source: params.utm_source || params.ref || null,
       utm_medium: params.utm_medium || null,
       utm_campaign: params.utm_campaign || null,
+      utm_content: params.utm_content || null,
+      boost_campaign_id,
       referrer: referrer || null,
     });
 
