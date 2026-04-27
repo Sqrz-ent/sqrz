@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { getConsentState } from "@/lib/tracking/getConsentState";
+import { track } from "@/lib/tracking/track";
 
 type UseTrackingOptions = {
   profileSlug: string | null;
@@ -17,40 +18,19 @@ export function useTracking({
   hasCustomPixels,
 }: UseTrackingOptions) {
   const firedRef = useRef(false);
-  const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Generate session_id once per mount
-    sessionIdRef.current = crypto.randomUUID();
-
     function firePageView() {
       if (firedRef.current) return;
       firedRef.current = true;
 
-      const searchParams = new URLSearchParams(window.location.search);
-      const utmSource   = searchParams.get("utm_source");
-      const utmMedium   = searchParams.get("utm_medium");
-      const utmCampaign = searchParams.get("utm_campaign");
-      const utmContent  = searchParams.get("utm_content");
-
-      fetch("/api/track", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          event_type: "page_view",
-          profile_slug: profileSlug,
-          profile_id: profileId,
-          user_tier: userTier,
-          has_custom_pixels: hasCustomPixels,
-          referrer: document.referrer || null,
-          session_id: sessionIdRef.current,
-          utm_source:   utmSource,
-          utm_medium:   utmMedium,
-          utm_campaign: utmCampaign,
-          utm_content:  utmContent,
-        }),
+      track("page_view", {
+        profile_slug: profileSlug,
+        profile_id: profileId,
+        user_tier: userTier,
+        has_custom_pixels: hasCustomPixels,
       }).catch(() => {
-        // fire-and-forget — reset so a retry is possible on consent update
+        // reset so a retry is possible on consent update
         firedRef.current = false;
       });
     }

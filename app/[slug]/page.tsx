@@ -521,7 +521,7 @@ export default async function PrivateLinkPage({
           hasCustomPixels={hasCustomPixels}
         />
         <CookieBanner templateId={profile.template_id as string} />
-        <ChatBubble profileId={profile.id as string} profileName={displayName} />
+        <ChatBubble profileId={profile.id as string} profileSlug={profile.slug as string} profileName={displayName} />
       </div>
     );
   }

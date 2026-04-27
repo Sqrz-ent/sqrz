@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     utm_medium,
     utm_campaign,
     utm_content,
+    event_properties,
   } = body;
 
   const country = req.headers.get("x-vercel-ip-country") ?? null;
@@ -66,6 +67,7 @@ export async function POST(req: NextRequest) {
     utm_campaign: utm_campaign ?? null,
     utm_content: utm_content ?? null,
     boost_campaign_id,
+    event_properties: event_properties ?? {},
   });
 
   if (error) {

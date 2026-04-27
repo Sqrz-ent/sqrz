@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { track } from "@/lib/tracking/track";
 
 export default function ChatBubble({
   profileId,
+  profileSlug,
   profileName,
 }: {
   profileId: string;
+  profileSlug: string;
   profileName: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -182,7 +185,11 @@ export default function ChatBubble({
 
       {/* ── Bubble button ─────────────────────────────────────────────────── */}
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          const opening = !open;
+          setOpen(opening);
+          if (opening) track("chat_opened", { profile_slug: profileSlug });
+        }}
         aria-label="Message this creator"
         style={{
           position: "fixed",

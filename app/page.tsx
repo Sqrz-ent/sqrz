@@ -695,6 +695,7 @@ const ticket = {
 
        <ChatBubble
         profileId={profile.id as string}
+        profileSlug={profile.slug as string}
         profileName={displayName}
         />
 

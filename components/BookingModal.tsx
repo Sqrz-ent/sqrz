@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { Service } from "@/types/service";
 import { getServicePriceLabel } from "@/utils/serviceLabel";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/lib/tracking/track";
 
 type Step = 0 | 1 | 2 | 3 | 4;
 
@@ -67,6 +68,10 @@ export default function BookingModal({
     setSelectedService(initialService ?? null);
     setError(null);
     setSuccess(false);
+    track("booking_modal_open", {
+      profile_slug: username,
+      service_id: initialService?.id ?? null,
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -210,6 +215,10 @@ export default function BookingModal({
         console.error("[BookingModal] booking-confirm fetch threw:", emailErr);
       }
 
+      track("booking_request_sent", {
+        profile_slug: username,
+        service_id: selectedService?.id ?? null,
+      });
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");

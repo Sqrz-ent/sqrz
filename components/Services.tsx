@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import type { Service } from "@/types/service";
 import BookingModal from "./BookingModal";
+import { track } from "@/lib/tracking/track";
 
 function formatMoney(amount: number, currency: string) {
   try {
@@ -162,6 +163,11 @@ export default function Services({
   if (!services || services.length === 0) return null;
 
   function handleBook(service: Service) {
+    track("service_click", {
+      service_id: service.id,
+      service_name: service.title,
+      profile_slug: username,
+    });
     setSelectedService(service);
     setModalOpen(true);
   }
