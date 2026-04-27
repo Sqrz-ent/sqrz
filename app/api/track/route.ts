@@ -18,10 +18,17 @@ export async function POST(req: NextRequest) {
     has_custom_pixels,
     referrer,
     session_id,
+    visited_via: visited_via_body,
   } = body;
 
   const country = req.headers.get("x-vercel-ip-country") ?? null;
   const user_agent = req.headers.get("user-agent") ?? null;
+
+  const host = req.headers.get("host") ?? "";
+  const visited_via =
+    host.endsWith(".sqrz.com") || host === "sqrz.com"
+      ? "sqrz_domain"
+      : "custom_domain";
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,6 +45,7 @@ export async function POST(req: NextRequest) {
     user_agent,
     country,
     session_id: session_id ?? null,
+    visited_via: visited_via ?? visited_via_body ?? null,
   });
 
   if (error) {
