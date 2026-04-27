@@ -19,6 +19,10 @@ export async function POST(req: NextRequest) {
     referrer,
     session_id,
     visited_via: visited_via_body,
+    utm_source,
+    utm_medium,
+    utm_campaign,
+    utm_content,
   } = body;
 
   const country = req.headers.get("x-vercel-ip-country") ?? null;
@@ -35,6 +39,17 @@ export async function POST(req: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  let boost_campaign_id: string | null = null;
+  if (utm_campaign?.startsWith("boost_") && profile_id) {
+    const { data: campaign } = await supabase
+      .from("boost_campaigns")
+      .select("id")
+      .eq("utm_campaign", utm_campaign)
+      .eq("profile_id", profile_id)
+      .maybeSingle();
+    boost_campaign_id = campaign?.id ?? null;
+  }
+
   const { error } = await supabase.from("jitsu_events").insert({
     event_type,
     profile_slug: profile_slug ?? null,
@@ -46,6 +61,11 @@ export async function POST(req: NextRequest) {
     country,
     session_id: session_id ?? null,
     visited_via: visited_via ?? visited_via_body ?? null,
+    utm_source: utm_source ?? null,
+    utm_medium: utm_medium ?? null,
+    utm_campaign: utm_campaign ?? null,
+    utm_content: utm_content ?? null,
+    boost_campaign_id,
   });
 
   if (error) {

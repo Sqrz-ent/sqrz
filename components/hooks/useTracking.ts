@@ -27,6 +27,12 @@ export function useTracking({
       if (firedRef.current) return;
       firedRef.current = true;
 
+      const searchParams = new URLSearchParams(window.location.search);
+      const utmSource   = searchParams.get("utm_source");
+      const utmMedium   = searchParams.get("utm_medium");
+      const utmCampaign = searchParams.get("utm_campaign");
+      const utmContent  = searchParams.get("utm_content");
+
       fetch("/api/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -38,6 +44,10 @@ export function useTracking({
           has_custom_pixels: hasCustomPixels,
           referrer: document.referrer || null,
           session_id: sessionIdRef.current,
+          utm_source:   utmSource,
+          utm_medium:   utmMedium,
+          utm_campaign: utmCampaign,
+          utm_content:  utmContent,
         }),
       }).catch(() => {
         // fire-and-forget — reset so a retry is possible on consent update
