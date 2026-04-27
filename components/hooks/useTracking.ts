@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { getConsentState } from "@/lib/tracking/getConsentState";
 
 type UseTrackingOptions = {
   profileSlug: string | null;
@@ -8,19 +9,6 @@ type UseTrackingOptions = {
   userTier: number | null;
   hasCustomPixels: boolean;
 };
-
-function readAnalyticsConsent(): boolean {
-  try {
-    const raw = document.cookie
-      .split("; ")
-      .find((r) => r.startsWith("sqrz_cookie_consent="));
-    if (!raw) return false;
-    const consent = JSON.parse(decodeURIComponent(raw.split("=")[1]));
-    return consent.analytics === true;
-  } catch {
-    return false;
-  }
-}
 
 export function useTracking({
   profileSlug,
@@ -58,13 +46,13 @@ export function useTracking({
     }
 
     // Check consent immediately
-    if (readAnalyticsConsent()) {
+    if (getConsentState().analytics) {
       firePageView();
     }
 
     // Re-check if user interacts with banner after mount
     function onConsentUpdated() {
-      if (readAnalyticsConsent()) {
+      if (getConsentState().analytics) {
         firePageView();
       }
     }

@@ -8,6 +8,8 @@ import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
 import ChatBubble from "@/components/ChatBubble";
 import CookieBanner from "@/components/CookieBanner";
+import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+import TrackingGate from "@/components/tracking/TrackingGate";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -317,7 +319,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
     .eq("slug", username)
     .single();
 
@@ -419,6 +421,8 @@ export default async function PrivateLinkPage({
     );
   }
 
+  const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
+
   // ─── BOOK ────────────────────────────────────────────────────────────────────
   if (pageType === "book") {
     const { data: servicesData } = await supabase
@@ -503,6 +507,19 @@ export default async function PrivateLinkPage({
           {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
         </div>
         <LegalFooter {...legalFooterProps} />
+        <AnalyticsGate
+          googleAnalyticsId={profile.pixel_google as string | null}
+          facebookPixelId={profile.pixel_facebook as string | null}
+          hubspotPortalId={profile.hubspot_portal_id as string | null}
+          hubspotEnabled={!!profile.hubspot_portal_id}
+          linkedinPartnerId={profile.pixel_linkedin as string | null}
+        />
+        <TrackingGate
+          profileSlug={profile.slug as string | null}
+          profileId={profile.id as string | null}
+          userTier={profile.plan_id as number | null}
+          hasCustomPixels={hasCustomPixels}
+        />
         <CookieBanner templateId={profile.template_id as string} />
         <ChatBubble profileId={profile.id as string} profileName={displayName} />
       </div>
@@ -578,6 +595,19 @@ export default async function PrivateLinkPage({
           )}
         </div>
         <LegalFooter {...legalFooterProps} />
+        <AnalyticsGate
+          googleAnalyticsId={profile.pixel_google as string | null}
+          facebookPixelId={profile.pixel_facebook as string | null}
+          hubspotPortalId={profile.hubspot_portal_id as string | null}
+          hubspotEnabled={!!profile.hubspot_portal_id}
+          linkedinPartnerId={profile.pixel_linkedin as string | null}
+        />
+        <TrackingGate
+          profileSlug={profile.slug as string | null}
+          profileId={profile.id as string | null}
+          userTier={profile.plan_id as number | null}
+          hasCustomPixels={hasCustomPixels}
+        />
         <CookieBanner templateId={profile.template_id as string} />
       </div>
     );
@@ -637,6 +667,19 @@ export default async function PrivateLinkPage({
         )}
       </div>
       <LegalFooter {...legalFooterProps} />
+      <AnalyticsGate
+        googleAnalyticsId={profile.pixel_google as string | null}
+        facebookPixelId={profile.pixel_facebook as string | null}
+        hubspotPortalId={profile.hubspot_portal_id as string | null}
+        hubspotEnabled={!!profile.hubspot_portal_id}
+        linkedinPartnerId={profile.pixel_linkedin as string | null}
+      />
+      <TrackingGate
+        profileSlug={profile.slug as string | null}
+        profileId={profile.id as string | null}
+        userTier={profile.plan_id as number | null}
+        hasCustomPixels={hasCustomPixels}
+      />
       <CookieBanner templateId={profile.template_id as string} />
     </div>
   );

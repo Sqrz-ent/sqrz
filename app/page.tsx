@@ -31,7 +31,6 @@ import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
 import MusoWidget from "@/components/MusoWidget";
-import ViewTracker from "@/components/ViewTracker";
 import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
@@ -484,7 +483,6 @@ const ticket = {
 {hasActiveServices && (
   <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />
 )}
-<ViewTracker username={profile.slug} />
 
 
 

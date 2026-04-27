@@ -2,6 +2,7 @@
 
 import Script from "next/script";
 import { useState, useEffect } from "react";
+import { getConsentState } from "@/lib/tracking/getConsentState";
 
 type AnalyticsGateProps = {
   googleAnalyticsId?: string | null;
@@ -25,20 +26,9 @@ export default function AnalyticsGate({
 
   useEffect(() => {
     const checkConsent = () => {
-      const raw = document.cookie
-        .split("; ")
-        .find(r => r.startsWith("sqrz_cookie_consent="));
-
-      if (raw) {
-        try {
-          const consent = JSON.parse(decodeURIComponent(raw.split("=")[1]));
-          setAnalyticsConsent(consent.analytics === true);
-          setMarketingConsent(consent.marketing === true);
-        } catch {
-          setAnalyticsConsent(false);
-          setMarketingConsent(false);
-        }
-      }
+      const { analytics, marketing } = getConsentState();
+      setAnalyticsConsent(analytics);
+      setMarketingConsent(marketing);
     };
 
     // Check immediately

@@ -98,8 +98,7 @@ export default function CookieBanner({ templateId }: Props) {
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <p style={{ margin: 0, fontSize: "13px", lineHeight: 1.6, color: t.text, opacity: 0.85 }}>
-              We use cookies for analytics and marketing to help you get booked.{" "}
-              <a href="/cookies" style={{ color: t.accent, textDecoration: "underline" }}>Learn more</a>
+              We use cookies for analytics and marketing to help you get booked.
             </p>
             {hasConsent && (
               <button onClick={() => setVisible(false)} style={{
