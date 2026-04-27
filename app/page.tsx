@@ -251,6 +251,8 @@ export default async function HomePage({
       .slice(0, 16);
 
     let boost_campaign_id: string | null = null;
+    console.log("[boost lookup] utm_campaign:", params.utm_campaign);
+    console.log("[boost lookup] profile.id:", profile.id);
     if (params.utm_campaign?.startsWith("boost_")) {
       const { data: campaign } = await adminSupabase
         .from("boost_campaigns")
@@ -258,7 +260,10 @@ export default async function HomePage({
         .eq("utm_campaign", params.utm_campaign)
         .eq("profile_id", profile.id)
         .maybeSingle();
+      console.log("[boost lookup] campaign result:", campaign);
       boost_campaign_id = campaign?.id ?? null;
+    } else {
+      console.log("[boost lookup] skipped — utm_campaign does not start with 'boost_'");
     }
 
     const { error: viewError } = await adminSupabase.from("profile_views").insert({
