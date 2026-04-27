@@ -28,6 +28,7 @@ import {
   type TemplateKey,
 } from "@/lib/profileTemplates";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
+import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
 import MusoWidget from "@/components/MusoWidget";
 import ViewTracker from "@/components/ViewTracker";
@@ -458,6 +459,12 @@ const ticket = {
       hubspotEnabled={!!profile.hubspot_portal_id}
       linkedinPartnerId={profile.pixel_linkedin}
       isPreview={isPreview}
+    />
+    <TrackingGate
+      profileSlug={profile.slug as string | null}
+      profileId={profile.id as string | null}
+      userTier={profile.plan_id as number | null}
+      hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id)}
     />
 
 {hasActiveServices && (
