@@ -26,6 +26,10 @@ export async function POST(req: NextRequest) {
     event_properties,
   } = body;
 
+  // Top-level fields take priority, fall back to event_properties
+  const resolvedProfileSlug = profile_slug ?? event_properties?.profile_slug ?? null;
+  const resolvedProfileId   = profile_id   ?? event_properties?.profile_id   ?? null;
+
   const country = req.headers.get("x-vercel-ip-country") ?? null;
   const user_agent = req.headers.get("user-agent") ?? null;
 
@@ -41,20 +45,20 @@ export async function POST(req: NextRequest) {
   );
 
   let boost_campaign_id: string | null = null;
-  if (utm_campaign?.startsWith("boost_") && profile_id) {
+  if (utm_campaign?.startsWith("boost_") && resolvedProfileId) {
     const { data: campaign } = await supabase
       .from("boost_campaigns")
       .select("id")
       .eq("utm_campaign", utm_campaign)
-      .eq("profile_id", profile_id)
+      .eq("profile_id", resolvedProfileId)
       .maybeSingle();
     boost_campaign_id = campaign?.id ?? null;
   }
 
   const { error } = await supabase.from("jitsu_events").insert({
     event_type,
-    profile_slug: profile_slug ?? null,
-    profile_id: profile_id ?? null,
+    profile_slug: resolvedProfileSlug,
+    profile_id: resolvedProfileId,
     user_tier: user_tier ?? null,
     has_custom_pixels: has_custom_pixels ?? false,
     referrer: referrer ?? null,
