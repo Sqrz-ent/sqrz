@@ -10,6 +10,7 @@ import ChatBubble from "@/components/ChatBubble";
 import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
+import DownloadCtaButton from "@/components/DownloadCtaButton";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -661,9 +662,14 @@ export default async function PrivateLinkPage({
         )}
 
         {ctaUrl && (
-          <CtaButton href={ctaUrl} accent={accent}>
-            {(link.external_url_label as string) || "Download →"}
-          </CtaButton>
+          <DownloadCtaButton
+            href={ctaUrl}
+            accent={accent}
+            profileSlug={profile.slug as string}
+            profileId={profile.id as string}
+            linkSlug={linkSlug}
+            label={(link.external_url_label as string) || "Download →"}
+          />
         )}
       </div>
       <LegalFooter {...legalFooterProps} />
