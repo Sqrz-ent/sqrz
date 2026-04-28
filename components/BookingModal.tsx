@@ -154,6 +154,16 @@ export default function BookingModal({
     setError(null);
     setLoading(true);
 
+    let utmSource: string | null = null;
+    let utmMedium: string | null = null;
+    let utmCampaign: string | null = null;
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      utmSource   = sessionStorage.getItem("utm_source")   ?? searchParams.get("utm_source");
+      utmMedium   = sessionStorage.getItem("utm_medium")   ?? searchParams.get("utm_medium");
+      utmCampaign = sessionStorage.getItem("utm_campaign") ?? searchParams.get("utm_campaign");
+    } catch { /* sessionStorage unavailable — fail silently */ }
+
     try {
       const { data: rpcData, error: rpcError } = await supabase.rpc("create_booking_request", {
         p_to_slug: username,
@@ -171,6 +181,9 @@ export default function BookingModal({
         p_phone: phone.trim() || null,
         p_date_end: (multiDay && dateEnd) ? `${dateEnd}T${timeEnd || "00:00"}:00` : null,
         p_booking_ref_code: getStoredRef(),
+        p_utm_source:   utmSource   ?? undefined,
+        p_utm_medium:   utmMedium   ?? undefined,
+        p_utm_campaign: utmCampaign ?? undefined,
       });
 
       if (rpcError) throw rpcError;
