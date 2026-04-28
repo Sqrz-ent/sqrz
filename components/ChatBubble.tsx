@@ -188,7 +188,7 @@ export default function ChatBubble({
         onClick={() => {
           const opening = !open;
           setOpen(opening);
-          if (opening) track("chat_opened", { profile_slug: profileSlug });
+          if (opening) track("chat_opened", { profile_slug: profileSlug, profile_id: profileId });
         }}
         aria-label="Message this creator"
         style={{

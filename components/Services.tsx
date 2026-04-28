@@ -167,6 +167,7 @@ export default function Services({
       service_id: service.id,
       service_name: service.title,
       profile_slug: username,
+      profile_id: profileId,
     });
     setSelectedService(service);
     setModalOpen(true);

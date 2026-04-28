@@ -70,6 +70,7 @@ export default function BookingModal({
     setSuccess(false);
     track("booking_modal_open", {
       profile_slug: username,
+      profile_id: profileId,
       service_id: initialService?.id ?? null,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -217,6 +218,7 @@ export default function BookingModal({
 
       track("booking_request_sent", {
         profile_slug: username,
+        profile_id: profileId,
         service_id: selectedService?.id ?? null,
       });
       setSuccess(true);
