@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   } = body;
 
   // Top-level fields take priority, fall back to event_properties
-  const resolvedProfileSlug = profile_slug ?? null;
+  const resolvedProfileSlug = profile_slug ?? event_properties?.profile_slug ?? null;
   const resolvedProfileId   = profile_id   ?? event_properties?.profile_id   ?? null;
 
   const country = req.headers.get("x-vercel-ip-country") ?? null;
