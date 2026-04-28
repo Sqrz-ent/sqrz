@@ -39,52 +39,106 @@ export default function AnalyticsGate({
     return () => window.removeEventListener("sqrz_consent_updated", checkConsent);
   }, []);
 
-  const gaId = googleAnalyticsId || process.env.NEXT_PUBLIC_SQRZ_GA_ID;
-  const fbId = facebookPixelId   || process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL;
-  const hsId = hubspotPortalId   || process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL;
-  const liId = linkedinPartnerId || process.env.NEXT_PUBLIC_SQRZ_LINKEDIN;
+  const userGaId  = googleAnalyticsId  || null;
+  const userFbId  = facebookPixelId    || null;
+  const userHsId  = hubspotPortalId    || null;
+  const userLiId  = linkedinPartnerId  || null;
+
+  const sqrzGaId  = process.env.NEXT_PUBLIC_SQRZ_GA_ID         || null;
+  const sqrzFbId  = process.env.NEXT_PUBLIC_SQRZ_FB_PIXEL       || null;
+  const sqrzHsId  = process.env.NEXT_PUBLIC_SQRZ_HUBSPOT_PORTAL || null;
+  const sqrzLiId  = process.env.NEXT_PUBLIC_SQRZ_LINKEDIN        || null;
 
   if (isPreview) return null;
 
   return (
     <>
       {/* GA4 — fires on statistics consent */}
-      {analyticsConsent && gaId && (
+      {analyticsConsent && userGaId && (
         <>
           <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+            src={`https://www.googletagmanager.com/gtag/js?id=${userGaId}`}
             strategy="afterInteractive"
           />
-          <Script id={`ga-init-${gaId}`} strategy="afterInteractive">
+          <Script id={`ga-user-${userGaId}`} strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', '${gaId}', { send_page_view: true });
+              gtag('config', '${userGaId}', { send_page_view: true });
+            `}
+          </Script>
+        </>
+      )}
+      {analyticsConsent && sqrzGaId && sqrzGaId !== userGaId && (
+        <>
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${sqrzGaId}`}
+            strategy="afterInteractive"
+          />
+          <Script id={`ga-sqrz-${sqrzGaId}`} strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${sqrzGaId}', { send_page_view: true });
             `}
           </Script>
         </>
       )}
 
       {/* HubSpot — fires on marketing consent */}
-      {marketingConsent && hsId && (
-        <Script id={`hubspot-${hsId}`} strategy="afterInteractive">
+      {marketingConsent && userHsId && (
+        <Script id={`hubspot-user-${userHsId}`} strategy="afterInteractive">
           {`
             (function(d,s,i){
               if (d.getElementById(i)) return;
               var js=d.createElement(s), f=d.getElementsByTagName(s)[0];
-              js.id=i; js.src='https://js.hs-scripts.com/${hsId}.js';
+              js.id=i; js.src='https://js.hs-scripts.com/${userHsId}.js';
               f.parentNode.insertBefore(js,f);
-            })(document,'script','hs-script-loader');
+            })(document,'script','hs-script-loader-user');
+          `}
+        </Script>
+      )}
+      {marketingConsent && sqrzHsId && sqrzHsId !== userHsId && (
+        <Script id={`hubspot-sqrz-${sqrzHsId}`} strategy="afterInteractive">
+          {`
+            (function(d,s,i){
+              if (d.getElementById(i)) return;
+              var js=d.createElement(s), f=d.getElementsByTagName(s)[0];
+              js.id=i; js.src='https://js.hs-scripts.com/${sqrzHsId}.js';
+              f.parentNode.insertBefore(js,f);
+            })(document,'script','hs-script-loader-sqrz');
           `}
         </Script>
       )}
 
       {/* LinkedIn Insight Tag — fires on marketing consent */}
-      {marketingConsent && liId && (
-        <Script id={`linkedin-insight-${liId}`} strategy="afterInteractive">
+      {marketingConsent && userLiId && (
+        <Script id={`linkedin-user-${userLiId}`} strategy="afterInteractive">
           {`
-            _linkedin_partner_id = "${liId}";
+            _linkedin_partner_id = "${userLiId}";
+            window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
+            window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+            (function(l) {
+              if (!l){
+                window.lintrk = function(a,b){window.lintrk.q.push([a,b])};
+                window.lintrk.q=[];
+              }
+              var s = document.getElementsByTagName("script")[0];
+              var b = document.createElement("script");
+              b.type = "text/javascript";
+              b.async = true;
+              b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+              s.parentNode.insertBefore(b, s);
+            })(window.lintrk);
+          `}
+        </Script>
+      )}
+      {marketingConsent && sqrzLiId && sqrzLiId !== userLiId && (
+        <Script id={`linkedin-sqrz-${sqrzLiId}`} strategy="afterInteractive">
+          {`
+            _linkedin_partner_id = "${sqrzLiId}";
             window._linkedin_data_partner_ids = window._linkedin_data_partner_ids || [];
             window._linkedin_data_partner_ids.push(_linkedin_partner_id);
             (function(l) {
@@ -104,8 +158,8 @@ export default function AnalyticsGate({
       )}
 
       {/* Meta Pixel — fires on marketing consent */}
-      {marketingConsent && fbId && (
-        <Script id={`fb-pixel-${fbId}`} strategy="afterInteractive">
+      {marketingConsent && userFbId && (
+        <Script id={`fb-user-${userFbId}`} strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -115,7 +169,23 @@ export default function AnalyticsGate({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '${fbId}');
+            fbq('init', '${userFbId}');
+            fbq('track', 'PageView');
+          `}
+        </Script>
+      )}
+      {marketingConsent && sqrzFbId && sqrzFbId !== userFbId && (
+        <Script id={`fb-sqrz-${sqrzFbId}`} strategy="afterInteractive">
+          {`
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            fbq('init', '${sqrzFbId}');
             fbq('track', 'PageView');
           `}
         </Script>
