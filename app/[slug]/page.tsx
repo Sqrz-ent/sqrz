@@ -11,6 +11,7 @@ import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
+import LeadGateCta from "@/components/LeadGateCta";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -328,7 +329,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -590,9 +591,9 @@ export default async function PrivateLinkPage({
           )}
 
           {ctaUrl && (
-            <CtaButton href={ctaUrl} accent={accent}>
-              {(link.external_url_label as string) || "Get Tickets →"}
-            </CtaButton>
+            (link.lead_gate as boolean)
+              ? <LeadGateCta href={ctaUrl} accent={accent} label={(link.external_url_label as string) || "Get Tickets →"} linkId={link.id as string} />
+              : <CtaButton href={ctaUrl} accent={accent}>{(link.external_url_label as string) || "Get Tickets →"}</CtaButton>
           )}
         </div>
         <LegalFooter {...legalFooterProps} />
@@ -662,14 +663,16 @@ export default async function PrivateLinkPage({
         )}
 
         {ctaUrl && (
-          <DownloadCtaButton
-            href={ctaUrl}
-            accent={accent}
-            profileSlug={profile.slug as string}
-            profileId={profile.id as string}
-            linkSlug={linkSlug}
-            label={(link.external_url_label as string) || "Download →"}
-          />
+          (link.lead_gate as boolean)
+            ? <LeadGateCta href={ctaUrl} accent={accent} label={(link.external_url_label as string) || "Download →"} linkId={link.id as string} />
+            : <DownloadCtaButton
+                href={ctaUrl}
+                accent={accent}
+                profileSlug={profile.slug as string}
+                profileId={profile.id as string}
+                linkSlug={linkSlug}
+                label={(link.external_url_label as string) || "Download →"}
+              />
         )}
       </div>
       <LegalFooter {...legalFooterProps} />
