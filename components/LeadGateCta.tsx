@@ -67,7 +67,7 @@ export default function LeadGateCta({ href, accent, label, linkId }: Props) {
           flexShrink: 0,
         }}
       >
-        {submitting ? "…" : "Continue →"}
+        {submitting ? "…" : label || "Continue →"}
       </button>
     </form>
   );
