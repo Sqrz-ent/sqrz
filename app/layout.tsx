@@ -21,6 +21,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "SQRZ",
   description: "The LinkInBio that gets you booked",
+  icons: {
+    icon: "/api/profile-favicon",
+    apple: "/api/profile-favicon",
+  },
 };
 
 export default function RootLayout({
