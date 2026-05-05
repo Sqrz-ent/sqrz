@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { getProfileIconUrl } from "@/lib/profile-icons";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
@@ -242,11 +243,16 @@ export async function generateMetadata({
   const title = link.title ? `${link.title as string} — ${displayName}` : displayName;
   const description = (link.description as string | null) ?? `A private link from ${displayName}`;
   const ogImage = (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
+  const iconUrl = getProfileIconUrl(profile.avatar_url as string | null);
   const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
   return {
     title,
     description,
+    icons: {
+      icon: iconUrl,
+      apple: iconUrl,
+    },
     alternates: {
       canonical: canonicalUrl,
     },

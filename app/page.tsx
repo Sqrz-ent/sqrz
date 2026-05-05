@@ -27,6 +27,7 @@ import {
   LEGACY_TEMPLATE_MAP,
   type TemplateKey,
 } from "@/lib/profileTemplates";
+import { getProfileIconUrl } from "@/lib/profile-icons";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
@@ -107,12 +108,17 @@ export async function generateMetadata(): Promise<Metadata> {
     profile.og_image?.url ||
     (profile.avatar_url && !String(profile.avatar_url).includes("placeholder.") ? profile.avatar_url : null) ||
     `${baseUrl}/og/default.png`;
+  const iconUrl = getProfileIconUrl(profile.avatar_url as string | null);
 
    
   return {
     metadataBase: new URL(baseUrl),
     title,
     description,
+    icons: {
+      icon: iconUrl,
+      apple: iconUrl,
+    },
     openGraph: {
       type: "profile",
       title,
