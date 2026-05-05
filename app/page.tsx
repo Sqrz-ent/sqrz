@@ -187,7 +187,7 @@ export default async function HomePage({
 
   if (!profile) notFound();
 
-  // ── View logging (debug mode — awaited so errors surface in Vercel logs) ────
+  // ── View logging — best-effort, not render-blocking ─────────────────────────
   {
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -210,38 +210,38 @@ export default async function HomePage({
       .toString("base64")
       .slice(0, 16);
 
-    let boost_campaign_id: string | null = null;
-    console.log("[boost lookup] utm_campaign:", params.utm_campaign);
-    console.log("[boost lookup] profile.id:", profile.id);
-    if (params.utm_campaign?.startsWith("boost_")) {
-      const { data: campaign } = await adminSupabase
-        .from("boost_campaigns")
-        .select("id")
-        .eq("utm_campaign", params.utm_campaign)
-        .eq("profile_id", profile.id)
-        .maybeSingle();
-      console.log("[boost lookup] campaign result:", campaign);
-      boost_campaign_id = campaign?.id ?? null;
-    } else {
-      console.log("[boost lookup] skipped — utm_campaign does not start with 'boost_'");
-    }
+    void (async () => {
+      try {
+        let boost_campaign_id: string | null = null;
+        if (params.utm_campaign?.startsWith("boost_")) {
+          const { data: campaign } = await adminSupabase
+            .from("boost_campaigns")
+            .select("id")
+            .eq("utm_campaign", params.utm_campaign)
+            .eq("profile_id", profile.id)
+            .maybeSingle();
+          boost_campaign_id = campaign?.id ?? null;
+        }
 
-    const { error: viewError } = await adminSupabase.from("profile_views").insert({
-      profile_id: profile.id,
-      session_id,
-      visitor_fingerprint,
-      utm_source: params.utm_source || params.ref || null,
-      utm_medium: params.utm_medium || null,
-      utm_campaign: params.utm_campaign || null,
-      utm_content: params.utm_content || null,
-      boost_campaign_id,
-      referrer: referrer || null,
-    });
+        const { error: viewError } = await adminSupabase.from("profile_views").insert({
+          profile_id: profile.id,
+          session_id,
+          visitor_fingerprint,
+          utm_source: params.utm_source || params.ref || null,
+          utm_medium: params.utm_medium || null,
+          utm_campaign: params.utm_campaign || null,
+          utm_content: params.utm_content || null,
+          boost_campaign_id,
+          referrer: referrer || null,
+        });
 
-    console.log("[views] profile.id:", profile.id);
-    console.log("[views] insert error:", viewError?.message || "none");
-    console.log("[views] service key defined:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
-
+        if (viewError) {
+          console.error("[views] insert error:", viewError.message);
+        }
+      } catch (error) {
+        console.error("[views] logging failed:", error);
+      }
+    })();
   }
 
   // Claim banner — verify token matches this profile and hasn't been claimed yet

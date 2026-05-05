@@ -315,7 +315,7 @@ export default async function PrivateLinkPage({
       .eq("id", link.id);
   }
 
-  // ── Link view logging ────────────────────────────────────────────────────────
+  // ── Link view logging — best-effort, not render-blocking ───────────────────
   {
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -336,16 +336,28 @@ export default async function PrivateLinkPage({
       .toString("base64")
       .slice(0, 16);
 
-    await adminSupabase.from("profile_views").insert({
-      profile_id: profile.id,
-      link_id: link.id,
-      session_id,
-      visitor_fingerprint,
-      utm_source: sp.utm_source || sp.ref || null,
-      utm_medium: sp.utm_medium || null,
-      utm_campaign: sp.utm_campaign || null,
-      referrer: referrer || null,
-    });
+    void (async () => {
+      try {
+        const { error } = await adminSupabase
+          .from("profile_views")
+          .insert({
+            profile_id: profile.id,
+            link_id: link.id,
+            session_id,
+            visitor_fingerprint,
+            utm_source: sp.utm_source || sp.ref || null,
+            utm_medium: sp.utm_medium || null,
+            utm_campaign: sp.utm_campaign || null,
+            referrer: referrer || null,
+          });
+
+        if (error) {
+          console.error("[link views] insert error:", error.message);
+        }
+      } catch (error) {
+        console.error("[link views] logging failed:", error);
+      }
+    })();
   }
 
   const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
