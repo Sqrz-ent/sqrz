@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { resolveProfileSlug } from "@/lib/profile-resolver";
 import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
@@ -30,31 +31,6 @@ function getInitials(name: string): string {
     .join("")
     .toUpperCase()
     .slice(0, 2);
-}
-
-function getUsernameFromHost(host: string): string | null {
-  const cleanHost = host
-    .toLowerCase()
-    .replace(/:\d+$/, "")
-    .replace(/^www\./, "")
-    .trim();
-  if (cleanHost.endsWith(".sqrz.com")) {
-    const username = cleanHost.replace(".sqrz.com", "");
-    if (!username || username === "www" || username === "sqrz") return null;
-    return username;
-  }
-  return null;
-}
-
-async function getUsernameFromCustomDomain(host: string): Promise<string | null> {
-  const cleanHost = host.toLowerCase().replace(/:\d+$/, "").trim();
-  const { data } = await supabase
-    .from("profiles")
-    .select("slug")
-    .eq("custom_domain", cleanHost)
-    .eq("custom_domain_verified", true)
-    .single();
-  return data?.slug ?? null;
 }
 
 function safeUrl(url: string | null | undefined): string | null {
@@ -230,23 +206,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
-
-  let username: string | null = null;
-  if (process.env.NODE_ENV === "development" && sp.username) {
-    username = sp.username;
-  } else {
-    const headersList = await headers();
-    const rawHost = headersList.get("host") ?? "";
-    username = getUsernameFromHost(rawHost);
-    if (!username) username = await getUsernameFromCustomDomain(rawHost);
-  }
-
-  if (!username) return {};
+  const headersList = await headers();
+  const resolved = await resolveProfileSlug({
+    host: headersList.get("host"),
+    forwardedSlug: headersList.get("x-profile-slug"),
+    devUsername: sp.username,
+  });
+  if (!resolved) return {};
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("id, slug, name, first_name, last_name, brand_name, avatar_url")
-    .eq("slug", username)
+    .eq("slug", resolved.slug)
     .single();
 
   if (!profile) return {};
@@ -271,7 +242,7 @@ export async function generateMetadata({
   const title = link.title ? `${link.title as string} — ${displayName}` : displayName;
   const description = (link.description as string | null) ?? `A private link from ${displayName}`;
   const ogImage = (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
-  const canonicalUrl = `https://${username}.sqrz.com/${linkSlug}`;
+  const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
   return {
     title,
@@ -306,18 +277,14 @@ export default async function PrivateLinkPage({
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
-
-  let username: string | null = null;
-  if (process.env.NODE_ENV === "development" && sp.username) {
-    username = sp.username;
-  } else {
-    const headersList = await headers();
-    const rawHost = headersList.get("host") ?? "";
-    username = getUsernameFromHost(rawHost);
-    if (!username) username = await getUsernameFromCustomDomain(rawHost);
-  }
-
-  if (!username) return notFound();
+  const headersList = await headers();
+  const resolved = await resolveProfileSlug({
+    host: headersList.get("host"),
+    forwardedSlug: headersList.get("x-profile-slug"),
+    devUsername: sp.username,
+  });
+  if (!resolved) return notFound();
+  const username = resolved.slug;
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -354,7 +321,6 @@ export default async function PrivateLinkPage({
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    const headersList = await headers();
     const referrer = headersList.get("referer");
 
     const cookieHeader = headersList.get("cookie") || "";

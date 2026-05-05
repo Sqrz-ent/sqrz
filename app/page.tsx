@@ -27,6 +27,7 @@ import {
   LEGACY_TEMPLATE_MAP,
   type TemplateKey,
 } from "@/lib/profileTemplates";
+import { resolveProfileSlug } from "@/lib/profile-resolver";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
@@ -81,55 +82,23 @@ async function getProfileByUsername(username: string) {
 
   return data ?? null;
 }
-
-async function getProfileByDomain(domain: string) {
-  const { data } = await supabase
-    .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
-    .eq("custom_domain", domain)
-    .order("sort_order", { referencedTable: "profile_videos", ascending: true })
-    .single();
-
-  return data ?? null;
-}
-
-async function getProfileFromHost(host: string) {
-  const cleanHost = host
-    .toLowerCase()
-    .replace(/:\d+$/, "")
-    .replace(/^www\./, "")
-    .trim();
-
-  if (cleanHost.endsWith(".sqrz.com")) {
-    const username = cleanHost.replace(".sqrz.com", "");
-    if (!username || username === "www" || username === "sqrz") return null;
-    return getProfileByUsername(username);
-  }
-
-  return getProfileByDomain(cleanHost);
-}
-
 /* =========================
    SEO METADATA
 ========================= */
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
-  const rawHost = headersList.get("host");
+  const resolved = await resolveProfileSlug({
+    host: headersList.get("host"),
+    forwardedSlug: headersList.get("x-profile-slug"),
+  });
 
-  if (!rawHost) return {};
+  if (!resolved) return {};
 
-  const host = rawHost
-    .toLowerCase()
-    .replace(/:\d+$/, "") // strip :443 etc.
-    .trim();
-
-  if (!host) return {};
-
-  const profile = await getProfileFromHost(host);
+  const profile = await getProfileByUsername(resolved.slug);
   if (!profile) return {};
 
-  const baseUrl = `https://${host}`;
+  const baseUrl = `https://${resolved.host}`;
   const title = profile.display_name || profile.slug;
   const description =
     profile.description || `View ${title}'s profile on SQRZ`;
@@ -205,24 +174,16 @@ export default async function HomePage({
   console.log("[HomePage] NODE_ENV:", process.env.NODE_ENV);
 
   const isPreview = params.preview === "true";
-  let profile: Record<string, any> | null = null;
+  const headersList = await headers();
+  const resolved = await resolveProfileSlug({
+    host: headersList.get("host"),
+    forwardedSlug: headersList.get("x-profile-slug"),
+    devUsername: params.username,
+  });
+  if (!resolved || resolved.host === "dashboard.sqrz.com") notFound();
 
-  // Dev shortcut: ?username=willvilla bypasses host-based routing (dev only)
-  if (process.env.NODE_ENV === "development" && params.username) {
-    profile = await getProfileByUsername(params.username);
-    console.log("[HomePage] getProfileByUsername result:", profile);
-  } else {
-    const headersList = await headers();
-    const rawHost = headersList.get("host");
-    if (!rawHost) notFound();
-
-    const host = rawHost.toLowerCase().replace(/:\d+$/, "").trim();
-
-    // 🔥 IMPORTANT: ignore dashboard host
-    if (host === "dashboard.sqrz.com") notFound();
-
-    profile = await getProfileFromHost(host);
-  }
+  const profile = await getProfileByUsername(resolved.slug);
+  console.log("[HomePage] resolved profile slug:", resolved.slug);
 
   if (!profile) notFound();
 
@@ -232,7 +193,6 @@ export default async function HomePage({
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    const headersList = await headers();
     const referrer = headersList.get("referer");
 
     // Session ID from cookie for consistency across page loads
@@ -754,4 +714,3 @@ const ticket = {
     </>
   );
 }
-
