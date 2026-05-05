@@ -22,8 +22,8 @@ export const metadata: Metadata = {
   title: "SQRZ",
   description: "The LinkInBio that gets you booked",
   icons: {
-    icon: "/api/profile-favicon",
-    apple: "/api/profile-favicon",
+    icon: "/brand/sqrz_logo.png",
+    apple: "/brand/sqrz_logo.png",
   },
 };
 
