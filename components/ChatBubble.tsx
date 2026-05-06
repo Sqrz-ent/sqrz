@@ -141,7 +141,7 @@ export default function ChatBubble({
                   style={inputStyle}
                 />
                 <textarea
-                  placeholder="What are you looking for?"
+                  placeholder="How can I help you?"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   required
