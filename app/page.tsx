@@ -111,6 +111,9 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(baseUrl),
     title,
     description,
+    alternates: {
+      canonical: baseUrl,
+    },
     openGraph: {
       type: "profile",
       title,
