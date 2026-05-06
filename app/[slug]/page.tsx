@@ -7,7 +7,6 @@ import { resolveProfileSlug } from "@/lib/profile-resolver";
 import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
-import ChatBubble from "@/components/ChatBubble";
 import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
@@ -501,7 +500,6 @@ export default async function PrivateLinkPage({
           hasCustomPixels={hasCustomPixels}
         />
         <CookieBanner templateId={profile.template_id as string} />
-        <ChatBubble profileId={profile.id as string} profileSlug={profile.slug as string} profileName={displayName} />
       </div>
     );
   }

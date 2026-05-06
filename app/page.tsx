@@ -32,7 +32,6 @@ import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
 import MusoWidget from "@/components/MusoWidget";
-import ChatBubble from "@/components/ChatBubble";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
@@ -720,20 +719,6 @@ const ticket = {
             />
           </section>
         )}
-
-
-
-       <ChatBubble
-        profileId={profile.id as string}
-        profileSlug={profile.slug as string}
-        profileName={displayName}
-        />
-
-         
-
-
-
-
       {/* Powered by SQRZ — subtle footer */}
       <div style={{
         textAlign: "center",
