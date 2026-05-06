@@ -2,7 +2,8 @@ export default function Skills({ skills }: { skills: any[] }) {
   if (!Array.isArray(skills) || skills.length === 0) return null;
 
   return (
-    <div>
+    <section>
+      <div style={eyebrowStyle}>Capabilities</div>
       <h3 style={titleStyle}>Skills</h3>
 
       <div style={skillsWrap}>
@@ -20,14 +21,26 @@ export default function Skills({ skills }: { skills: any[] }) {
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
 /* styles */
-const titleStyle = {
-  color: "text-accent",
+const eyebrowStyle = {
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase" as const,
+  color: "rgba(255,255,255,0.38)",
   marginBottom: 8,
+};
+
+const titleStyle = {
+  color: "var(--accent-color, #F3B130)",
+  margin: "0 0 16px",
+  fontSize: 24,
+  lineHeight: 1.15,
+  fontWeight: 700,
 };
 
 const skillsWrap = {

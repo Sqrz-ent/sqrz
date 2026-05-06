@@ -39,13 +39,27 @@ export default function Experience({ jobs }: { jobs: ExperienceItem[] }) {
   const hidden = visibleJobs.slice(INITIAL_COUNT);
 
   return (
-    <section style={{ marginTop: 40, textAlign: "left" }}>
+    <section style={{ textAlign: "left" }}>
+      <div
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: "0.14em",
+          textTransform: "uppercase",
+          color: "rgba(255,255,255,0.38)",
+          marginBottom: 8,
+        }}
+      >
+        Background
+      </div>
       <h3
         style={{
-          fontSize: 18,
-          fontWeight: 600,
+          fontSize: 24,
+          lineHeight: 1.15,
+          fontWeight: 700,
           marginBottom: 16,
-          opacity: 0.85,
+          marginTop: 0,
+          color: "var(--accent-color, #F3B130)",
         }}
       >
         Experience

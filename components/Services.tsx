@@ -181,8 +181,12 @@ export default function Services({
           .sqrz-svc-header > button { align-self: flex-start; }
         }
       `}</style>
-      <section style={{ marginTop: 40 }}>
+      <section style={sectionStyle}>
+        <div style={eyebrowStyle}>Book now</div>
         <h3 style={titleStyle}>Services & Pricing</h3>
+        <p style={introStyle}>
+          Pick the option that fits best and send a request in a few clicks.
+        </p>
         <div style={listStyle}>
           {services.map((s, i) => (
             <ServiceCard key={i} s={s} planId={planId} onBook={handleBook} />
@@ -206,10 +210,36 @@ export default function Services({
 
 /* styles */
 
+const sectionStyle = {
+  padding: "22px 20px 20px",
+  borderRadius: 18,
+  border: "1px solid rgba(243,177,48,0.18)",
+  background: "linear-gradient(180deg, rgba(243,177,48,0.08) 0%, rgba(255,255,255,0.02) 100%)",
+  boxShadow: "0 18px 40px rgba(0,0,0,0.18)",
+};
+
+const eyebrowStyle = {
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: "0.14em",
+  textTransform: "uppercase" as const,
+  color: "rgba(255,255,255,0.42)",
+  marginBottom: 8,
+};
+
 const titleStyle = {
-  color: "text-accent",
-  marginBottom: 12,
-  fontSize: 18,
+  color: "var(--accent-color, #F3B130)",
+  margin: "0 0 10px",
+  fontSize: 24,
+  lineHeight: 1.15,
+  fontWeight: 700,
+};
+
+const introStyle = {
+  margin: "0 0 18px",
+  color: "rgba(255,255,255,0.68)",
+  fontSize: 14,
+  lineHeight: 1.6,
 };
 
 const listStyle = {

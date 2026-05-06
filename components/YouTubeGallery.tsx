@@ -27,7 +27,7 @@ export default function YouTubeGallery({
   const hiddenCount = videos.length - INITIAL_SHOW;
 
   return (
-    <div style={{ marginTop: 32 }}>
+    <div>
       {/* ▶️ PLAYER */}
       <div
         style={{

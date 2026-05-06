@@ -66,7 +66,7 @@ export default function ProfileCalendar({
   const allEvents = [...mappedBookings, ...blockEvents];
 
   return (
-    <div className="profile-calendar" style={{ marginTop: 40 }}>
+    <div className="profile-calendar">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"

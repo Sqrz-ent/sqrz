@@ -38,6 +38,7 @@ import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
 import RefCapture from "@/components/RefCapture";
+import CollapsibleBio from "@/components/CollapsibleBio";
 
 
 
@@ -63,6 +64,46 @@ function getProfileGradient(slug: string): string {
     "linear-gradient(135deg, #0d1a00 0%, #1a2d00 50%, #0d0d0d 100%)",
   ];
   return gradients[Math.abs(hash) % gradients.length];
+}
+
+function SectionHeading({
+  title,
+  eyebrow,
+  align = "left",
+}: {
+  title: string;
+  eyebrow?: string;
+  align?: "left" | "center";
+}) {
+  return (
+    <div style={{ marginBottom: 18, textAlign: align }}>
+      {eyebrow && (
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: "0.14em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.38)",
+            marginBottom: 8,
+          }}
+        >
+          {eyebrow}
+        </div>
+      )}
+      <h2
+        style={{
+          fontSize: 24,
+          lineHeight: 1.15,
+          fontWeight: 700,
+          margin: 0,
+          color: "var(--accent-color, #F3B130)",
+        }}
+      >
+        {title}
+      </h2>
+    </div>
+  );
 }
 
 /* =========================
@@ -386,6 +427,12 @@ const ticket = {
   };
 
   const showPaymentBanner = params.payment === "success";
+  const hasMusicEmbeds = Boolean(spotifyEmbed || soundcloudEmbed || mixcloudEmbedUrl);
+  const hasImageGallery = Boolean(profile.pics?.length > 0);
+  const hasVideos = Boolean(profile.profile_videos?.length > 0);
+  const hasPhotos = photoGallery.length > 0;
+  const hasCalendarContent =
+    bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0;
 
   return (
     <>
@@ -580,23 +627,19 @@ const ticket = {
         style={{
           margin: "0 auto",
           borderRadius: 16,
-          padding: 32,
-          textAlign: "center",
+          padding: "40px 24px 32px",
+          textAlign: "left",
           display: "flex",
           flexDirection: "column",
-          gap: 64,
+          gap: 84,
+          maxWidth: 720,
         }}
       >
         {profile.bio && (
-          <div>
-            {(profile.bio as string).split('\n\n').map((paragraph, i) => (
-              <p key={i} style={{ margin: i > 0 ? "1em 0 0" : 0 }}>
-                {paragraph.split('\n').map((line, j, arr) => (
-                  <span key={j}>{line}{j < arr.length - 1 && <br />}</span>
-                ))}
-              </p>
-            ))}
-          </div>
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="About" title="Get to know me" />
+            <CollapsibleBio bio={profile.bio as string} />
+          </section>
         )}
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
@@ -606,50 +649,76 @@ const ticket = {
           <Experience jobs={profile.profile_references} />
         )}
 
-        {spotifyEmbed && (
-          <iframe src={spotifyEmbed} width="100%" height="152" />
+        {hasMusicEmbeds && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Listen" title="Music" />
+            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+              {spotifyEmbed && (
+                <iframe src={spotifyEmbed} width="100%" height="152" />
+              )}
+
+              {soundcloudEmbed && (
+                <iframe src={soundcloudEmbed} width="100%" height="300" />
+              )}
+
+              {mixcloudEmbedUrl && (
+                <iframe
+                  src={mixcloudEmbedUrl}
+                  width="100%"
+                  height="120"
+                  frameBorder="0"
+                  allow="autoplay"
+                  style={{ borderRadius: 8 }}
+                />
+              )}
+            </div>
+          </section>
         )}
 
         {profile.widget_bandsintown ? (
-        <div className="mt-6">
-        <h2 className="text-xl font-semibold mb-4">Tour Dates</h2>
+        <section style={sectionShellStyle}>
+        <SectionHeading eyebrow="Live" title="Tour Dates" />
         <BandsintownWidget bandsintownUrl={profile.widget_bandsintown} />
-        </div>
+        </section>
         ) : null}
 
-        {profile.pics?.length > 0 && <ImageGallery pics={profile.pics} />}
-
-        {profile.profile_videos?.length > 0 && (
-          <YouTubeGallery videos={profile.profile_videos} />
+        {hasImageGallery && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Featured" title="Highlights" />
+            <ImageGallery pics={profile.pics} />
+          </section>
         )}
 
-        {soundcloudEmbed && (
-          <iframe src={soundcloudEmbed} width="100%" height="300" />
+        {hasVideos && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Watch" title="Video" />
+            <YouTubeGallery videos={profile.profile_videos} />
+          </section>
         )}
 
-        {mixcloudEmbedUrl && (
-          <iframe
-            src={mixcloudEmbedUrl}
-            width="100%"
-            height="120"
-            frameBorder="0"
-            allow="autoplay"
-            style={{ borderRadius: 8 }}
-          />
+        {hasPhotos && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="See more" title="Gallery" />
+            <PhotoGallery urls={photoGallery} />
+          </section>
         )}
-
-        {photoGallery.length > 0 && <PhotoGallery urls={photoGallery} />}
 
         {profile.muso?.profile_url && (
-          <MusoWidget profile={profile.muso} />
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Credits" title="Muso.ai" />
+            <MusoWidget profile={profile.muso} />
+          </section>
         )}
 
-        {(bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0) && (
-          <ProfileCalendar
-            bookingEvents={bookingEvents}
-            availabilityBlocks={profile.availability_blocks ?? []}
-            templateId={rawTemplateKey}
-          />
+        {hasCalendarContent && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Schedule" title="Calendar" />
+            <ProfileCalendar
+              bookingEvents={bookingEvents}
+              availabilityBlocks={profile.availability_blocks ?? []}
+              templateId={rawTemplateKey}
+            />
+          </section>
         )}
 
 
@@ -715,3 +784,7 @@ const ticket = {
     </>
   );
 }
+
+const sectionShellStyle: React.CSSProperties = {
+  paddingTop: 4,
+};

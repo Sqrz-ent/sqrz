@@ -37,7 +37,6 @@ export default function ImageGallery({
   return (
     <div
       style={{
-        marginTop: 32,
         position: "relative",
         borderRadius: 16,
         overflow: "hidden",
