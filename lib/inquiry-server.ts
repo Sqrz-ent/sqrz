@@ -106,7 +106,7 @@ async function ensureInquiryStreamResources(input: {
   const { thread, ownerName } = input;
   const client = getStreamServerClient();
   type UpsertUserInput = Parameters<typeof client.upsertUsers>[0][number];
-  type ChannelDataInput = Parameters<typeof client.channel>[2];
+  type ChannelDataInput = Record<string, unknown>;
 
   await client.upsertUsers([
     {
