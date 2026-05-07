@@ -305,6 +305,11 @@ export default function ProfileInquiryBubble({
         if (!notifyResponse.ok) {
           const notifyPayload = await notifyResponse.json().catch(() => null);
           console.error("[ProfileInquiryBubble] notify failed", notifyPayload ?? notifyResponse.status);
+        } else {
+          const notifyPayload = await notifyResponse.json().catch(() => null);
+          if (notifyPayload && "sent" in notifyPayload && Number((notifyPayload as { sent?: number }).sent ?? 0) === 0) {
+            console.warn("[ProfileInquiryBubble] notify sent 0 pushes", notifyPayload);
+          }
         }
       } catch (notifyError) {
         console.error("[ProfileInquiryBubble] notify request failed", notifyError);
