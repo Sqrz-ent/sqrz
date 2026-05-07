@@ -770,7 +770,7 @@ const ticket = {
     <ProfileInquiryBubble
       profileId={profile.id as string}
       ownerName={displayName}
-      enabled={!!profile.plan_id && Number(profile.plan_id) > 0}
+      enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
     />
     </>
   );

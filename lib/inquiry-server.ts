@@ -23,6 +23,7 @@ type ProfileRow = {
   id: string;
   slug: string;
   plan_id: number | null;
+  inquiry_chat_enabled: boolean | null;
   name: string | null;
   brand_name: string | null;
   first_name: string | null;
@@ -74,7 +75,7 @@ function formatProfileName(profile: ProfileRow) {
 async function getInquiryProfile(profileId: string) {
   const { data: profile } = await supabaseServer
     .from("profiles")
-    .select("id, slug, plan_id, name, brand_name, first_name, last_name, email")
+    .select("id, slug, plan_id, inquiry_chat_enabled, name, brand_name, first_name, last_name, email")
     .eq("id", profileId)
     .maybeSingle();
 
@@ -104,6 +105,8 @@ async function ensureInquiryStreamResources(input: {
 }) {
   const { thread, ownerName } = input;
   const client = getStreamServerClient();
+  type UpsertUserInput = Parameters<typeof client.upsertUsers>[0][number];
+  type ChannelDataInput = Parameters<typeof client.channel>[2];
 
   await client.upsertUsers([
     {
@@ -111,12 +114,12 @@ async function ensureInquiryStreamResources(input: {
       name: ownerName,
       role: "admin",
       sqrz_profile_id: thread.profile_id,
-    } as any,
+    } as unknown as UpsertUserInput,
     {
       id: thread.visitor_stream_user_id,
       name: thread.visitor_name || "Visitor",
       role: "user",
-    } as any,
+    } as unknown as UpsertUserInput,
   ]);
 
   const existingChannel = await queryStreamChannel(thread.provider_channel_id);
@@ -127,7 +130,7 @@ async function ensureInquiryStreamResources(input: {
       sqrz_inquiry_thread_id: thread.id,
       sqrz_profile_id: thread.profile_id,
       sqrz_thread_kind: "profile_inquiry",
-    } as any);
+    } as unknown as ChannelDataInput);
     await channel.create();
     return;
   }
@@ -216,7 +219,7 @@ export async function bootstrapExistingInquirySession(input: {
   const profile = await getInquiryProfile(profileId);
   const hasPremiumAccess = profile?.plan_id != null && Number(profile.plan_id) > 0;
 
-  if (!profile || !hasPremiumAccess) {
+  if (!profile || !hasPremiumAccess || profile.inquiry_chat_enabled === false) {
     return null;
   }
 
@@ -266,7 +269,7 @@ export async function startInquirySession(input: {
     throw new Error("Profile not found");
   }
 
-  if (profile.plan_id == null || Number(profile.plan_id) <= 0) {
+  if (profile.plan_id == null || Number(profile.plan_id) <= 0 || profile.inquiry_chat_enabled === false) {
     throw new Error("Inquiry messaging is not enabled for this profile");
   }
 

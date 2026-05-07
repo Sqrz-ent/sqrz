@@ -12,6 +12,7 @@ import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
 import LeadGateCta from "@/components/LeadGateCta";
+import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -287,7 +288,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
     .eq("slug", username)
     .single();
 
@@ -500,6 +501,11 @@ export default async function PrivateLinkPage({
           hasCustomPixels={hasCustomPixels}
         />
         <CookieBanner templateId={profile.template_id as string} />
+        <ProfileInquiryBubble
+          profileId={profile.id as string}
+          ownerName={displayName}
+          enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
+        />
       </div>
     );
   }
@@ -587,6 +593,11 @@ export default async function PrivateLinkPage({
           hasCustomPixels={hasCustomPixels}
         />
         <CookieBanner templateId={profile.template_id as string} />
+        <ProfileInquiryBubble
+          profileId={profile.id as string}
+          ownerName={displayName}
+          enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
+        />
       </div>
     );
   }
@@ -666,6 +677,11 @@ export default async function PrivateLinkPage({
         hasCustomPixels={hasCustomPixels}
       />
       <CookieBanner templateId={profile.template_id as string} />
+      <ProfileInquiryBubble
+        profileId={profile.id as string}
+        ownerName={displayName}
+        enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
+      />
     </div>
   );
 }
