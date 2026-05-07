@@ -106,6 +106,8 @@ export default function ProfileInquiryBubble({
   const clientRef = useRef<StreamChat | null>(null);
   const channelRef = useRef<StreamChannelLike | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const bootstrapRequestRef = useRef<AbortController | null>(null);
+  const bootstrapInFlightRef = useRef(false);
 
   const storageKey = useMemo(() => `sqrz_inquiry_${profileId}`, [profileId]);
 
@@ -151,14 +153,24 @@ export default function ProfileInquiryBubble({
     let cancelled = false;
 
     async function bootstrap() {
+      if (bootstrapInFlightRef.current) return;
+      if (typeof navigator !== "undefined" && navigator.onLine === false) return;
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+
       const visitorToken = localStorage.getItem(storageKey);
       if (!visitorToken) return;
 
       try {
+        bootstrapInFlightRef.current = true;
+        bootstrapRequestRef.current?.abort();
+        const controller = new AbortController();
+        bootstrapRequestRef.current = controller;
+
         const response = await fetch("/api/inquiries/bootstrap", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ profileId, visitorToken }),
+          signal: controller.signal,
         });
         const payload = await response.json();
         if (!response.ok) {
@@ -188,19 +200,51 @@ export default function ProfileInquiryBubble({
         setSession(payload as InquirySession);
         setName((payload.thread.visitorName as string | null) ?? "");
         setEmail((payload.thread.visitorEmail as string | null) ?? "");
-      } catch {
-        // Silent rejoin failure is fine for v1.
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        // Silent rejoin failure is fine for v1, especially on mobile suspend/resume.
+      } finally {
+        bootstrapInFlightRef.current = false;
+        if (bootstrapRequestRef.current?.signal.aborted) {
+          bootstrapRequestRef.current = null;
+        }
       }
     }
 
     void bootstrap();
     const intervalId = window.setInterval(() => {
       void bootstrap();
-    }, 10000);
+    }, session ? 45000 : 15000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void bootstrap();
+      }
+    };
+
+    const handleOnline = () => {
+      void bootstrap();
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
+    if (typeof window !== "undefined") {
+      window.addEventListener("online", handleOnline);
+    }
 
     return () => {
       cancelled = true;
+      bootstrapRequestRef.current?.abort();
       window.clearInterval(intervalId);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
+      if (typeof window !== "undefined") {
+        window.removeEventListener("online", handleOnline);
+      }
     };
   }, [enabled, profileId, resetInquiryState, session, storageKey]);
 
