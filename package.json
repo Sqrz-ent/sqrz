@@ -18,6 +18,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.10.0",
+    "stream-chat": "^9.43.1",
     "stripe": "^22.0.0"
   },
   "devDependencies": {

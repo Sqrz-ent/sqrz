@@ -38,6 +38,7 @@ import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
+import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 
 
 
@@ -766,6 +767,11 @@ const ticket = {
       responsiblePerson={(profile.responsible_person as string) ?? null}
     />
     <CookieBanner templateId={profile.template_id as string} />
+    <ProfileInquiryBubble
+      profileId={profile.id as string}
+      ownerName={displayName}
+      enabled={!!profile.plan_id && Number(profile.plan_id) > 0}
+    />
     </>
   );
 }
