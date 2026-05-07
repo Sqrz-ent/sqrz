@@ -111,12 +111,12 @@ async function ensureInquiryStreamResources(input: {
       name: ownerName,
       role: "admin",
       sqrz_profile_id: thread.profile_id,
-    },
+    } as any,
     {
       id: thread.visitor_stream_user_id,
       name: thread.visitor_name || "Visitor",
       role: "user",
-    },
+    } as any,
   ]);
 
   const existingChannel = await queryStreamChannel(thread.provider_channel_id);
@@ -127,7 +127,7 @@ async function ensureInquiryStreamResources(input: {
       sqrz_inquiry_thread_id: thread.id,
       sqrz_profile_id: thread.profile_id,
       sqrz_thread_kind: "profile_inquiry",
-    });
+    } as any);
     await channel.create();
     return;
   }
@@ -276,7 +276,7 @@ export async function startInquirySession(input: {
       visitorToken,
     });
 
-    if (existing) {
+    if (existing?.thread?.id) {
       if (
         (visitorName && visitorName !== existing.thread.visitorName) ||
         (visitorEmail && visitorEmail !== existing.thread.visitorEmail)
