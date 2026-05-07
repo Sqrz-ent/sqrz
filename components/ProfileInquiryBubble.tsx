@@ -291,6 +291,14 @@ export default function ProfileInquiryBubble({
       if (!activeSession) return;
       const channel = await ensureConnectedChannel(activeSession);
       await channel.sendMessage({ text });
+      void fetch("/api/inquiries/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          threadId: activeSession.thread.id,
+          messageText: text,
+        }),
+      }).catch(() => {});
       setMessages(mapMessages(channel.state.messages));
       setDraft("");
       setOpen(true);
