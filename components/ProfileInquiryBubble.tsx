@@ -63,8 +63,10 @@ type StreamChannelLike = {
     messages: StreamMessagePayload[];
   };
   watch: () => Promise<void>;
-  on: (eventType: string, listener: () => void) => { unsubscribe?: () => void };
+  on: (eventType: string, listener: (event: { user?: { id?: string } }) => void) => { unsubscribe?: () => void };
   sendMessage: (message: { text: string }) => Promise<unknown>;
+  keystroke: () => Promise<unknown>;
+  stopTyping: () => Promise<unknown>;
 };
 
 function mapMessages(messages: StreamMessagePayload[]) {
@@ -103,6 +105,7 @@ export default function ProfileInquiryBubble({
   const [handoff, setHandoff] = useState<InquiryHandoff["handoff"] | null>(null);
   const [messages, setMessages] = useState<StreamMessage[]>([]);
   const [sending, setSending] = useState(false);
+  const [ownerTyping, setOwnerTyping] = useState(false);
   const clientRef = useRef<StreamChat | null>(null);
   const channelRef = useRef<StreamChannelLike | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -253,6 +256,8 @@ export default function ProfileInquiryBubble({
 
     let active = true;
     let subscription: { unsubscribe?: () => void } | null = null;
+    let typingStartSub: { unsubscribe?: () => void } | null = null;
+    let typingStopSub: { unsubscribe?: () => void } | null = null;
     const activeSession = session;
 
     async function connect() {
@@ -260,6 +265,16 @@ export default function ProfileInquiryBubble({
       if (!active) return;
       subscription = channel.on("message.new", () => {
         setMessages(mapMessages(channel.state.messages));
+      });
+
+      typingStartSub = channel.on("typing.start", (event) => {
+        if (!active) return;
+        if (event.user?.id !== activeSession.streamUser.id) setOwnerTyping(true);
+      });
+
+      typingStopSub = channel.on("typing.stop", (event) => {
+        if (!active) return;
+        if (event.user?.id !== activeSession.streamUser.id) setOwnerTyping(false);
       });
     }
 
@@ -270,6 +285,8 @@ export default function ProfileInquiryBubble({
     return () => {
       active = false;
       subscription?.unsubscribe?.();
+      typingStartSub?.unsubscribe?.();
+      typingStopSub?.unsubscribe?.();
     };
   }, [session]);
 
@@ -334,6 +351,7 @@ export default function ProfileInquiryBubble({
       const activeSession = await ensureSessionForSend();
       if (!activeSession) return;
       const channel = await ensureConnectedChannel(activeSession);
+      channel.stopTyping().catch(() => {});
       await channel.sendMessage({ text });
       try {
         const notifyResponse = await fetch("/api/inquiries/notify", {
@@ -523,6 +541,24 @@ export default function ProfileInquiryBubble({
                 );
               })
             )}
+            {ownerTyping && session && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)" }}>
+                  {ownerName}
+                </div>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "16px 16px 16px 4px",
+                    background: "rgba(255,255,255,0.08)",
+                    color: "rgba(255,255,255,0.55)",
+                    fontSize: 13,
+                  }}
+                >
+                  typing…
+                </div>
+              </div>
+            )}
             <div ref={bottomRef} />
           </div>
 
@@ -532,7 +568,12 @@ export default function ProfileInquiryBubble({
             <div style={{ display: "flex", gap: 8 }}>
               <input
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={(event) => {
+                  setDraft(event.target.value);
+                  if (channelRef.current) {
+                    channelRef.current.keystroke().catch(() => {});
+                  }
+                }}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
