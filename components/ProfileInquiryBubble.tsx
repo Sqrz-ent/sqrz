@@ -346,6 +346,26 @@ export default function ProfileInquiryBubble({
     }
   }, [open]);
 
+  // ── markRead on visibility + focus ───────────────────────────────────────────
+  useEffect(() => {
+    function doMarkRead() {
+      if (!open || !channelRef.current) return;
+      channelRef.current.markRead?.().catch(() => {});
+    }
+
+    function handleVisibilityChange() {
+      if (document.visibilityState === "visible") doMarkRead();
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", doMarkRead);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", doMarkRead);
+    };
+  }, [open]);
+
   useEffect(() => {
     return () => {
       const client = clientRef.current;
@@ -518,7 +538,10 @@ export default function ProfileInquiryBubble({
             </div>
           )}
 
-          <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div
+            onClick={() => { channelRef.current?.markRead?.().catch(() => {}); }}
+            style={{ flex: 1, overflowY: "auto", padding: "14px 16px", display: "flex", flexDirection: "column", gap: 12 }}
+          >
             {handoff ? (
               <div
                 style={{
@@ -627,6 +650,7 @@ export default function ProfileInquiryBubble({
                   setDraft(event.target.value);
                   if (channelRef.current) {
                     channelRef.current.keystroke().catch(() => {});
+                    channelRef.current.markRead?.().catch(() => {});
                   }
                 }}
                 onKeyDown={(event) => {
