@@ -424,10 +424,19 @@ const ticket = {
   const hasPhotos = photoGallery.length > 0;
   const hasCalendarContent =
     bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0;
+  const hasSocials = Boolean(
+    profile.social_instagram ||
+    profile.social_facebook ||
+    profile.social_tiktok ||
+    profile.social_youtube ||
+    profile.social_linkedin
+  );
+
   const hasAnyContent = Boolean(
     profile.bio ||
     (profile.profile_skills?.length > 0) ||
     hasActiveServices ||
+    hasSocials ||
     (profile.profile_references?.length > 0) ||
     hasMusicEmbeds ||
     profile.widget_bandsintown ||
