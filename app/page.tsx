@@ -417,15 +417,6 @@ const ticket = {
     .toUpperCase()
     .slice(0, 2);
 
-  const heroStyle: React.CSSProperties = {
-    height: 480,
-    position: "relative",
-    backgroundImage: heroBackground,
-    backgroundSize: "cover",
-    backgroundPosition: "center top",
-    backgroundColor: "#1a1a1a",
-  };
-
   const showPaymentBanner = params.payment === "success";
   const hasMusicEmbeds = Boolean(spotifyEmbed || soundcloudEmbed || mixcloudEmbedUrl);
   const hasImageGallery = Boolean(profile.pics?.length > 0);
@@ -433,6 +424,28 @@ const ticket = {
   const hasPhotos = photoGallery.length > 0;
   const hasCalendarContent =
     bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0;
+  const hasAnyContent = Boolean(
+    profile.bio ||
+    (profile.profile_skills?.length > 0) ||
+    hasActiveServices ||
+    (profile.profile_references?.length > 0) ||
+    hasMusicEmbeds ||
+    profile.widget_bandsintown ||
+    hasImageGallery ||
+    hasVideos ||
+    hasPhotos ||
+    profile.muso?.profile_url ||
+    hasCalendarContent
+  );
+
+  const heroStyle: React.CSSProperties = {
+    ...(hasAnyContent ? { height: 480 } : { minHeight: "100dvh" }),
+    position: "relative",
+    backgroundImage: heroBackground,
+    backgroundSize: "cover",
+    backgroundPosition: "center top",
+    backgroundColor: "#1a1a1a",
+  };
 
   return (
     <>
@@ -455,7 +468,7 @@ const ticket = {
         fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
       }}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>
-          Is this you? Claim this profile and take full control.
+          Is this you? Claim this profile — includes Early Access pricing.
         </span>
         <a
           href={claimUrl}
@@ -509,7 +522,7 @@ const ticket = {
             height: "100%",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "flex-end",
+            justifyContent: hasAnyContent ? "flex-end" : "center",
             alignItems: "center",
             textAlign: "center",
             padding: "24px 20px",
