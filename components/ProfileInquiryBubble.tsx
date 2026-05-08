@@ -67,6 +67,7 @@ type StreamChannelLike = {
   sendMessage: (message: { text: string }) => Promise<unknown>;
   keystroke: () => Promise<unknown>;
   stopTyping: () => Promise<unknown>;
+  markRead?: () => Promise<unknown>;
 };
 
 function mapMessages(messages: StreamMessagePayload[]) {
@@ -106,6 +107,7 @@ export default function ProfileInquiryBubble({
   const [messages, setMessages] = useState<StreamMessage[]>([]);
   const [sending, setSending] = useState(false);
   const [ownerTyping, setOwnerTyping] = useState(false);
+  const [ownerSeen, setOwnerSeen] = useState(false);
   const clientRef = useRef<StreamChat | null>(null);
   const channelRef = useRef<StreamChannelLike | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -113,6 +115,10 @@ export default function ProfileInquiryBubble({
   const bootstrapInFlightRef = useRef(false);
 
   const storageKey = useMemo(() => `sqrz_inquiry_${profileId}`, [profileId]);
+  const lastSentMessageId = useMemo(() => {
+    if (!session) return null;
+    return [...messages].reverse().find((m) => m.userId === session.streamUser.id)?.id ?? null;
+  }, [messages, session]);
 
   const resetInquiryState = useCallback((options?: { close?: boolean }) => {
     localStorage.removeItem(storageKey);
@@ -256,15 +262,54 @@ export default function ProfileInquiryBubble({
 
     let active = true;
     let subscription: { unsubscribe?: () => void } | null = null;
+    let readSub: { unsubscribe?: () => void } | null = null;
     let typingStartSub: { unsubscribe?: () => void } | null = null;
     let typingStopSub: { unsubscribe?: () => void } | null = null;
     const activeSession = session;
 
     async function connect() {
+      setOwnerSeen(false);
       const channel = await ensureConnectedChannel(activeSession);
       if (!active) return;
+
+      const myStreamUserId = activeSession.streamUser.id;
+
+      // Derive initial read-receipt state
+      {
+        const readState = (channel as any).state?.read as Record<string, { last_read: string | Date }> | undefined;
+        if (readState && myStreamUserId) {
+          const msgs = channel.state.messages;
+          const myLastMsg = [...msgs].reverse().find((m) => m.user?.id === myStreamUserId);
+          if (myLastMsg) {
+            const myLastMsgTime = new Date(myLastMsg.created_at as string).getTime();
+            const seen = Object.entries(readState).some(([userId, r]) => {
+              if (userId === myStreamUserId) return false;
+              const t = r.last_read instanceof Date ? r.last_read.getTime() : new Date(r.last_read as string).getTime();
+              return t >= myLastMsgTime;
+            });
+            if (active) setOwnerSeen(seen);
+          }
+        }
+      }
+
       subscription = channel.on("message.new", () => {
         setMessages(mapMessages(channel.state.messages));
+      });
+
+      readSub = channel.on("message.read", (_event) => {
+        if (!active) return;
+        const readState = (channel as any).state?.read as Record<string, { last_read: string | Date }> | undefined;
+        if (!readState || !myStreamUserId) return;
+        const msgs = channel.state.messages;
+        const myLastMsg = [...msgs].reverse().find((m) => m.user?.id === myStreamUserId);
+        if (!myLastMsg) return;
+        const myLastMsgTime = new Date(myLastMsg.created_at as string).getTime();
+        const seen = Object.entries(readState).some(([userId, r]) => {
+          if (userId === myStreamUserId) return false;
+          const t = r.last_read instanceof Date ? r.last_read.getTime() : new Date(r.last_read as string).getTime();
+          return t >= myLastMsgTime;
+        });
+        setOwnerSeen(seen);
       });
 
       typingStartSub = channel.on("typing.start", (event) => {
@@ -285,6 +330,7 @@ export default function ProfileInquiryBubble({
     return () => {
       active = false;
       subscription?.unsubscribe?.();
+      readSub?.unsubscribe?.();
       typingStartSub?.unsubscribe?.();
       typingStopSub?.unsubscribe?.();
     };
@@ -293,6 +339,12 @@ export default function ProfileInquiryBubble({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, open]);
+
+  useEffect(() => {
+    if (open && channelRef.current) {
+      channelRef.current.markRead?.()?.catch?.(() => {});
+    }
+  }, [open]);
 
   useEffect(() => {
     return () => {
@@ -537,6 +589,9 @@ export default function ProfileInquiryBubble({
                     <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)" }}>
                       {timeLabel(message.createdAt)}
                     </div>
+                    {isVisitor && message.id === lastSentMessageId && ownerSeen && (
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", textAlign: "right", marginTop: 2 }}>Seen</div>
+                    )}
                   </div>
                 );
               })
