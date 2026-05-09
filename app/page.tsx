@@ -448,7 +448,7 @@ const ticket = {
   );
 
   const heroStyle: React.CSSProperties = {
-    ...(hasAnyContent ? { height: 480 } : { minHeight: "100dvh" }),
+    ...(hasAnyContent ? { height: 480 } : { minHeight: "100dvh", display: "flex", flexDirection: "column" }),
     position: "relative",
     backgroundImage: heroBackground,
     backgroundSize: "cover",
@@ -528,7 +528,7 @@ const ticket = {
           style={{
             position: "relative",
             zIndex: 1,
-            height: "100%",
+            ...(hasAnyContent ? { height: "100%" } : { flex: 1 }),
             display: "flex",
             flexDirection: "column",
             justifyContent: hasAnyContent ? "flex-end" : "center",
