@@ -571,6 +571,39 @@ const ticket = {
             {displayName}
           </h1>
 
+          {/* Empty-state tagline + claim CTA */}
+          {!hasAnyContent && (
+            <>
+              <p style={{
+                fontSize: 15,
+                color: "rgba(255,255,255,0.45)",
+                margin: "0 0 24px",
+                fontWeight: 400,
+              }}>
+                Creative Professional on SQRZ
+              </p>
+              {showClaimBanner && (
+                <a
+                  href={claimUrl}
+                  style={{
+                    display: "inline-block",
+                    padding: "11px 28px",
+                    borderRadius: 999,
+                    border: `1px solid ${template.accent}99`,
+                    background: "transparent",
+                    color: template.accent,
+                    fontSize: 15,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Claim this profile →
+                </a>
+              )}
+            </>
+          )}
+
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
             const pl = privateLinks[0];
