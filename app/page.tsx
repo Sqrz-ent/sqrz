@@ -642,7 +642,7 @@ const ticket = {
               </a>
             )}
           </div>
-      
+      </div>
 
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
@@ -676,7 +676,7 @@ const ticket = {
             );
           })()}
           
-        </div>
+        
       </div>
 
       {/* Analytics */}
