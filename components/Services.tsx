@@ -176,11 +176,27 @@ export default function Services({
   return (
     <>
       <style>{`
-        @media (max-width: 768px) {
-          .sqrz-svc-header { flex-direction: column !important; align-items: flex-start !important; }
-          .sqrz-svc-header > button { align-self: flex-end; }
+      @media (max-width: 768px) {
+      .sqrz-svc-header {
+       display: flex !important;
+       flex-direction: row !important;
+       align-items: flex-start !important;
+       justify-content: space-between !important;
+       gap: 12px;
+      }
+
+     .sqrz-svc-header > div {
+      min-width: 0;
+      flex: 1;
+     }
+
+    .sqrz-svc-header > button {
+      flex-shrink: 0;
+      margin-left: auto;
         }
+      }
       `}</style>
+
       <section style={sectionStyle}>
         <div style={eyebrowStyle}>Book now</div>
         <h3 style={titleStyle}>Services & Pricing</h3>
