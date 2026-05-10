@@ -211,11 +211,11 @@ export default function Services({
 /* styles */
 
 const sectionStyle = {
-  padding: "22px 20px 20px",
-  borderRadius: 18,
-  border: "1px solid rgba(243,177,48,0.18)",
-  background: "linear-gradient(180deg, rgba(243,177,48,0.08) 0%, rgba(255,255,255,0.02) 100%)",
-  boxShadow: "0 18px 40px rgba(0,0,0,0.18)",
+  padding: 0,
+  borderRadius: 0,
+  border: "none",
+  background: "transparent",
+  boxShadow: "none",
 };
 
 const eyebrowStyle = {
