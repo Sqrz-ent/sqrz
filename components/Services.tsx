@@ -184,9 +184,6 @@ export default function Services({
       <section style={sectionStyle}>
         <div style={eyebrowStyle}>Book now</div>
         <h3 style={titleStyle}>Services & Pricing</h3>
-        <p style={introStyle}>
-          Pick the option that fits best and send a request in a few clicks.
-        </p>
         <div style={listStyle}>
           {services.map((s, i) => (
             <ServiceCard key={i} s={s} planId={planId} onBook={handleBook} />
