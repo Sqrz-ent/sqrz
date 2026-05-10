@@ -642,7 +642,7 @@ const ticket = {
               </a>
             )}
           </div>
-      </div>
+      
 
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
@@ -667,6 +667,7 @@ const ticket = {
                   textAlign: "center",
                   fontSize: 14,
                   fontWeight: 600,
+                  marginTop: 20,
                   marginBottom: 10,
                   boxSizing: "border-box",
                 }}
@@ -676,7 +677,7 @@ const ticket = {
             );
           })()}
           
-        
+        </div>
       </div>
 
       {/* Analytics */}
