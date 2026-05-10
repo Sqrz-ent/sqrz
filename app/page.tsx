@@ -657,6 +657,8 @@ const ticket = {
                 style={{
                   display: "inline-flew",
                   width: "auto",
+                  alignItems: "center",
+                  justifyContent: "center",
                   padding: "10px 16px",
                   borderRadius: 999,
                   border: `1px solid ${template.accent}66`,
