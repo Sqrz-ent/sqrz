@@ -604,36 +604,6 @@ const ticket = {
             </>
           )}
 
-          {/* Featured link pill */}
-          {privateLinks[0] && (() => {
-            const pl = privateLinks[0];
-            const icon = pl.page_type === "book" ? "📅" : pl.page_type === "event" ? "🎤" : "⬇";
-            return (
-              <a
-                href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "10px 16px",
-                  borderRadius: 999,
-                  border: `1px solid ${template.accent}66`,
-                  background: `${template.accent}14`,
-                  color: template.accent,
-                  textDecoration: "none",
-                  textAlign: "center",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  marginBottom: 10,
-                  boxSizing: "border-box",
-                }}
-              >
-                {icon} {pl.title}
-              </a>
-            );
-          })()}
-
           <div
             className="social-bar"
             style={{
@@ -674,6 +644,36 @@ const ticket = {
           </div>
         </div>
       </div>
+
+          {/* Featured link pill */}
+          {privateLinks[0] && (() => {
+            const pl = privateLinks[0];
+            const icon = pl.page_type === "book" ? "📅" : pl.page_type === "event" ? "🎤" : "⬇";
+            return (
+              <a
+                href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "10px 16px",
+                  borderRadius: 999,
+                  border: `1px solid ${template.accent}66`,
+                  background: `${template.accent}14`,
+                  color: template.accent,
+                  textDecoration: "none",
+                  textAlign: "center",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  marginBottom: 10,
+                  boxSizing: "border-box",
+                }}
+              >
+                {icon} {pl.title}
+              </a>
+            );
+          })()}
 
       {/* Analytics */}
 
