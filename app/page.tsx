@@ -641,9 +641,8 @@ const ticket = {
                 </svg>
               </a>
             )}
-          </div>
-        </div>
-      </div>
+          
+      
 
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
@@ -676,7 +675,10 @@ const ticket = {
               </a>
             );
           })()}
-
+          </div>
+        </div>
+      </div>
+      
       {/* Analytics */}
 
       <div
