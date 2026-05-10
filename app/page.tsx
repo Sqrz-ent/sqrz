@@ -690,6 +690,9 @@ const ticket = {
           maxWidth: 720,
         }}
       >
+
+        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
+
         {profile.bio && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="About" title="Get to know me" />
@@ -698,7 +701,6 @@ const ticket = {
         )}
 
         {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
-        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
 
         {profile.profile_references?.length > 0 && (
           <Experience jobs={profile.profile_references} />
