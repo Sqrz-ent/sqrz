@@ -177,8 +177,8 @@ export default function Services({
     <>
       <style>{`
         @media (max-width: 768px) {
-          .sqrz-svc-header { flex-direction: column !important; align-items: flex-end !important; }
-          .sqrz-svc-header > button { align-self: flex-start; }
+          .sqrz-svc-header { flex-direction: column !important; align-items: flex-start !important; }
+          .sqrz-svc-header > button { align-self: flex-end; }
         }
       `}</style>
       <section style={sectionStyle}>
