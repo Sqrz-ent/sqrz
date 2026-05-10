@@ -655,8 +655,8 @@ const ticket = {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  display: "block",
-                  width: "100%",
+                  display: "inline-flew",
+                  width: "auto",
                   padding: "10px 16px",
                   borderRadius: 999,
                   border: `1px solid ${template.accent}66`,
