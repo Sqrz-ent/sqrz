@@ -39,6 +39,7 @@ import LegalFooter from "@/components/LegalFooter";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
+import { normalizeImageUrl } from "@/lib/image-url";
 
 
 
@@ -145,7 +146,7 @@ export async function generateMetadata(): Promise<Metadata> {
     profile.description || `View ${title}'s profile on SQRZ`;
 
   const imageUrl =
-    profile.og_image?.url ||
+    normalizeImageUrl(profile.og_image?.url) ||
     (profile.avatar_url && !String(profile.avatar_url).includes("placeholder.") ? profile.avatar_url : null) ||
     `${baseUrl}/og/default.png`;
   return {
@@ -386,17 +387,6 @@ export default async function HomePage({
     }
   }
 
-  // Transform Dropbox share URLs to direct-access URLs
-  function transformGalleryUrl(url: string): string {
-    if (url.includes("dropbox.com")) {
-      return url
-        .replace("?dl=0", "?raw=1")
-        .replace("?dl=1", "?raw=1")
-        .replace("www.dropbox.com", "dl.dropboxusercontent.com");
-    }
-    return url;
-  }
-
   // Photo gallery — fetched from profile_photos table
   const { data: photosData } = await supabase
     .from("profile_photos")
@@ -404,8 +394,8 @@ export default async function HomePage({
     .eq("profile_id", profile.id as string)
     .order("sort_order", { ascending: true });
   const photoGallery = (photosData ?? [])
-    .map((p: { url: string }) => transformGalleryUrl(p.url))
-    .filter((u: string) => u.startsWith("http"));
+    .map((p: { url: string }) => normalizeImageUrl(p.url))
+    .filter((u): u is string => !!u);
 
   const activeServices = (profile.profile_services ?? []).filter(
     (s: { is_active: boolean }) => s.is_active === true

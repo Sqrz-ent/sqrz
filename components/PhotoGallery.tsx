@@ -1,7 +1,5 @@
 "use client";
 
-import Image from "next/image";
-
 type PhotoGalleryProps = { urls: string[] };
 
 export default function PhotoGallery({ urls }: PhotoGalleryProps) {
@@ -16,14 +14,10 @@ export default function PhotoGallery({ urls }: PhotoGalleryProps) {
       }}
     >
       {urls.map((url, i) => (
-        <Image
+        <img
           key={i}
           src={url}
           alt=""
-          width={600}
-          height={600}
-          priority={i < 2}
-          sizes="(max-width: 768px) 50vw, 360px"
           style={{
             width: "100%",
             height: "auto",
