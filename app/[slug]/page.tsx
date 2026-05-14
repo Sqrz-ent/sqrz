@@ -38,6 +38,44 @@ function safeUrl(url: string | null | undefined): string | null {
   return url.startsWith("http") ? url : `https://${url}`;
 }
 
+function normalizeImageUrl(url: string | null | undefined): string | null {
+  const raw = url?.trim();
+  if (!raw) return null;
+
+  let value = raw.startsWith("//") ? `https:${raw}` : raw;
+  if (!/^https?:\/\//i.test(value)) value = `https://${value}`;
+
+  try {
+    const parsed = new URL(value);
+    if (!["http:", "https:"].includes(parsed.protocol)) return null;
+
+    if (parsed.hostname.includes("dropbox.com")) {
+      parsed.hostname = "dl.dropboxusercontent.com";
+      parsed.searchParams.delete("dl");
+      parsed.searchParams.set("raw", "1");
+      return parsed.toString();
+    }
+
+    if (parsed.pathname.includes("/storage/v1/object/sign/")) {
+      parsed.pathname = parsed.pathname.replace("/storage/v1/object/sign/", "/storage/v1/object/public/");
+      parsed.search = "";
+      parsed.hash = "";
+      return parsed.toString();
+    }
+
+    if (parsed.pathname.includes("/storage/v1/render/image/public/")) {
+      parsed.pathname = parsed.pathname.replace("/storage/v1/render/image/public/", "/storage/v1/object/public/");
+      parsed.search = "";
+      parsed.hash = "";
+      return parsed.toString();
+    }
+
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+}
+
 function formatEventDate(dateStr: string | null): string | null {
   if (!dateStr) return null;
   try {
@@ -369,6 +407,7 @@ export default async function PrivateLinkPage({
     !String(profile.avatar_url).includes("placeholder.");
   const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
   const pageType = (link.page_type as string) ?? "download";
+  const coverImageSrc = normalizeImageUrl(link.cover_image_url as string | null);
 
   const legalFooterProps = {
     privacyHref: `/${profile.slug}/privacy`,
@@ -435,11 +474,11 @@ export default async function PrivateLinkPage({
             ← View full profile
           </a>
 
-          {link.cover_image_url && (
+          {coverImageSrc && (
             <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={link.cover_image_url}
+                src={coverImageSrc}
                 alt={link.title ?? "Cover"}
                 style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
               />
@@ -534,11 +573,11 @@ export default async function PrivateLinkPage({
             ← View full profile
           </a>
 
-          {link.cover_image_url && (
+          {coverImageSrc && (
             <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={link.cover_image_url}
+                src={coverImageSrc}
                 alt={link.title ?? "Event"}
                 style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
               />
@@ -624,11 +663,11 @@ export default async function PrivateLinkPage({
           ← View full profile
         </a>
 
-        {link.cover_image_url && (
+        {coverImageSrc && (
           <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={link.cover_image_url}
+              src={coverImageSrc}
               alt={link.title ?? "Cover"}
               style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
             />
