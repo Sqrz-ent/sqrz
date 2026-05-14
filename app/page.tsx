@@ -255,7 +255,24 @@ export default async function HomePage({
     const country = headersList.get('x-vercel-ip-country') ?? null;
     const city = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
 
-    void (async () => {
+    // Skip logging for bots, crawlers, and anonymized traffic
+    const BOT_PATTERNS = [
+      'bot', 'crawler', 'spider', 'crawling',
+      'googlebot', 'bingbot', 'slurp', 'duckduckbot',
+      'baiduspider', 'yandexbot', 'sogou', 'exabot',
+      'facebot', 'ia_archiver', 'python-requests',
+      'curl/', 'wget/', 'axios/', 'node-fetch',
+      'go-http-client', 'java/', 'ruby',
+      'headlesschrome', 'phantomjs', 'selenium',
+      'lighthouse', 'pagespeed', 'chrome-lighthouse',
+      'vercel-screenshot', 'unfurl', 'whatsapp',
+      'telegrambot', 'twitterbot', 'linkedinbot',
+      'slackbot', 'discordbot',
+    ];
+    const isBot = !userAgent || BOT_PATTERNS.some(p => userAgent.toLowerCase().includes(p));
+    const isTor = country === 'T1';
+
+    if (!isBot && !isTor) void (async () => {
       try {
         let boost_campaign_id: string | null = null;
         if (params.utm_campaign?.startsWith("boost_")) {
