@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StreamChat } from "stream-chat";
+import { track } from "@/lib/tracking/track";
 
 type InquirySession = {
   status?: "open";
@@ -89,10 +90,12 @@ function timeLabel(value: string) {
 
 export default function ProfileInquiryBubble({
   profileId,
+  profileSlug,
   ownerName,
   enabled,
 }: {
   profileId: string;
+  profileSlug: string | null;
   ownerName: string;
   enabled: boolean;
 }) {
@@ -694,7 +697,18 @@ export default function ProfileInquiryBubble({
       )}
 
       <button
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setOpen((value) => {
+            const nextOpen = !value;
+            if (nextOpen) {
+              void track("chat_opened", {
+                profile_id: profileId,
+                profile_slug: profileSlug,
+              });
+            }
+            return nextOpen;
+          });
+        }}
         style={{
           position: "fixed",
           right: 20,

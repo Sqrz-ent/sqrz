@@ -503,6 +503,7 @@ export default async function PrivateLinkPage({
         <CookieBanner templateId={profile.template_id as string} />
         <ProfileInquiryBubble
           profileId={profile.id as string}
+          profileSlug={profile.slug as string | null}
           ownerName={displayName}
           enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
         />
@@ -595,6 +596,7 @@ export default async function PrivateLinkPage({
         <CookieBanner templateId={profile.template_id as string} />
         <ProfileInquiryBubble
           profileId={profile.id as string}
+          profileSlug={profile.slug as string | null}
           ownerName={displayName}
           enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
         />
@@ -679,6 +681,7 @@ export default async function PrivateLinkPage({
       <CookieBanner templateId={profile.template_id as string} />
       <ProfileInquiryBubble
         profileId={profile.id as string}
+        profileSlug={profile.slug as string | null}
         ownerName={displayName}
         enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
       />
