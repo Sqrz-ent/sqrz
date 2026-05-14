@@ -26,6 +26,17 @@
   background: transparent;
 }
 
+.profile-hero {
+  background-repeat: no-repeat;
+}
+
+@media (min-width: 768px) {
+  .profile-hero--avatar {
+    background-size: cover, auto 100%, cover !important;
+    background-position: center top, center top, center center !important;
+  }
+}
+
 
 html {
   background: #111111;
