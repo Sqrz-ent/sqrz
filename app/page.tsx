@@ -252,6 +252,9 @@ export default async function HomePage({
       .toString("base64")
       .slice(0, 16);
 
+    const country = headersList.get('x-vercel-ip-country') ?? null;
+    const city = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
+
     void (async () => {
       try {
         let boost_campaign_id: string | null = null;
@@ -275,6 +278,8 @@ export default async function HomePage({
           utm_content: params.utm_content || null,
           boost_campaign_id,
           referrer: referrer || null,
+          country_code: country,
+          city: city,
         });
 
         if (viewError) {
@@ -831,6 +836,7 @@ const ticket = {
     <CookieBanner templateId={profile.template_id as string} />
     <ProfileInquiryBubble
       profileId={profile.id as string}
+      profileSlug={profile.slug as string | null}
       ownerName={displayName}
       enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
     />
