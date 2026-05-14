@@ -417,7 +417,7 @@ const ticket = {
     !profile.avatar_url.includes("placeholder.sqrz");
 
   const heroBackground = hasRealAvatar
-    ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url}), url(${profile.avatar_url})`
+    ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url})`
     : getProfileGradient(profile.slug || "");
 
   const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
@@ -534,7 +534,7 @@ const ticket = {
 
 
       {/* 🖼️ Profile Hero */}
-      <div className={hasRealAvatar ? "profile-hero profile-hero--avatar" : "profile-hero"} style={heroStyle}>
+      <div style={heroStyle}>
 
         <div
           style={{
