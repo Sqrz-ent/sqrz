@@ -39,6 +39,7 @@ import LegalFooter from "@/components/LegalFooter";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
+import PartnerJoinBanner from "@/components/PartnerJoinBanner";
 import { normalizeImageUrl } from "@/lib/image-url";
 
 
@@ -123,6 +124,17 @@ async function getProfileByUsername(username: string) {
     .single();
 
   return data ?? null;
+}
+
+async function getActivePartnerRefCode(profileId: string) {
+  const { data } = await supabase
+    .from("referral_codes")
+    .select("code")
+    .eq("owner_id", profileId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  return (data?.code as string | null) ?? null;
 }
 /* =========================
    SEO METADATA
@@ -229,6 +241,11 @@ export default async function HomePage({
   console.log("[HomePage] resolved profile slug:", resolved.slug);
 
   if (!profile) notFound();
+
+  const partnerRefCode =
+    profile.is_partner === true
+      ? await getActivePartnerRefCode(profile.id as string)
+      : null;
 
   // ── View logging — best-effort, not render-blocking ─────────────────────────
   {
@@ -849,6 +866,7 @@ const ticket = {
       ownerName={displayName}
       enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
     />
+    {partnerRefCode && <PartnerJoinBanner refCode={partnerRefCode} />}
     </>
   );
 }
