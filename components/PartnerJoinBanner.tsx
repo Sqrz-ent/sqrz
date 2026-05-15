@@ -12,8 +12,10 @@ export default function PartnerJoinBanner({
       href={joinUrl}
       aria-label="Get your SQRZ profile"
       style={{
-        display: "block",
+        display: "inline-block",
         textDecoration: "none",
+        alignSelf: "flex-start",
+        maxWidth: 420,
       }}
     >
       <div
@@ -22,7 +24,7 @@ export default function PartnerJoinBanner({
           alignItems: "center",
           justifyContent: "space-between",
           gap: 14,
-          padding: "12px 14px",
+          padding: "11px 13px",
           borderRadius: 20,
           border: "1px solid rgba(255,255,255,0.1)",
           background: "rgba(255,255,255,0.04)",
@@ -58,11 +60,11 @@ export default function PartnerJoinBanner({
         <div
           style={{
             flexShrink: 0,
-            padding: "9px 14px",
+            padding: "8px 13px",
             borderRadius: 999,
             background: "#F3B130",
             color: "#111",
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: 800,
             lineHeight: 1,
           }}
