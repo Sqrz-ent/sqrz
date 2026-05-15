@@ -249,8 +249,10 @@ export default async function HomePage({
       headersList.get("x-forwarded-for")?.split(",")[0] ||
       headersList.get("x-real-ip") ||
       "";
-    const visitor_fingerprint = Buffer.from(userAgent.slice(0, 50) + ip)
-      .toString("base64")
+    const { createHash } = await import('crypto');
+    const visitor_fingerprint = createHash('sha256')
+      .update(userAgent + ip)
+      .digest('base64')
       .slice(0, 16);
 
     const country = headersList.get('x-vercel-ip-country') ?? null;
