@@ -5,19 +5,19 @@ export default function PartnerJoinBanner({
 }: {
   refCode: string;
 }) {
-  const joinUrl = `https://sqrz.com?ref=${encodeURIComponent(refCode)}`;
+  const joinUrl = `https://dashboard.sqrz.com/join?ref=${encodeURIComponent(refCode)}`;
 
   return (
     <a
       href={joinUrl}
-      aria-label="Join SQRZ with partner referral"
+      aria-label="Get your SQRZ profile"
       style={{
         position: "fixed",
-        left: 16,
-        right: 92,
+        left: "50%",
+        transform: "translateX(-50%)",
         bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
         zIndex: 1000,
-        maxWidth: 420,
+        width: "min(calc(100vw - 116px), 420px)",
         textDecoration: "none",
       }}
     >
@@ -46,7 +46,7 @@ export default function PartnerJoinBanner({
               fontWeight: 700,
             }}
           >
-            Partner Profile
+            Verified Profile
           </div>
           <div
             style={{
@@ -72,7 +72,7 @@ export default function PartnerJoinBanner({
             lineHeight: 1,
           }}
         >
-          Activate code
+          Get your SQRZ Profile
         </div>
       </div>
     </a>
