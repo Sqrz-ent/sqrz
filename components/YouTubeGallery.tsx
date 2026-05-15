@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { getYouTubeEmbedUrl } from "@/lib/youtube";
+import { useState, useEffect } from "react";
+import { getYouTubeEmbedUrl, getYouTubeId } from "@/lib/youtube";
 
 const INITIAL_SHOW = 4;
 
@@ -9,6 +9,16 @@ type VideoItem = {
   title?: string;
   url: string;
 };
+
+function readConsent(): boolean {
+  if (typeof document === "undefined") return false;
+  return (
+    document.cookie
+      .split("; ")
+      .find((r) => r.startsWith("sqrz_cookie_consent="))
+      ?.split("=")[1] === "accepted"
+  );
+}
 
 export default function YouTubeGallery({
   videos,
@@ -19,12 +29,24 @@ export default function YouTubeGallery({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [showAll, setShowAll] = useState(false);
+  const [consented, setConsented] = useState(false);
 
-  const activeEmbed = getYouTubeEmbedUrl(videos[activeIndex].url);
+  useEffect(() => {
+    setConsented(readConsent());
+  }, []);
+
+  const activeVideo = videos[activeIndex];
+  const activeEmbed = getYouTubeEmbedUrl(activeVideo.url);
+  const activeId = getYouTubeId(activeVideo.url);
   if (!activeEmbed) return null;
 
   const visibleVideos = showAll ? videos : videos.slice(0, INITIAL_SHOW);
   const hiddenCount = videos.length - INITIAL_SHOW;
+
+  function handleConsentAndPlay() {
+    document.cookie = "sqrz_cookie_consent=accepted; path=/; max-age=31536000; SameSite=Lax";
+    setConsented(true);
+  }
 
   return (
     <div>
@@ -35,17 +57,75 @@ export default function YouTubeGallery({
           overflow: "hidden",
           aspectRatio: "16 / 9",
           background: "#000000",
+          position: "relative",
         }}
       >
-        <iframe
-          key={activeEmbed}
-          src={activeEmbed}
-          width="100%"
-          height="100%"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+        {consented ? (
+          <iframe
+            key={activeEmbed}
+            src={activeEmbed}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <button
+            onClick={handleConsentAndPlay}
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
+              background: "#000",
+              display: "block",
+            }}
+            aria-label="Accept cookies to watch video"
+          >
+            {activeId && (
+              <img
+                src={`https://img.youtube.com/vi/${activeId}/hqdefault.jpg`}
+                alt=""
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            )}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(0,0,0,0.55)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+              }}
+            >
+              <div
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.15)",
+                  border: "2px solid rgba(255,255,255,0.4)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+              <span style={{ color: "var(--text-muted)", fontSize: 13 }}>
+                Accept cookies to watch
+              </span>
+            </div>
+          </button>
+        )}
       </div>
 
       {/* 📃 VIDEO LIST */}
