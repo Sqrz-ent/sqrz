@@ -12,10 +12,10 @@ export default function PartnerJoinBanner({
       href={joinUrl}
       aria-label="Get your SQRZ profile"
       style={{
-        display: "inline-block",
+        display: "block",
         textDecoration: "none",
-        alignSelf: "center",
         maxWidth: 420,
+        margin: "0 auto",
       }}
     >
       <div
