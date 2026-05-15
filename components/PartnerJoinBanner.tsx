@@ -14,7 +14,7 @@ export default function PartnerJoinBanner({
       style={{
         display: "inline-block",
         textDecoration: "none",
-        alignSelf: "flex-start",
+        alignSelf: "center",
         maxWidth: 420,
       }}
     >
