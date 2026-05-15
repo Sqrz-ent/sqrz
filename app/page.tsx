@@ -727,6 +727,12 @@ const ticket = {
         }}
       >
 
+        {partnerRefCode && (
+          <section style={sectionShellStyle}>
+            <PartnerJoinBanner refCode={partnerRefCode} />
+          </section>
+        )}
+
         {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
 
         {profile.bio && (
@@ -740,6 +746,20 @@ const ticket = {
 
         {profile.profile_references?.length > 0 && (
           <Experience jobs={profile.profile_references} />
+        )}
+
+        {hasImageGallery && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Featured" title="Highlights" />
+            <ImageGallery pics={profile.pics} />
+          </section>
+        )}
+
+        {hasPhotos && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="See more" title="Gallery" />
+            <PhotoGallery urls={photoGallery} />
+          </section>
         )}
 
         {hasMusicEmbeds && (
@@ -775,24 +795,10 @@ const ticket = {
         </section>
         ) : null}
 
-        {hasImageGallery && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Featured" title="Highlights" />
-            <ImageGallery pics={profile.pics} />
-          </section>
-        )}
-
         {hasVideos && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Watch" title="Video" />
             <YouTubeGallery videos={profile.profile_videos} />
-          </section>
-        )}
-
-        {hasPhotos && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="See more" title="Gallery" />
-            <PhotoGallery urls={photoGallery} />
           </section>
         )}
 
@@ -866,7 +872,6 @@ const ticket = {
       ownerName={displayName}
       enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
     />
-    {partnerRefCode && <PartnerJoinBanner refCode={partnerRefCode} />}
     </>
   );
 }

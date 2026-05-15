@@ -12,12 +12,7 @@ export default function PartnerJoinBanner({
       href={joinUrl}
       aria-label="Get your SQRZ profile"
       style={{
-        position: "fixed",
-        left: "50%",
-        transform: "translateX(-50%)",
-        bottom: "calc(env(safe-area-inset-bottom, 0px) + 18px)",
-        zIndex: 1000,
-        width: "min(calc(100vw - 116px), 420px)",
+        display: "block",
         textDecoration: "none",
       }}
     >
@@ -28,11 +23,11 @@ export default function PartnerJoinBanner({
           justifyContent: "space-between",
           gap: 14,
           padding: "12px 14px",
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.12)",
-          background: "rgba(10,10,10,0.84)",
-          backdropFilter: "blur(16px)",
-          boxShadow: "0 18px 40px rgba(0,0,0,0.28)",
+          borderRadius: 20,
+          border: "1px solid rgba(255,255,255,0.1)",
+          background: "rgba(255,255,255,0.04)",
+          boxShadow: "0 14px 34px rgba(0,0,0,0.12)",
+          flexWrap: "wrap",
         }}
       >
         <div style={{ minWidth: 0 }}>
