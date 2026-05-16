@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import ViewTracker from "@/components/ViewTracker";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
@@ -274,7 +274,7 @@ export default async function PrivateLinkPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ username?: string; ref?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string }>;
+  searchParams: Promise<{ username?: string; ref?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string }>;
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
@@ -316,50 +316,10 @@ export default async function PrivateLinkPage({
       .eq("id", link.id);
   }
 
-  // ── Link view logging — best-effort, not render-blocking ───────────────────
-  {
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    const referrer = headersList.get("referer");
-
-    const cookieHeader = headersList.get("cookie") || "";
-    const sessionMatch = cookieHeader.match(/sqrz_session=([^;]+)/);
-    const session_id = sessionMatch?.[1] || Math.random().toString(36).slice(2);
-
-    const userAgent = headersList.get("user-agent") || "";
-    const ip =
-      headersList.get("x-forwarded-for")?.split(",")[0] ||
-      headersList.get("x-real-ip") ||
-      "";
-    const visitor_fingerprint = Buffer.from(userAgent.slice(0, 50) + ip)
-      .toString("base64")
-      .slice(0, 16);
-
-    void (async () => {
-      try {
-        const { error } = await adminSupabase
-          .from("profile_views")
-          .insert({
-            profile_id: profile.id,
-            link_id: link.id,
-            session_id,
-            visitor_fingerprint,
-            utm_source: sp.utm_source || sp.ref || null,
-            utm_medium: sp.utm_medium || null,
-            utm_campaign: sp.utm_campaign || null,
-            referrer: referrer || null,
-          });
-
-        if (error) {
-          console.error("[link views] insert error:", error.message);
-        }
-      } catch (error) {
-        console.error("[link views] logging failed:", error);
-      }
-    })();
-  }
+  // Collect tracking data — sent via client-side beacon after 5 seconds
+  const country = headersList.get("x-vercel-ip-country") ?? null;
+  const city = decodeURIComponent(headersList.get("x-vercel-ip-city") ?? "") || null;
+  const referrer = headersList.get("referer") ?? null;
 
   const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
 
@@ -509,6 +469,18 @@ export default async function PrivateLinkPage({
           ownerName={displayName}
           enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
         />
+        <ViewTracker
+          profileId={profile.id as string}
+          slug={linkSlug}
+          country={country}
+          city={city}
+          referrer={referrer}
+          utmSource={sp.utm_source ?? null}
+          utmMedium={sp.utm_medium ?? null}
+          utmCampaign={sp.utm_campaign ?? null}
+          utmContent={sp.utm_content ?? null}
+          linkId={link.id as string}
+        />
       </div>
     );
   }
@@ -602,6 +574,18 @@ export default async function PrivateLinkPage({
           ownerName={displayName}
           enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
         />
+        <ViewTracker
+          profileId={profile.id as string}
+          slug={linkSlug}
+          country={country}
+          city={city}
+          referrer={referrer}
+          utmSource={sp.utm_source ?? null}
+          utmMedium={sp.utm_medium ?? null}
+          utmCampaign={sp.utm_campaign ?? null}
+          utmContent={sp.utm_content ?? null}
+          linkId={link.id as string}
+        />
       </div>
     );
   }
@@ -686,6 +670,18 @@ export default async function PrivateLinkPage({
         profileSlug={profile.slug as string | null}
         ownerName={displayName}
         enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
+      />
+      <ViewTracker
+        profileId={profile.id as string}
+        slug={linkSlug}
+        country={country}
+        city={city}
+        referrer={referrer}
+        utmSource={sp.utm_source ?? null}
+        utmMedium={sp.utm_medium ?? null}
+        utmCampaign={sp.utm_campaign ?? null}
+        utmContent={sp.utm_content ?? null}
+        linkId={link.id as string}
       />
     </div>
   );
