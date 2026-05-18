@@ -292,7 +292,15 @@ export default async function HomePage({
     const isBot = !userAgent || BOT_PATTERNS.some(p => userAgent.toLowerCase().includes(p));
     const isTor = country === 'T1';
 
-    if (!isBot && !isTor) void (async () => {
+    const DATACENTER_CITIES = new Set([
+      'santa clara', 'ashburn', 'boardman', 'hillsboro', 'ogden',
+      'los lunas', 'manassas', 'dekalb', 'north charleston',
+      'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo',
+      'falkenstein', 'frankfurt am main',
+    ]);
+    const cityLower = (city ?? '').toLowerCase();
+
+    if (!isBot && !isTor && !DATACENTER_CITIES.has(cityLower)) void (async () => {
       try {
         let boost_campaign_id: string | null = null;
         if (params.utm_campaign?.startsWith("boost_")) {
