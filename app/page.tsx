@@ -296,7 +296,7 @@ export default async function HomePage({
       'santa clara', 'ashburn', 'boardman', 'hillsboro', 'ogden',
       'los lunas', 'manassas', 'dekalb', 'north charleston',
       'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo',
-      'falkenstein', 'frankfurt am main',
+      'falkenstein', 'chicago',
     ]);
     const cityLower = (city ?? '').toLowerCase();
 
