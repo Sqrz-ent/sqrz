@@ -196,16 +196,20 @@ function ProfileAttribution({
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
-// Only use Supabase-hosted images for OG — external URLs (Dropbox, etc.) can return
-// wrong Content-Type headers that cause WhatsApp to show a white box.
-// Converts a raw URL to a Supabase render endpoint URL (WhatsApp-safe), or null if not Supabase.
-function toSupabaseOgUrl(raw: string | null): string | null {
+// Converts a raw image URL to an OG-safe URL.
+// Supabase-hosted images → render endpoint (600×314, quality=75, no redirects, correct Content-Type).
+// All other URLs → returned as-is after normalisation.
+// Returns null if the input is null/empty/invalid.
+function toOgImageUrl(raw: string | null): string | null {
   const clean = normalizeImageUrl(raw);
-  if (!clean?.includes("supabase.co/storage/v1/object/public/")) return null;
-  return (
-    clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-    "?width=600&height=314&resize=cover&quality=75"
-  );
+  if (!clean) return null;
+  if (clean.includes("supabase.co/storage/v1/object/public/")) {
+    return (
+      clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+      "?width=600&height=314&resize=cover&quality=75"
+    );
+  }
+  return clean;
 }
 
 export async function generateMetadata({
@@ -256,9 +260,14 @@ export async function generateMetadata({
   const coverRaw = link.cover_image_url as string | null;
   const avatarRaw = profile.avatar_url as string | null;
 
-  // Priority: Supabase cover → Supabase avatar → no OG image.
-  // External URLs (Dropbox, etc.) are skipped — they can return wrong Content-Type headers.
-  const ogImage = toSupabaseOgUrl(coverRaw) ?? toSupabaseOgUrl(avatarRaw) ?? null;
+  // Debug OG image selection — remove before launch
+  const coverOgUrl = toOgImageUrl(coverRaw);
+  console.log("[generateMetadata] cover_image_url raw:", coverRaw);
+  console.log("[generateMetadata] toOgImageUrl(cover):", coverOgUrl);
+
+  // Priority: cover (any host) → Supabase avatar → no OG image.
+  const ogImage = coverOgUrl ?? toOgImageUrl(avatarRaw) ?? null;
+  console.log("[generateMetadata] final ogImage:", ogImage);
 
   const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
