@@ -1,3 +1,18 @@
+// Converts a raw image URL to an OG-safe URL.
+// Supabase-hosted images → render endpoint (600×314, quality=75, correct Content-Type, under 300 KB).
+// All other URLs → returned as-is after normalisation.
+export function toOgImageUrl(raw: string | null | undefined): string | null {
+  const clean = normalizeImageUrl(raw);
+  if (!clean) return null;
+  if (clean.includes("supabase.co/storage/v1/object/public/")) {
+    return (
+      clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+      "?width=600&height=314&resize=cover&quality=75"
+    );
+  }
+  return clean;
+}
+
 export function normalizeImageUrl(url: string | null | undefined): string | null {
   const raw = url?.trim();
   if (!raw) return null;

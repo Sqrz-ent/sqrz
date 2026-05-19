@@ -40,7 +40,7 @@ import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
-import { normalizeImageUrl } from "@/lib/image-url";
+import { normalizeImageUrl, toOgImageUrl } from "@/lib/image-url";
 
 
 
@@ -158,8 +158,8 @@ export async function generateMetadata(): Promise<Metadata> {
     profile.description || `View ${title}'s profile on SQRZ`;
 
   const imageUrl =
-    normalizeImageUrl(profile.og_image?.url) ||
-    (profile.avatar_url && !String(profile.avatar_url).includes("placeholder.") ? profile.avatar_url : null) ||
+    toOgImageUrl(profile.og_image?.url) ||
+    toOgImageUrl(profile.avatar_url) ||
     `${baseUrl}/og/default.png`;
   return {
     metadataBase: new URL(baseUrl),
