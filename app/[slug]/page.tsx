@@ -243,26 +243,15 @@ export async function generateMetadata({
   const title = link.title ? `${link.title as string} — ${displayName}` : displayName;
   const description = (link.description as string | null) ?? `A private link from ${displayName}`;
 
-  // Prefer Supabase-hosted images for OG — they can be transformed to WhatsApp-safe dimensions.
-  // Dropbox/external images can't be resized and may exceed WhatsApp's ~300KB silent failure limit.
   const coverRaw = link.cover_image_url as string | null;
   const avatarRaw = profile.avatar_url as string | null;
 
-  const coverClean = normalizeImageUrl(coverRaw);
-  const avatarClean = normalizeImageUrl(avatarRaw);
+  // Priority: link cover → profile avatar → default.
+  // normalizeImageUrl converts signed/expired Supabase URLs → public, handles protocol-relative, etc.
+  const baseOgUrl = normalizeImageUrl(coverRaw) ?? normalizeImageUrl(avatarRaw) ?? DEFAULT_OG_IMAGE;
 
-  const coverIsSupabase = coverClean?.includes("supabase.co/storage/v1/object/public/");
-  const avatarIsSupabase = avatarClean?.includes("supabase.co/storage/v1/object/public/");
-
-  // For OG: use cover if Supabase-hosted, else avatar if Supabase-hosted, else cover (as-is), else default
-  const baseOgUrl = (coverIsSupabase ? coverClean : null)
-    ?? (avatarIsSupabase ? avatarClean : null)
-    ?? coverClean
-    ?? avatarClean
-    ?? DEFAULT_OG_IMAGE;
-
-  // Use Supabase render endpoint for WhatsApp-safe dimensions:
-  //   600×314 = 1.91:1 ratio, quality=75 keeps file well under 300KB
+  // For Supabase-hosted images, use the render endpoint with WhatsApp-safe dimensions:
+  //   600×314 = 1.91:1 ratio, quality=75 keeps file under 300KB
   //   render/image/public/ serves directly (no CDN redirect that WhatsApp won't follow)
   const ogImage = baseOgUrl.includes("supabase.co/storage/v1/object/public/")
     ? baseOgUrl.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
