@@ -196,7 +196,17 @@ function ProfileAttribution({
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
-const DEFAULT_OG_IMAGE = "https://sqrz.com/og.png";
+// Only use Supabase-hosted images for OG — external URLs (Dropbox, etc.) can return
+// wrong Content-Type headers that cause WhatsApp to show a white box.
+// Converts a raw URL to a Supabase render endpoint URL (WhatsApp-safe), or null if not Supabase.
+function toSupabaseOgUrl(raw: string | null): string | null {
+  const clean = normalizeImageUrl(raw);
+  if (!clean?.includes("supabase.co/storage/v1/object/public/")) return null;
+  return (
+    clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+    "?width=600&height=314&resize=cover&quality=75"
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -246,17 +256,9 @@ export async function generateMetadata({
   const coverRaw = link.cover_image_url as string | null;
   const avatarRaw = profile.avatar_url as string | null;
 
-  // Priority: link cover → profile avatar → default.
-  // normalizeImageUrl converts signed/expired Supabase URLs → public, handles protocol-relative, etc.
-  const baseOgUrl = normalizeImageUrl(coverRaw) ?? normalizeImageUrl(avatarRaw) ?? DEFAULT_OG_IMAGE;
-
-  // For Supabase-hosted images, use the render endpoint with WhatsApp-safe dimensions:
-  //   600×314 = 1.91:1 ratio, quality=75 keeps file under 300KB
-  //   render/image/public/ serves directly (no CDN redirect that WhatsApp won't follow)
-  const ogImage = baseOgUrl.includes("supabase.co/storage/v1/object/public/")
-    ? baseOgUrl.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-      "?width=600&height=314&resize=cover&quality=75"
-    : baseOgUrl;
+  // Priority: Supabase cover → Supabase avatar → no OG image.
+  // External URLs (Dropbox, etc.) are skipped — they can return wrong Content-Type headers.
+  const ogImage = toSupabaseOgUrl(coverRaw) ?? toSupabaseOgUrl(avatarRaw) ?? null;
 
   const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
@@ -272,13 +274,13 @@ export async function generateMetadata({
       description,
       url: canonicalUrl,
       type: "website",
-      images: [{ url: ogImage, secureUrl: ogImage, type: "image/jpeg", width: 600, height: 314, alt: title }],
+      ...(ogImage ? { images: [{ url: ogImage, secureUrl: ogImage, type: "image/jpeg", width: 600, height: 314, alt: title }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [ogImage],
+      ...(ogImage ? { images: [ogImage] } : {}),
     },
   };
 }
