@@ -244,13 +244,17 @@ export async function generateMetadata({
   const description = (link.description as string | null) ?? `A private link from ${displayName}`;
 
   const rawCoverUrl = (link.cover_image_url as string | null) ?? (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
-  const ogImage = rawCoverUrl.includes("supabase.co/storage/v1/object/public/")
-    ? `${rawCoverUrl}?width=1200&quality=85`
-    : rawCoverUrl;
+  // normalizeImageUrl converts signed/expired Supabase URLs → public, handles protocol-relative, etc.
+  const cleanUrl = normalizeImageUrl(rawCoverUrl) ?? DEFAULT_OG_IMAGE;
+  // Append Supabase image transform params for 1200px preview (Pro plan feature, safe no-op on free)
+  const ogImage = cleanUrl.includes("supabase.co/storage/v1/object/public/")
+    ? `${cleanUrl}${cleanUrl.includes("?") ? "&" : "?"}width=1200&quality=85`
+    : cleanUrl;
 
   const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
   return {
+    metadataBase: new URL(`https://${profile.slug as string}.sqrz.com`),
     title,
     description,
     alternates: {
@@ -261,7 +265,7 @@ export async function generateMetadata({
       description,
       url: canonicalUrl,
       type: "website",
-      images: [{ url: ogImage, width: 1200 }],
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: "summary_large_image",
