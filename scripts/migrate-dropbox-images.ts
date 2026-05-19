@@ -3,6 +3,7 @@
  *
  * Tables:  profile_photos.url
  *          profiles.avatar_url
+ *          private_booking_links.cover_image_url
  *
  * Usage:
  *   npx tsx scripts/migrate-dropbox-images.ts          # dry run
@@ -143,6 +144,44 @@ async function migrateAvatars(): Promise<number> {
   return count;
 }
 
+// ── Migrate private_booking_links.cover_image_url ────────────────────────────
+
+async function migrateLinkCovers(): Promise<number> {
+  const { data: links, error } = await supabase
+    .from("private_booking_links")
+    .select("id, profile_id, link_slug, cover_image_url")
+    .ilike("cover_image_url", "%dropbox%");
+
+  if (error) throw error;
+
+  const count = links?.length ?? 0;
+  console.log(`\nprivate_booking_links.cover_image_url: ${count} Dropbox URL${count !== 1 ? "s" : ""} found`);
+
+  for (const link of links ?? []) {
+    const coverUrl = link.cover_image_url as string;
+    const ext = extFromUrl(coverUrl);
+    const ct = contentTypeFromExt(ext);
+    const storagePath = `${link.profile_id}/links/${randomUUID()}.${ext}`;
+
+    console.log(`  link ${link.link_slug} (id=${link.id})`);
+    console.log(`    src: ${coverUrl.slice(0, 90)}${coverUrl.length > 90 ? "…" : ""}`);
+    console.log(`    dst: profile-media/${storagePath}`);
+
+    if (!DRY_RUN) {
+      const buffer = await downloadImage(coverUrl);
+      const publicUrl = await uploadToStorage("profile-media", storagePath, buffer, ct);
+      const { error: dbError } = await supabase
+        .from("private_booking_links")
+        .update({ cover_image_url: publicUrl })
+        .eq("id", link.id);
+      if (dbError) throw new Error(`DB update failed for link ${link.id}: ${dbError.message}`);
+      console.log(`    ✓ → ${publicUrl}`);
+    }
+  }
+
+  return count;
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
@@ -150,8 +189,9 @@ async function main() {
 
   const photoCount = await migrateProfilePhotos();
   const avatarCount = await migrateAvatars();
+  const coverCount = await migrateLinkCovers();
 
-  const total = photoCount + avatarCount;
+  const total = photoCount + avatarCount + coverCount;
   if (DRY_RUN) {
     console.log(`\n${total} URL${total !== 1 ? "s" : ""} would be migrated. Re-run with --run to execute.`);
   } else {
