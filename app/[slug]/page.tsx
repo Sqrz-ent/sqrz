@@ -225,7 +225,7 @@ export async function generateMetadata({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("title, description")
+    .select("title, description, cover_image_url")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -242,7 +242,12 @@ export async function generateMetadata({
 
   const title = link.title ? `${link.title as string} — ${displayName}` : displayName;
   const description = (link.description as string | null) ?? `A private link from ${displayName}`;
-  const ogImage = (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
+
+  const rawCoverUrl = (link.cover_image_url as string | null) ?? (profile.avatar_url as string | null) ?? DEFAULT_OG_IMAGE;
+  const ogImage = rawCoverUrl.includes("supabase.co/storage/v1/object/public/")
+    ? `${rawCoverUrl}?width=1200&quality=85`
+    : rawCoverUrl;
+
   const canonicalUrl = `https://${profile.slug}.sqrz.com/${linkSlug}`;
 
   return {
@@ -256,10 +261,10 @@ export async function generateMetadata({
       description,
       url: canonicalUrl,
       type: "website",
-      images: [{ url: ogImage }],
+      images: [{ url: ogImage, width: 1200 }],
     },
     twitter: {
-      card: "summary",
+      card: "summary_large_image",
       title,
       description,
       images: [ogImage],
