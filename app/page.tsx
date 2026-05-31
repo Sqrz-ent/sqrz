@@ -293,13 +293,18 @@ export default async function HomePage({
     const isTor = country === 'T1';
 
     const DATACENTER_CITIES = new Set([
+      // US datacenters (previous)
       'santa clara', 'ashburn', 'boardman', 'hillsboro', 'ogden',
-      'los lunas', 'manassas', 'dekalb', 'north charleston',
-      'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo',
-      'falkenstein', 'chicago',
+      'los lunas', 'manassas', 'dekalb', 'north charleston', 'chicago',
+      // US datacenters (new)
+      'council bluffs', 'the dalles', 'gallatin', 'social circle',
+      'huntsville', 'north bergen', 'burlington', 'monte vista',
+      // Singapore, Seoul, etc. (previous)
+      'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo', 'falkenstein',
     ]);
     const cityLower = (city ?? '').toLowerCase();
 
+    if (country === 'CN') return;
     if (!isBot && !isTor && !DATACENTER_CITIES.has(cityLower)) void (async () => {
       try {
         let boost_campaign_id: string | null = null;
