@@ -193,16 +193,26 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
   );
 }
 
-function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
+function CoverImage({ coverImageSrc, alt, username }: { coverImageSrc: string | null; alt: string; username: string }) {
   if (!coverImageSrc) return null;
   return (
-    <div style={{ width: "100%", height: "50vh", overflow: "hidden" }}>
+    <div style={{ position: "relative", width: "100%", height: "50vh", overflow: "hidden" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={coverImageSrc}
         alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
+      <a
+        href={`https://${username}.sqrz.com`}
+        style={{
+          position: "absolute", top: 12, left: 12,
+          fontSize: 12, color: "#fff", textDecoration: "none",
+          background: "rgba(0,0,0,0.5)", padding: "6px 12px", borderRadius: 4,
+        }}
+      >
+        ← View full profile
+      </a>
     </div>
   );
 }
@@ -320,19 +330,7 @@ function ContentSection({
       {/* Second CTA — only when there's content between the two */}
       {hasScrollContent && cta && <div style={{ marginTop: 40 }}>{cta}</div>}
 
-      {/* View full profile — outlined, full width */}
-      <a
-        href={`https://${username}.sqrz.com`}
-        style={{
-          display: "block", width: "100%", marginTop: 16, marginBottom: 48,
-          padding: "14px", boxSizing: "border-box",
-          border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8,
-          color: "#fff", fontSize: 15, fontWeight: 600,
-          textAlign: "center", textDecoration: "none",
-        }}
-      >
-        ← View full profile
-      </a>
+      <div style={{ marginBottom: 48 }} />
     </div>
   );
 }
@@ -567,7 +565,7 @@ export default async function PrivateLinkPage({
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
+        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} />
         <ContentSection
           title={link.title as string | null}
           pill={matchedService && <ServicePill label={matchedService.title} accent={accent} />}
@@ -636,7 +634,7 @@ export default async function PrivateLinkPage({
 
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} />
+        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} username={username} />
         <ContentSection
           title={link.title as string | null}
           meta={eventMeta}
@@ -702,7 +700,7 @@ export default async function PrivateLinkPage({
 
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
+      <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} />
       <ContentSection
         title={link.title as string | null}
         cta={downloadCta}
