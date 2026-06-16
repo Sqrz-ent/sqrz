@@ -274,7 +274,7 @@ function HeroSection({
   cta: React.ReactNode;
 }) {
   return (
-    <div style={{ position: "relative", width: "100%", height: "100vh", minHeight: 480, overflow: "hidden" }}>
+    <div style={{ position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
       {coverImageSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
