@@ -156,7 +156,7 @@ function getYouTubeId(url: string | null | undefined): string | null {
 
 function VideoEmbed({ videoId }: { videoId: string }) {
   return (
-    <div style={{ position: "relative", width: "100%", maxWidth: 720, margin: "32px auto", aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "#000" }}>
+    <div style={{ position: "relative", width: "100%", margin: "0 auto", aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "#000" }}>
       <iframe
         src={`https://www.youtube.com/embed/${videoId}`}
         title="Promo video"
@@ -177,7 +177,7 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
       style={{
         display: "block",
         width: "100%",
-        padding: "16px 32px",
+        padding: "16px",
         background: accent,
         color: "#fff",
         borderRadius: 8,
@@ -196,18 +196,12 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
 function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
   if (!coverImageSrc) return null;
   return (
-    <div style={{ position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
+    <div style={{ width: "100%", height: "50vh", overflow: "hidden" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={coverImageSrc}
         alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-      />
-      <div
-        style={{
-          position: "absolute", bottom: 0, left: 0, right: 0, height: 100,
-          background: "linear-gradient(to bottom, transparent, #0a0a0a)",
-        }}
       />
     </div>
   );
@@ -218,7 +212,7 @@ function ServicePill({ label, accent }: { label: string; accent: string }) {
     <div style={{
       display: "inline-flex", alignItems: "center", gap: 6,
       background: `${accent}18`, border: `1px solid ${accent}44`,
-      borderRadius: 8, padding: "5px 12px", marginBottom: 20,
+      borderRadius: 8, padding: "5px 12px",
       fontSize: 13, fontWeight: 600, color: accent,
     }}>
       {label}
@@ -266,61 +260,79 @@ function ContentSection({
 }) {
   const hasScrollContent = !!(videoId || description);
   return (
-    <div style={{ width: "100%", maxWidth: 680, margin: "0 auto", padding: "24px 24px 0", boxSizing: "border-box" }}>
+    <div style={{ width: "100%", maxWidth: 600, margin: "0 auto", padding: "0 24px", boxSizing: "border-box" }}>
 
-      {/* Avatar + name + CTA row — side-by-side on sm+, stacked on mobile */}
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3" style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
-          {profileAvatarSrc ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={profileAvatarSrc}
-              alt={displayName ?? username}
-              style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-            />
-          ) : (
-            <div
-              style={{
-                width: 32, height: 32, borderRadius: "50%", background: accent,
-                color: "white", fontSize: 12, fontWeight: 800,
-                fontFamily: "Barlow Condensed, sans-serif",
-                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-              }}
-            >
-              {getInitials(displayName ?? username)}
-            </div>
-          )}
-          <span style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-            {displayName ?? username}
-          </span>
-        </div>
-        {/* CTA: full width on mobile, fixed width on sm+ so it sits alongside avatar+name */}
-        <div className="w-full sm:w-52 sm:flex-shrink-0">{cta}</div>
+      {/* Avatar + name */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 24 }}>
+        {profileAvatarSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profileAvatarSrc}
+            alt={displayName ?? username}
+            style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 32, height: 32, borderRadius: "50%", background: accent,
+              color: "white", fontSize: 12, fontWeight: 800,
+              fontFamily: "Barlow Condensed, sans-serif",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}
+          >
+            {getInitials(displayName ?? username)}
+          </div>
+        )}
+        <span style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>
+          {displayName ?? username}
+        </span>
       </div>
 
+      {/* Title */}
       {title && (
-        <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 16px", lineHeight: 1.2 }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: 0, marginTop: 16, lineHeight: 1.2 }}>
           {title}
         </h1>
       )}
-      {pill}
-      {meta}
-      {videoId && <VideoEmbed videoId={videoId} />}
+
+      {/* Service pill (book type only) */}
+      {pill && <div style={{ marginTop: 8 }}>{pill}</div>}
+
+      {/* Event date/venue meta */}
+      {meta && <div style={{ marginTop: 8 }}>{meta}</div>}
+
+      {/* Primary CTA (includes lead-gate form if applicable) */}
+      {cta && <div style={{ marginTop: 24 }}>{cta}</div>}
+
+      {/* YouTube embed */}
+      {videoId && <div style={{ marginTop: 32 }}><VideoEmbed videoId={videoId} /></div>}
+
+      {/* Description */}
       {description && (
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginTop: 32 }}>
           <RichDescription text={description} />
         </div>
       )}
-      {hasScrollContent && <div style={{ marginBottom: 32 }}>{cta}</div>}
-      {extra}
-      <div style={{ textAlign: "center", padding: "24px 0 48px" }}>
-        <a
-          href={`https://${username}.sqrz.com`}
-          style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
-        >
-          ← View full profile
-        </a>
-      </div>
+
+      {/* Service terms */}
+      {extra && <div style={{ marginTop: 16 }}>{extra}</div>}
+
+      {/* Second CTA — only when there's content between the two */}
+      {hasScrollContent && cta && <div style={{ marginTop: 40 }}>{cta}</div>}
+
+      {/* View full profile — outlined, full width */}
+      <a
+        href={`https://${username}.sqrz.com`}
+        style={{
+          display: "block", width: "100%", marginTop: 16, marginBottom: 48,
+          padding: "14px", boxSizing: "border-box",
+          border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8,
+          color: "#fff", fontSize: 15, fontWeight: 600,
+          textAlign: "center", textDecoration: "none",
+        }}
+      >
+        ← View full profile
+      </a>
     </div>
   );
 }
