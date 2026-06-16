@@ -193,43 +193,6 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
   );
 }
 
-function ArtistHeader({
-  profileAvatarSrc,
-  name,
-  username,
-  accent,
-}: {
-  profileAvatarSrc: string | null;
-  name: string | null;
-  username: string;
-  accent: string;
-}) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "16px 24px" }}>
-      {profileAvatarSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={profileAvatarSrc}
-          alt={name ?? username}
-          style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-        />
-      ) : (
-        <div
-          style={{
-            width: 24, height: 24, borderRadius: "50%", background: accent,
-            color: "white", fontSize: 10, fontWeight: 800,
-            fontFamily: "Barlow Condensed, sans-serif",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}
-        >
-          {getInitials(name ?? username)}
-        </div>
-      )}
-      <span style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>{name ?? username}</span>
-    </div>
-  );
-}
-
 function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
   if (!coverImageSrc) return null;
   return (
@@ -285,6 +248,9 @@ function ContentSection({
   description,
   extra,
   username,
+  profileAvatarSrc,
+  displayName,
+  accent,
 }: {
   title: string | null;
   pill?: React.ReactNode;
@@ -294,10 +260,44 @@ function ContentSection({
   description: string | null;
   extra?: React.ReactNode;
   username: string;
+  profileAvatarSrc: string | null;
+  displayName: string | null;
+  accent: string;
 }) {
   const hasScrollContent = !!(videoId || description);
   return (
-    <div style={{ width: "100%", maxWidth: 680, margin: "0 auto", padding: "32px 24px 0", boxSizing: "border-box" }}>
+    <div style={{ width: "100%", maxWidth: 680, margin: "0 auto", padding: "24px 24px 0", boxSizing: "border-box" }}>
+
+      {/* Avatar + name + CTA row — side-by-side on sm+, stacked on mobile */}
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3" style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+          {profileAvatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profileAvatarSrc}
+              alt={displayName ?? username}
+              style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 32, height: 32, borderRadius: "50%", background: accent,
+                color: "white", fontSize: 12, fontWeight: 800,
+                fontFamily: "Barlow Condensed, sans-serif",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}
+            >
+              {getInitials(displayName ?? username)}
+            </div>
+          )}
+          <span style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.8)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {displayName ?? username}
+          </span>
+        </div>
+        {/* CTA: full width on mobile, fixed width on sm+ so it sits alongside avatar+name */}
+        <div className="w-full sm:w-52 sm:flex-shrink-0">{cta}</div>
+      </div>
+
       {title && (
         <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 16px", lineHeight: 1.2 }}>
           {title}
@@ -305,7 +305,6 @@ function ContentSection({
       )}
       {pill}
       {meta}
-      <div style={{ marginBottom: 32 }}>{cta}</div>
       {videoId && <VideoEmbed videoId={videoId} />}
       {description && (
         <div style={{ marginBottom: 32 }}>
@@ -556,7 +555,6 @@ export default async function PrivateLinkPage({
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        <ArtistHeader profileAvatarSrc={profileAvatarSrc} name={displayName} username={username} accent={accent} />
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
           title={link.title as string | null}
@@ -566,6 +564,9 @@ export default async function PrivateLinkPage({
           description={link.description as string | null}
           extra={matchedService && <ServiceTerms service={matchedService} accent={accent} />}
           username={username}
+          profileAvatarSrc={profileAvatarSrc}
+          displayName={displayName}
+          accent={accent}
         />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -623,7 +624,6 @@ export default async function PrivateLinkPage({
 
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <ArtistHeader profileAvatarSrc={profileAvatarSrc} name={displayName} username={username} accent={accent} />
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} />
         <ContentSection
           title={link.title as string | null}
@@ -632,6 +632,9 @@ export default async function PrivateLinkPage({
           videoId={videoId}
           description={link.description as string | null}
           username={username}
+          profileAvatarSrc={profileAvatarSrc}
+          displayName={displayName}
+          accent={accent}
         />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -687,7 +690,6 @@ export default async function PrivateLinkPage({
 
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <ArtistHeader profileAvatarSrc={profileAvatarSrc} name={displayName} username={username} accent={accent} />
       <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
       <ContentSection
         title={link.title as string | null}
@@ -695,6 +697,9 @@ export default async function PrivateLinkPage({
         videoId={videoId}
         description={link.description as string | null}
         username={username}
+        profileAvatarSrc={profileAvatarSrc}
+        displayName={displayName}
+        accent={accent}
       />
       <LegalFooter {...legalFooterProps} />
       <AnalyticsGate
