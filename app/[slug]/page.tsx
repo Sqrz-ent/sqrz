@@ -155,7 +155,7 @@ function getYouTubeId(url: string | null | undefined): string | null {
 
 function VideoEmbed({ videoId }: { videoId: string }) {
   return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", marginBottom: 24, background: "#000" }}>
+    <div style={{ position: "relative", width: "100%", maxWidth: 720, margin: "32px auto", aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", background: "#000" }}>
       <iframe
         src={`https://www.youtube.com/embed/${videoId}`}
         title="Promo video"
@@ -176,7 +176,7 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
       style={{
         display: "block",
         width: "100%",
-        padding: "16px",
+        padding: "16px 32px",
         background: accent,
         color: "#fff",
         borderRadius: 8,
@@ -192,7 +192,7 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
   );
 }
 
-function ProfileAttribution({
+function HeroHeader({
   profileAvatarSrc,
   name,
   username,
@@ -204,40 +204,150 @@ function ProfileAttribution({
   accent: string;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
-      {profileAvatarSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={profileAvatarSrc}
-          alt={name ?? username}
-          style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-        />
-      ) : (
-        <div
-          style={{
-            width: 24, height: 24, borderRadius: "50%", background: accent,
-            color: "white", fontSize: 10, fontWeight: 800,
-            fontFamily: "Barlow Condensed, sans-serif",
-            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-          }}
-        >
-          {getInitials(name ?? username)}
-        </div>
-      )}
-      <span style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{name ?? username}</span>
+    <div style={{ position: "absolute", top: 0, left: 0, right: 0, padding: "20px 24px", zIndex: 2 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        {profileAvatarSrc ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={profileAvatarSrc}
+            alt={name ?? username}
+            style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 24, height: 24, borderRadius: "50%", background: accent,
+              color: "white", fontSize: 10, fontWeight: 800,
+              fontFamily: "Barlow Condensed, sans-serif",
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}
+          >
+            {getInitials(name ?? username)}
+          </div>
+        )}
+        <span style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>{name ?? username}</span>
+      </div>
+      <a
+        href={`https://${username}.sqrz.com`}
+        style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", textDecoration: "none" }}
+      >
+        ← View full profile
+      </a>
     </div>
   );
 }
 
-function ViewFullProfileLink({ username }: { username: string }) {
+function ServicePill({ label, accent }: { label: string; accent: string }) {
   return (
-    <div style={{ textAlign: "center", marginTop: 32 }}>
-      <a
-        href={`https://${username}.sqrz.com`}
-        style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      background: `${accent}18`, border: `1px solid ${accent}44`,
+      borderRadius: 8, padding: "5px 12px", marginBottom: 12,
+      fontSize: 13, fontWeight: 600, color: accent,
+    }}>
+      {label}
+    </div>
+  );
+}
+
+function HeroSection({
+  coverImageSrc,
+  alt,
+  profileAvatarSrc,
+  displayName,
+  username,
+  accent,
+  pill,
+  title,
+  meta,
+  cta,
+}: {
+  coverImageSrc: string | null;
+  alt: string;
+  profileAvatarSrc: string | null;
+  displayName: string | null;
+  username: string;
+  accent: string;
+  pill?: React.ReactNode;
+  title: string | null;
+  meta?: React.ReactNode;
+  cta: React.ReactNode;
+}) {
+  return (
+    <div style={{ position: "relative", width: "100%", height: "100vh", minHeight: 480, overflow: "hidden" }}>
+      {coverImageSrc ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={coverImageSrc}
+          alt={alt}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      ) : (
+        <div style={{ position: "absolute", inset: 0, background: "#0a0a0a" }} />
+      )}
+      <div
+        style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.2) 100%)",
+        }}
+      />
+
+      <HeroHeader profileAvatarSrc={profileAvatarSrc} name={displayName} username={username} accent={accent} />
+
+      <div
+        style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          padding: "0 24px 40px", display: "flex", flexDirection: "column",
+          alignItems: "center", textAlign: "center",
+        }}
       >
-        ← View full profile
-      </a>
+        {pill}
+        {title && (
+          <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.1 }}>
+            {title}
+          </h1>
+        )}
+        {meta}
+        <div style={{ width: "100%", maxWidth: 480 }}>{cta}</div>
+      </div>
+    </div>
+  );
+}
+
+function RichDescription({ text }: { text: string }) {
+  return (
+    <p
+      style={{
+        fontSize: "1rem", lineHeight: 1.7, color: "rgba(255,255,255,0.8)",
+        whiteSpace: "pre-wrap", margin: 0, width: "100%",
+      }}
+    >
+      {text}
+    </p>
+  );
+}
+
+function ContentSection({
+  videoId,
+  description,
+  cta,
+  extra,
+}: {
+  videoId: string | null;
+  description: string | null;
+  cta: React.ReactNode;
+  extra?: React.ReactNode;
+}) {
+  return (
+    <div style={{ width: "100%", padding: "48px 24px 64px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+      {videoId && <VideoEmbed videoId={videoId} />}
+      {description && (
+        <div style={{ width: "100%", maxWidth: 680, margin: "0 auto" }}>
+          <RichDescription text={description} />
+        </div>
+      )}
+      <div style={{ width: "100%", maxWidth: 480, marginTop: 32 }}>{cta}</div>
+      {extra}
     </div>
   );
 }
@@ -455,68 +565,40 @@ export default async function PrivateLinkPage({
       ? services.find((s) => s.title === prefillServiceTitle)
       : null;
 
+    const bookCta = (
+      <BookLinkButton
+        username={username}
+        services={services}
+        profileId={profile.id as string}
+        planId={profile.plan_id as number | null}
+        accent={accent}
+        prefillService={prefillServiceTitle}
+        prefilledTitle={link.title as string | null}
+        prefilledDescription={link.description as string | null}
+        profileName={displayName}
+      />
+    );
+
     return (
-      <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        <div className="flex-1" style={container}>
-          <ProfileAttribution
-            profileAvatarSrc={profileAvatarSrc}
-            name={displayName}
-            username={username}
-            accent={accent}
-          />
-
-          {coverImageSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverImageSrc}
-              alt={link.title ?? "Cover"}
-              style={{
-                width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
-                borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
-              }}
-            />
-          )}
-
-          {link.title && (
-            <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
-              {link.title}
-            </h1>
-          )}
-
-          {matchedService && (
-            <div style={{
-              display: "inline-flex", alignItems: "center", gap: 6,
-              background: `${accent}18`, border: `1px solid ${accent}44`,
-              borderRadius: 8, padding: "5px 12px", marginBottom: 16,
-              fontSize: 13, fontWeight: 600, color: accent,
-            }}>
-              {matchedService.title}
-            </div>
-          )}
-
-          {(link.description as string | null) && (
-            <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
-              {link.description as string}
-            </p>
-          )}
-
-          {videoId && <VideoEmbed videoId={videoId} />}
-
-          <BookLinkButton
-            username={username}
-            services={services}
-            profileId={profile.id as string}
-            planId={profile.plan_id as number | null}
-            accent={accent}
-            prefillService={prefillServiceTitle}
-            prefilledTitle={link.title as string | null}
-            prefilledDescription={link.description as string | null}
-            profileName={displayName}
-          />
-          {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
-          <ViewFullProfileLink username={username} />
-        </div>
+        <HeroSection
+          coverImageSrc={coverImageSrc}
+          alt={(link.title as string) ?? "Cover"}
+          profileAvatarSrc={profileAvatarSrc}
+          displayName={displayName}
+          username={username}
+          accent={accent}
+          pill={matchedService && <ServicePill label={matchedService.title} accent={accent} />}
+          title={link.title as string | null}
+          cta={bookCta}
+        />
+        <ContentSection
+          videoId={videoId}
+          description={link.description as string | null}
+          cta={bookCta}
+          extra={matchedService && <ServiceTerms service={matchedService} accent={accent} />}
+        />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
           googleAnalyticsId={profile.pixel_google as string | null}
@@ -559,62 +641,36 @@ export default async function PrivateLinkPage({
     const eventDateStr = formatEventDate(link.event_date as string | null);
     const venue = [link.event_venue, link.event_city].filter(Boolean).join(" · ");
     const ctaUrl = safeUrl(link.external_url as string | null);
+    const eventCta = ctaUrl ? (
+      (link.lead_gate as boolean)
+        ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
+        : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
+    ) : null;
+    const eventMeta = (eventDateStr || venue) ? (
+      <div style={{ marginBottom: 16 }}>
+        {eventDateStr && <div style={{ fontSize: 15, fontWeight: 600, color: accent, marginBottom: 4 }}>{eventDateStr}</div>}
+        {venue && <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>📍 {venue}</div>}
+      </div>
+    ) : null;
 
     return (
-      <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <div className="flex-1" style={container}>
-          <ProfileAttribution
-            profileAvatarSrc={profileAvatarSrc}
-            name={displayName}
-            username={username}
-            accent={accent}
-          />
-
-          {coverImageSrc && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={coverImageSrc}
-              alt={link.title ?? "Event"}
-              style={{
-                width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
-                borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
-              }}
-            />
-          )}
-
-          {link.title && (
-            <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
-              {link.title}
-            </h1>
-          )}
-
-          {eventDateStr && (
-            <div style={{ fontSize: 15, fontWeight: 600, color: accent, marginBottom: 6 }}>
-              {eventDateStr}
-            </div>
-          )}
-
-          {venue && (
-            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", marginBottom: 20 }}>
-              📍 {venue}
-            </div>
-          )}
-
-          {link.description && (
-            <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
-              {link.description}
-            </p>
-          )}
-
-          {videoId && <VideoEmbed videoId={videoId} />}
-
-          {ctaUrl && (
-            (link.lead_gate as boolean)
-              ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
-              : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
-          )}
-          <ViewFullProfileLink username={username} />
-        </div>
+      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+        <HeroSection
+          coverImageSrc={coverImageSrc}
+          alt={(link.title as string) ?? "Event"}
+          profileAvatarSrc={profileAvatarSrc}
+          displayName={displayName}
+          username={username}
+          accent={accent}
+          title={link.title as string | null}
+          meta={eventMeta}
+          cta={eventCta}
+        />
+        <ContentSection
+          videoId={videoId}
+          description={link.description as string | null}
+          cta={eventCta}
+        />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
           googleAnalyticsId={profile.pixel_google as string | null}
@@ -654,57 +710,36 @@ export default async function PrivateLinkPage({
 
   // ─── DOWNLOAD (default) ───────────────────────────────────────────────────────
   const ctaUrl = safeUrl(link.external_url as string | null);
+  const downloadCta = ctaUrl ? (
+    (link.lead_gate as boolean)
+      ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
+      : <DownloadCtaButton
+          href={ctaUrl}
+          accent={accent}
+          profileSlug={profile.slug as string}
+          profileId={profile.id as string}
+          linkSlug={linkSlug}
+          label="Download"
+        />
+  ) : null;
 
   return (
-    <div className="flex flex-col min-h-screen items-center" style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <div className="flex-1" style={container}>
-        <ProfileAttribution
-          profileAvatarSrc={profileAvatarSrc}
-          name={displayName}
-          username={username}
-          accent={accent}
-        />
-
-        {coverImageSrc && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={coverImageSrc}
-            alt={link.title ?? "Cover"}
-            style={{
-              width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
-              borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
-            }}
-          />
-        )}
-
-        {link.title && (
-          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
-            {link.title}
-          </h1>
-        )}
-
-        {link.description && (
-          <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
-            {link.description}
-          </p>
-        )}
-
-        {videoId && <VideoEmbed videoId={videoId} />}
-
-        {ctaUrl && (
-          (link.lead_gate as boolean)
-            ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
-            : <DownloadCtaButton
-                href={ctaUrl}
-                accent={accent}
-                profileSlug={profile.slug as string}
-                profileId={profile.id as string}
-                linkSlug={linkSlug}
-                label="Download"
-              />
-        )}
-        <ViewFullProfileLink username={username} />
-      </div>
+    <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+      <HeroSection
+        coverImageSrc={coverImageSrc}
+        alt={(link.title as string) ?? "Cover"}
+        profileAvatarSrc={profileAvatarSrc}
+        displayName={displayName}
+        username={username}
+        accent={accent}
+        title={link.title as string | null}
+        cta={downloadCta}
+      />
+      <ContentSection
+        videoId={videoId}
+        description={link.description as string | null}
+        cta={downloadCta}
+      />
       <LegalFooter {...legalFooterProps} />
       <AnalyticsGate
         googleAnalyticsId={profile.pixel_google as string | null}

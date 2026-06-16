@@ -38,7 +38,7 @@ export default function BookLinkButton({
         style={{
           display: "block",
           width: "100%",
-          padding: "16px",
+          padding: "16px 32px",
           background: accent,
           color: "#fff",
           borderRadius: 8,
