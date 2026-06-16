@@ -193,7 +193,21 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
   );
 }
 
-function CoverImage({ coverImageSrc, alt, username }: { coverImageSrc: string | null; alt: string; username: string }) {
+function CoverImage({
+  coverImageSrc,
+  alt,
+  username,
+  profileAvatarSrc,
+  displayName,
+  accent,
+}: {
+  coverImageSrc: string | null;
+  alt: string;
+  username: string;
+  profileAvatarSrc: string | null;
+  displayName: string | null;
+  accent: string;
+}) {
   if (!coverImageSrc) return null;
   return (
     <div style={{ position: "relative", width: "100%", height: "50vh", overflow: "hidden" }}>
@@ -203,16 +217,48 @@ function CoverImage({ coverImageSrc, alt, username }: { coverImageSrc: string | 
         alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
-      <a
-        href={`https://${username}.sqrz.com`}
-        style={{
-          position: "absolute", top: 12, left: 12,
-          fontSize: 12, color: "#fff", textDecoration: "none",
-          background: "rgba(0,0,0,0.5)", padding: "6px 12px", borderRadius: 4,
-        }}
-      >
-        ← View full profile
-      </a>
+      {/* Top-left overlay: view-profile pill + avatar + name */}
+      <div style={{ position: "absolute", top: 16, left: 16, zIndex: 10 }}>
+        <a
+          href={`https://${username}.sqrz.com`}
+          style={{
+            display: "inline-block",
+            fontSize: "0.85rem", color: "#fff", textDecoration: "none",
+            background: "rgba(0,0,0,0.6)", padding: "6px 14px", borderRadius: 20,
+          }}
+        >
+          ← View full profile
+        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          {profileAvatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profileAvatarSrc}
+              alt={displayName ?? username}
+              style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 28, height: 28, borderRadius: "50%", background: accent,
+                color: "white", fontSize: 10, fontWeight: 800,
+                fontFamily: "Barlow Condensed, sans-serif",
+                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              }}
+            >
+              {getInitials(displayName ?? username)}
+            </div>
+          )}
+          <span
+            style={{
+              fontSize: 13, fontWeight: 600, color: "#fff",
+              textShadow: "0 1px 3px rgba(0,0,0,0.6)",
+            }}
+          >
+            {displayName ?? username}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -252,9 +298,6 @@ function ContentSection({
   description,
   extra,
   username,
-  profileAvatarSrc,
-  displayName,
-  accent,
 }: {
   title: string | null;
   pill?: React.ReactNode;
@@ -264,43 +307,14 @@ function ContentSection({
   description: string | null;
   extra?: React.ReactNode;
   username: string;
-  profileAvatarSrc: string | null;
-  displayName: string | null;
-  accent: string;
 }) {
   const hasScrollContent = !!(videoId || description);
   return (
     <div style={{ width: "100%", maxWidth: 600, margin: "0 auto", padding: "0 24px", boxSizing: "border-box" }}>
 
-      {/* Avatar + name */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 24 }}>
-        {profileAvatarSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profileAvatarSrc}
-            alt={displayName ?? username}
-            style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 32, height: 32, borderRadius: "50%", background: accent,
-              color: "white", fontSize: 12, fontWeight: 800,
-              fontFamily: "Barlow Condensed, sans-serif",
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-            }}
-          >
-            {getInitials(displayName ?? username)}
-          </div>
-        )}
-        <span style={{ fontWeight: 600, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>
-          {displayName ?? username}
-        </span>
-      </div>
-
       {/* Title */}
       {title && (
-        <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: 0, marginTop: 16, lineHeight: 1.2 }}>
+        <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: 0, marginTop: 24, lineHeight: 1.2 }}>
           {title}
         </h1>
       )}
@@ -330,7 +344,15 @@ function ContentSection({
       {/* Second CTA — only when there's content between the two */}
       {hasScrollContent && cta && <div style={{ marginTop: 40 }}>{cta}</div>}
 
-      <div style={{ marginBottom: 48 }} />
+      {/* View full profile — restored bottom text link */}
+      <div style={{ textAlign: "center", padding: "24px 0 48px" }}>
+        <a
+          href={`https://${username}.sqrz.com`}
+          style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", textDecoration: "none" }}
+        >
+          ← View full profile
+        </a>
+      </div>
     </div>
   );
 }
@@ -565,7 +587,7 @@ export default async function PrivateLinkPage({
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} />
+        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} profileAvatarSrc={profileAvatarSrc} displayName={displayName} accent={accent} />
         <ContentSection
           title={link.title as string | null}
           pill={matchedService && <ServicePill label={matchedService.title} accent={accent} />}
@@ -574,9 +596,6 @@ export default async function PrivateLinkPage({
           description={link.description as string | null}
           extra={matchedService && <ServiceTerms service={matchedService} accent={accent} />}
           username={username}
-          profileAvatarSrc={profileAvatarSrc}
-          displayName={displayName}
-          accent={accent}
         />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -634,7 +653,7 @@ export default async function PrivateLinkPage({
 
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} username={username} />
+        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} username={username} profileAvatarSrc={profileAvatarSrc} displayName={displayName} accent={accent} />
         <ContentSection
           title={link.title as string | null}
           meta={eventMeta}
@@ -642,9 +661,6 @@ export default async function PrivateLinkPage({
           videoId={videoId}
           description={link.description as string | null}
           username={username}
-          profileAvatarSrc={profileAvatarSrc}
-          displayName={displayName}
-          accent={accent}
         />
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -700,16 +716,13 @@ export default async function PrivateLinkPage({
 
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} />
+      <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} username={username} profileAvatarSrc={profileAvatarSrc} displayName={displayName} accent={accent} />
       <ContentSection
         title={link.title as string | null}
         cta={downloadCta}
         videoId={videoId}
         description={link.description as string | null}
         username={username}
-        profileAvatarSrc={profileAvatarSrc}
-        displayName={displayName}
-        accent={accent}
       />
       <LegalFooter {...legalFooterProps} />
       <AnalyticsGate
