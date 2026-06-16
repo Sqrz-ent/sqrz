@@ -39,10 +39,10 @@ export default function LeadGateCta({ href, accent, label, linkId }: Props) {
         required
         style={{
           flex: 1,
-          padding: "14px 16px",
+          padding: "16px",
           background: "rgba(255,255,255,0.08)",
           border: "1px solid rgba(255,255,255,0.15)",
-          borderRadius: 12,
+          borderRadius: 8,
           fontSize: 16,
           color: "#fff",
           outline: "none",
@@ -54,11 +54,11 @@ export default function LeadGateCta({ href, accent, label, linkId }: Props) {
         type="submit"
         disabled={submitting || !email}
         style={{
-          padding: "14px 20px",
+          padding: "16px 20px",
           background: accent,
           color: "#fff",
           border: "none",
-          borderRadius: 12,
+          borderRadius: 8,
           fontSize: 15,
           fontWeight: 700,
           cursor: submitting ? "not-allowed" : "pointer",

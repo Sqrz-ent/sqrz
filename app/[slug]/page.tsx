@@ -54,14 +54,15 @@ function formatEventDate(dateStr: string | null): string | null {
 // ─── Layout primitives ────────────────────────────────────────────────────────
 
 const shell: React.CSSProperties = {
-  background: "#111111",
+  background: "#0a0a0a",
   fontFamily: "'DM Sans', ui-sans-serif, system-ui, -apple-system, sans-serif",
 };
 
 const container: React.CSSProperties = {
   width: "100%",
-  maxWidth: 520,
-  padding: "32px 20px 32px",
+  maxWidth: 480,
+  padding: 24,
+  boxSizing: "border-box",
 };
 
 function getCurrencySymbol(currency?: string): string {
@@ -154,7 +155,7 @@ function getYouTubeId(url: string | null | undefined): string | null {
 
 function VideoEmbed({ videoId }: { videoId: string }) {
   return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", marginBottom: 24, background: "#000" }}>
+    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 8, overflow: "hidden", marginBottom: 24, background: "#000" }}>
       <iframe
         src={`https://www.youtube.com/embed/${videoId}`}
         title="Promo video"
@@ -175,10 +176,10 @@ function CtaButton({ href, accent, children }: { href: string; accent: string; c
       style={{
         display: "block",
         width: "100%",
-        padding: "14px",
+        padding: "16px",
         background: accent,
         color: "#fff",
-        borderRadius: 12,
+        borderRadius: 8,
         fontSize: 16,
         fontWeight: 700,
         textAlign: "center",
@@ -203,19 +204,19 @@ function ProfileAttribution({
   accent: string;
 }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32 }}>
       {profileAvatarSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={profileAvatarSrc}
           alt={name ?? username}
-          style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+          style={{ width: 24, height: 24, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
         />
       ) : (
         <div
           style={{
-            width: 40, height: 40, borderRadius: "50%", background: accent,
-            color: "white", fontSize: 15, fontWeight: 800,
+            width: 24, height: 24, borderRadius: "50%", background: accent,
+            color: "white", fontSize: 10, fontWeight: 800,
             fontFamily: "Barlow Condensed, sans-serif",
             display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
           }}
@@ -223,7 +224,20 @@ function ProfileAttribution({
           {getInitials(name ?? username)}
         </div>
       )}
-      <span style={{ fontWeight: 600, fontSize: 15, color: "#e5e5e5" }}>{name ?? username}</span>
+      <span style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{name ?? username}</span>
+    </div>
+  );
+}
+
+function ViewFullProfileLink({ username }: { username: string }) {
+  return (
+    <div style={{ textAlign: "center", marginTop: 32 }}>
+      <a
+        href={`https://${username}.sqrz.com`}
+        style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none" }}
+      >
+        ← View full profile
+      </a>
     </div>
   );
 }
@@ -452,30 +466,20 @@ export default async function PrivateLinkPage({
             accent={accent}
           />
 
-          <a
-            href={`https://${username}.sqrz.com`}
-            style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
-          >
-            ← View full profile
-          </a>
-
           {coverImageSrc && (
-            <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverImageSrc}
-                alt={link.title ?? "Cover"}
-                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
-              />
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
-                background: "linear-gradient(to bottom, transparent, #111111)",
-              }} />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverImageSrc}
+              alt={link.title ?? "Cover"}
+              style={{
+                width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
+                borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
+              }}
+            />
           )}
 
           {link.title && (
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
               {link.title}
             </h1>
           )}
@@ -492,7 +496,7 @@ export default async function PrivateLinkPage({
           )}
 
           {(link.description as string | null) && (
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
               {link.description as string}
             </p>
           )}
@@ -511,6 +515,7 @@ export default async function PrivateLinkPage({
             profileName={displayName}
           />
           {matchedService && <ServiceTerms service={matchedService} accent={accent} />}
+          <ViewFullProfileLink username={username} />
         </div>
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -565,30 +570,20 @@ export default async function PrivateLinkPage({
             accent={accent}
           />
 
-          <a
-            href={`https://${username}.sqrz.com`}
-            style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
-          >
-            ← View full profile
-          </a>
-
           {coverImageSrc && (
-            <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={coverImageSrc}
-                alt={link.title ?? "Event"}
-                style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
-              />
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
-                background: "linear-gradient(to bottom, transparent, #111111)",
-              }} />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={coverImageSrc}
+              alt={link.title ?? "Event"}
+              style={{
+                width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
+                borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
+              }}
+            />
           )}
 
           {link.title && (
-            <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
               {link.title}
             </h1>
           )}
@@ -606,7 +601,7 @@ export default async function PrivateLinkPage({
           )}
 
           {link.description && (
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
+            <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
               {link.description}
             </p>
           )}
@@ -615,9 +610,10 @@ export default async function PrivateLinkPage({
 
           {ctaUrl && (
             (link.lead_gate as boolean)
-              ? <LeadGateCta href={ctaUrl} accent={accent} label={(link.external_url_label as string) || "Get Tickets →"} linkId={link.id as string} />
-              : <CtaButton href={ctaUrl} accent={accent}>{(link.external_url_label as string) || "Get Tickets →"}</CtaButton>
+              ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
+              : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
           )}
+          <ViewFullProfileLink username={username} />
         </div>
         <LegalFooter {...legalFooterProps} />
         <AnalyticsGate
@@ -669,36 +665,26 @@ export default async function PrivateLinkPage({
           accent={accent}
         />
 
-        <a
-          href={`https://${username}.sqrz.com`}
-          style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textDecoration: "none", display: "inline-block", marginBottom: 20, marginTop: -16 }}
-        >
-          ← View full profile
-        </a>
-
         {coverImageSrc && (
-          <div style={{ position: "relative", marginBottom: 24, borderRadius: 12, overflow: "hidden" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={coverImageSrc}
-              alt={link.title ?? "Cover"}
-              style={{ width: "100%", height: 280, objectFit: "cover", display: "block" }}
-            />
-            <div style={{
-              position: "absolute", bottom: 0, left: 0, right: 0, height: "60%",
-              background: "linear-gradient(to bottom, transparent, #111111)",
-            }} />
-          </div>
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={coverImageSrc}
+            alt={link.title ?? "Cover"}
+            style={{
+              width: "100%", aspectRatio: "16 / 9", objectFit: "cover", display: "block",
+              borderRadius: 12, boxShadow: "0 8px 24px rgba(0,0,0,0.45)", marginBottom: 24,
+            }}
+          />
         )}
 
         {link.title && (
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
+          <h1 style={{ fontSize: "2rem", fontWeight: 800, color: "#fff", margin: "0 0 10px", lineHeight: 1.2 }}>
             {link.title}
           </h1>
         )}
 
         {link.description && (
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: "1rem", color: "rgba(255,255,255,0.65)", margin: "0 0 28px", lineHeight: 1.6 }}>
             {link.description}
           </p>
         )}
@@ -707,16 +693,17 @@ export default async function PrivateLinkPage({
 
         {ctaUrl && (
           (link.lead_gate as boolean)
-            ? <LeadGateCta href={ctaUrl} accent={accent} label={(link.external_url_label as string) || "Download →"} linkId={link.id as string} />
+            ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
             : <DownloadCtaButton
                 href={ctaUrl}
                 accent={accent}
                 profileSlug={profile.slug as string}
                 profileId={profile.id as string}
                 linkSlug={linkSlug}
-                label={(link.external_url_label as string) || "Download →"}
+                label="Download"
               />
         )}
+        <ViewFullProfileLink username={username} />
       </div>
       <LegalFooter {...legalFooterProps} />
       <AnalyticsGate

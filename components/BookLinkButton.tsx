@@ -38,10 +38,10 @@ export default function BookLinkButton({
         style={{
           display: "block",
           width: "100%",
-          padding: "14px",
+          padding: "16px",
           background: accent,
           color: "#fff",
-          borderRadius: 12,
+          borderRadius: 8,
           fontSize: 16,
           fontWeight: 700,
           textAlign: "center",
@@ -51,7 +51,7 @@ export default function BookLinkButton({
           boxSizing: "border-box",
         }}
       >
-        Book Me →
+        Book
       </button>
       <BookingModal
         open={open}
