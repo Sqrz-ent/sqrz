@@ -132,6 +132,40 @@ function PoweredBy() {
   );
 }
 
+function getYouTubeId(url: string | null | undefined): string | null {
+  if (!url) return null;
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+  try {
+    const u = new URL(trimmed.startsWith("http") ? trimmed : `https://${trimmed}`);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") {
+      return u.pathname.slice(1).split("/")[0] || null;
+    }
+    if (host === "youtube.com" || host === "m.youtube.com") {
+      if (u.pathname === "/watch") return u.searchParams.get("v");
+      if (u.pathname.startsWith("/embed/")) return u.pathname.split("/embed/")[1]?.split("/")[0] || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function VideoEmbed({ videoId }: { videoId: string }) {
+  return (
+    <div style={{ position: "relative", width: "100%", aspectRatio: "16 / 9", borderRadius: 12, overflow: "hidden", marginBottom: 24, background: "#000" }}>
+      <iframe
+        src={`https://www.youtube.com/embed/${videoId}`}
+        title="Promo video"
+        style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
 function CtaButton({ href, accent, children }: { href: string; accent: string; children: React.ReactNode }) {
   return (
     <a
@@ -324,7 +358,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -358,6 +392,7 @@ export default async function PrivateLinkPage({
   const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
   const pageType = (link.page_type as string) ?? "download";
   const coverImageSrc = normalizeImageUrl(link.cover_image_url as string | null);
+  const videoId = getYouTubeId(link.video_url as string | null);
 
   const legalFooterProps = {
     privacyHref: `/${profile.slug}/privacy`,
@@ -461,6 +496,8 @@ export default async function PrivateLinkPage({
               {link.description as string}
             </p>
           )}
+
+          {videoId && <VideoEmbed videoId={videoId} />}
 
           <BookLinkButton
             username={username}
@@ -574,6 +611,8 @@ export default async function PrivateLinkPage({
             </p>
           )}
 
+          {videoId && <VideoEmbed videoId={videoId} />}
+
           {ctaUrl && (
             (link.lead_gate as boolean)
               ? <LeadGateCta href={ctaUrl} accent={accent} label={(link.external_url_label as string) || "Get Tickets →"} linkId={link.id as string} />
@@ -663,6 +702,8 @@ export default async function PrivateLinkPage({
             {link.description}
           </p>
         )}
+
+        {videoId && <VideoEmbed videoId={videoId} />}
 
         {ctaUrl && (
           (link.lead_gate as boolean)
