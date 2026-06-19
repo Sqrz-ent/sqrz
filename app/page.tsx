@@ -521,7 +521,7 @@ const ticket = {
         fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
       }}>
         <span style={{ fontSize: 15, fontWeight: 600 }}>
-          Is this you? Claim this profile — includes Early Access pricing.
+          Is this you? Claim this profile and take control of your page.
         </span>
         <a
           href={claimUrl}
@@ -698,7 +698,7 @@ const ticket = {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  display: "inline-flew",
+                  display: "inline-flex",
                   width: "auto",
                   alignItems: "center",
                   justifyContent: "center",
