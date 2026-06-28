@@ -18,7 +18,6 @@ import {
 import BookMeButton from "@/components/BookMeButton";
 import PaymentSuccessBanner from "@/components/PaymentSuccessBanner";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
-import Skills from "@/components/Skills";
 import Services from "@/components/Services";
 import Experience from "@/components/Experience";
 import {
@@ -118,7 +117,7 @@ import { supabaseServer as supabase } from "@/lib/supabase-server";
 async function getProfileByUsername(username: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_skills(skill_id, skills(name, category)), profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
+    .select("*, profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
     .eq("slug", username)
     .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
@@ -478,7 +477,6 @@ const ticket = {
 
   const hasAnyContent = Boolean(
     profile.bio ||
-    (profile.profile_skills?.length > 0) ||
     hasActiveServices ||
     hasSocials ||
     (profile.profile_references?.length > 0) ||
@@ -754,8 +752,6 @@ const ticket = {
             <CollapsibleBio bio={profile.bio as string} />
           </section>
         )}
-
-        {profile.profile_skills?.length > 0 && <Skills skills={profile.profile_skills} />}
 
         {profile.profile_references?.length > 0 && (
           <Experience jobs={profile.profile_references} />
