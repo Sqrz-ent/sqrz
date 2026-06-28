@@ -12,6 +12,7 @@ import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
 import LeadGateCta from "@/components/LeadGateCta";
+import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import { normalizeImageUrl } from "@/lib/image-url";
 import type { Service } from "@/types/service";
@@ -467,7 +468,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url, payment_gate, price, currency")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -479,7 +480,9 @@ export default async function PrivateLinkPage({
 
   const maxUsesReached = link.max_uses != null && link.use_count >= link.max_uses;
 
-  if (!maxUsesReached) {
+  // Payment-gated links count a "use" only once payment completes (in the Stripe
+  // webhook), never on page load — otherwise every visitor would burn a use.
+  if (!maxUsesReached && !link.payment_gate) {
     await supabase
       .from("private_booking_links")
       .update({ use_count: (link.use_count || 0) + 1 })
@@ -623,9 +626,11 @@ export default async function PrivateLinkPage({
     const venue = [link.event_venue, link.event_city].filter(Boolean).join(" · ");
     const ctaUrl = safeUrl(link.external_url as string | null);
     const eventCta = ctaUrl ? (
-      (link.lead_gate as boolean)
-        ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
-        : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
+      (link.payment_gate as boolean)
+        ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Get Tickets" />
+        : (link.lead_gate as boolean)
+          ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
+          : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
     ) : null;
     const eventMeta = (eventDateStr || venue) ? (
       <div style={{ marginBottom: 16 }}>
@@ -688,16 +693,18 @@ export default async function PrivateLinkPage({
   // ─── DOWNLOAD (default) ───────────────────────────────────────────────────────
   const ctaUrl = safeUrl(link.external_url as string | null);
   const downloadCta = ctaUrl ? (
-    (link.lead_gate as boolean)
-      ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
-      : <DownloadCtaButton
-          href={ctaUrl}
-          accent={accent}
-          profileSlug={profile.slug as string}
-          profileId={profile.id as string}
-          linkSlug={linkSlug}
-          label="Download"
-        />
+    (link.payment_gate as boolean)
+      ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Download" />
+      : (link.lead_gate as boolean)
+        ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
+        : <DownloadCtaButton
+            href={ctaUrl}
+            accent={accent}
+            profileSlug={profile.slug as string}
+            profileId={profile.id as string}
+            linkSlug={linkSlug}
+            label="Download"
+          />
   ) : null;
 
   return (
