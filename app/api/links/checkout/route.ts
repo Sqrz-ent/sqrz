@@ -3,6 +3,10 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
+  // Mirrors app/api/instant-booking/route.ts: live secret key + the live
+  // stripe_connect_id column. (instant-booking has no live/test switching — it is
+  // live-only — so there is nothing else to mirror.) The destination account in
+  // transfer_data must therefore be a LIVE, fully-onboarded Connect account.
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,34 +15,55 @@ export async function POST(req: NextRequest) {
 
   const { link_id, amount, currency } = await req.json();
   if (!link_id) {
+    console.error("[links/checkout] missing link_id in request body");
     return NextResponse.json({ error: "Missing link_id" }, { status: 400 });
   }
 
   // ── 1. Fetch the link (service role) + verify it is payment-gated ─────────
-  const { data: link } = await supabase
+  const { data: link, error: linkError } = await supabase
     .from("private_booking_links")
     .select("id, payment_gate, price, currency, link_slug, title, profile_id")
     .eq("id", link_id)
     .single();
 
-  if (!link || link.payment_gate !== true) {
+  if (linkError || !link) {
+    console.error("[links/checkout] link not found:", { link_id, linkError });
+    return NextResponse.json({ error: "Link not found" }, { status: 400 });
+  }
+  if (link.payment_gate !== true) {
+    console.error("[links/checkout] link is not payment-gated:", { link_id, payment_gate: link.payment_gate });
     return NextResponse.json({ error: "Link is not payment-gated" }, { status: 400 });
   }
 
-  // ── 2. Fetch the owner's Stripe Connect account ───────────────────────────
-  const { data: ownerProfile } = await supabase
+  // ── 2. Fetch the owner's Stripe Connect account (service role) ────────────
+  const { data: ownerProfile, error: profileError } = await supabase
     .from("profiles")
-    .select("stripe_connect_id, slug")
+    .select("stripe_connect_id, stripe_connect_status, slug")
     .eq("id", link.profile_id)
     .single();
 
   const connectId = (ownerProfile?.stripe_connect_id as string | null) ?? null;
-  if (!connectId) {
+  if (profileError || !connectId) {
+    console.error("[links/checkout] no stripe_connect_id for owner:", {
+      profile_id: link.profile_id,
+      profileError,
+      connectId,
+      stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
+    });
     return NextResponse.json(
       { error: "This creator can't accept payments yet." },
       { status: 400 }
     );
   }
+
+  // The connect account must be live + onboarded for a destination charge to work.
+  // A "pending" account has no transfers capability and Stripe will reject the
+  // session — log it so that case is obvious in the logs.
+  console.log("[links/checkout] using connect account:", {
+    connectId,
+    stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
+    mode: "live",
+  });
 
   // ── 3. Resolve the current page URL for success/cancel redirects ──────────
   const referer = req.headers.get("referer") || "";
@@ -76,19 +101,34 @@ export async function POST(req: NextRequest) {
       };
 
   // ── 5. Create the Stripe Checkout Session (destination charge) ────────────
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    line_items: [{ quantity: 1, price_data: priceData }],
-    payment_intent_data: {
-      transfer_data: { destination: connectId },
-    },
-    metadata: {
-      link_id: link.id as string,
-      type: "link_payment",
-    },
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-  });
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [{ quantity: 1, price_data: priceData }],
+      payment_intent_data: {
+        transfer_data: { destination: connectId },
+      },
+      metadata: {
+        link_id: link.id as string,
+        type: "link_payment",
+      },
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // Surfaces the exact Stripe reason in the server logs (e.g. destination account
+    // missing the transfers capability, or a test/live object-mode mismatch).
+    console.error("[links/checkout] stripe session create failed:", {
+      message: (err as Error)?.message,
+      connectId,
+      stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
+      err,
+    });
+    return NextResponse.json(
+      { error: (err as Error)?.message ?? "Could not start checkout." },
+      { status: 500 }
+    );
+  }
 }
