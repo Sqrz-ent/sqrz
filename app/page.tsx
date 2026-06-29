@@ -30,7 +30,6 @@ import { resolveProfileSlug } from "@/lib/profile-resolver";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
-import MusoWidget from "@/components/MusoWidget";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
@@ -485,7 +484,6 @@ const ticket = {
     hasImageGallery ||
     hasVideos ||
     hasPhotos ||
-    profile.muso?.profile_url ||
     hasCalendarContent
   );
 
@@ -808,13 +806,6 @@ const ticket = {
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Watch" title="Video" />
             <YouTubeGallery videos={profile.profile_videos} />
-          </section>
-        )}
-
-        {profile.muso?.profile_url && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Credits" title="Muso.ai" />
-            <MusoWidget profile={profile.muso} />
           </section>
         )}
 
