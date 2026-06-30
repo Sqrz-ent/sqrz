@@ -34,6 +34,7 @@ import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
+import ProfileLeadCollector from "@/components/ProfileLeadCollector";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
@@ -819,6 +820,12 @@ const ticket = {
             />
           </section>
         )}
+
+        {/* Soft email collector — last content block, before the footer */}
+        <section style={sectionShellStyle}>
+          <ProfileLeadCollector profileId={profile.id as string} />
+        </section>
+
       {/* Powered by SQRZ — subtle footer */}
       <div style={{
         textAlign: "center",
