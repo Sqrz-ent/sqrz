@@ -450,7 +450,7 @@ const ticket = {
     ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url})`
     : getProfileGradient(profile.slug || "");
 
-  const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
+  const displayName = (profile.brand_name || profile.name || profile.slug) as string;
 
   const initials = displayName
     .split(" ")

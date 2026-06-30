@@ -11,7 +11,6 @@ import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
-import LeadGateCta from "@/components/LeadGateCta";
 import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import { normalizeImageUrl } from "@/lib/image-url";
@@ -259,7 +258,6 @@ function ContentSection({
   displayName: string | null;
   accent: string;
 }) {
-  const hasScrollContent = !!(videoId || description);
   return (
     <div style={{ width: "100%", maxWidth: 600, margin: "0 auto", padding: "0 24px", boxSizing: "border-box" }}>
 
@@ -317,9 +315,6 @@ function ContentSection({
 
       {/* Service terms */}
       {extra && <div style={{ marginTop: 16 }}>{extra}</div>}
-
-      {/* Second CTA — only when there's content between the two */}
-      {hasScrollContent && cta && <div style={{ marginTop: 40 }}>{cta}</div>}
 
       {/* View full profile — outlined, full width */}
       <a
@@ -394,7 +389,6 @@ export async function generateMetadata({
   const displayName = (
     profile.brand_name ||
     profile.name ||
-    [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
     profile.slug
   ) as string;
 
@@ -494,7 +488,7 @@ export default async function PrivateLinkPage({
   const city = decodeURIComponent(headersList.get("x-vercel-ip-city") ?? "") || null;
   const referrer = headersList.get("referer") ?? null;
 
-  const displayName = (profile.brand_name || profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(" ") || profile.slug) as string;
+  const displayName = (profile.brand_name || profile.name || profile.slug) as string;
 
   const accent = TEMPLATE_ACCENTS[profile.template_id as string ?? ""] ?? DEFAULT_ACCENT;
   const hasRealAvatar =
@@ -628,9 +622,7 @@ export default async function PrivateLinkPage({
     const eventCta = ctaUrl ? (
       (link.payment_gate as boolean)
         ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Get Tickets" />
-        : (link.lead_gate as boolean)
-          ? <LeadGateCta href={ctaUrl} accent={accent} label="Get Tickets" linkId={link.id as string} />
-          : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
+        : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
     ) : null;
     const eventMeta = (eventDateStr || venue) ? (
       <div style={{ marginBottom: 16 }}>
@@ -695,16 +687,14 @@ export default async function PrivateLinkPage({
   const downloadCta = ctaUrl ? (
     (link.payment_gate as boolean)
       ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Download" />
-      : (link.lead_gate as boolean)
-        ? <LeadGateCta href={ctaUrl} accent={accent} label="Download" linkId={link.id as string} />
-        : <DownloadCtaButton
-            href={ctaUrl}
-            accent={accent}
-            profileSlug={profile.slug as string}
-            profileId={profile.id as string}
-            linkSlug={linkSlug}
-            label="Download"
-          />
+      : <DownloadCtaButton
+          href={ctaUrl}
+          accent={accent}
+          profileSlug={profile.slug as string}
+          profileId={profile.id as string}
+          linkSlug={linkSlug}
+          label="Download"
+        />
   ) : null;
 
   return (

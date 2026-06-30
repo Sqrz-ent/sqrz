@@ -428,29 +428,6 @@ export default function ProfileInquiryBubble({
       const channel = await ensureConnectedChannel(activeSession);
       channel.stopTyping().catch(() => {});
       await channel.sendMessage({ text });
-      try {
-        const notifyResponse = await fetch("/api/inquiries/notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            threadId: activeSession.thread.id,
-            messageText: text,
-          }),
-          keepalive: true,
-        });
-
-        if (!notifyResponse.ok) {
-          const notifyPayload = await notifyResponse.json().catch(() => null);
-          console.error("[ProfileInquiryBubble] notify failed", notifyPayload ?? notifyResponse.status);
-        } else {
-          const notifyPayload = await notifyResponse.json().catch(() => null);
-          if (notifyPayload && "sent" in notifyPayload && Number((notifyPayload as { sent?: number }).sent ?? 0) === 0) {
-            console.warn("[ProfileInquiryBubble] notify sent 0 pushes", notifyPayload);
-          }
-        }
-      } catch (notifyError) {
-        console.error("[ProfileInquiryBubble] notify request failed", notifyError);
-      }
       setMessages(mapMessages(channel.state.messages));
       setDraft("");
       setOpen(true);

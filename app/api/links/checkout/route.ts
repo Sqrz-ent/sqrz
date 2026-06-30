@@ -43,25 +43,28 @@ export async function POST(req: NextRequest) {
     .single();
 
   const connectId = (ownerProfile?.stripe_connect_id as string | null) ?? null;
-  if (profileError || !connectId) {
-    console.error("[links/checkout] no stripe_connect_id for owner:", {
+  const connectStatus = (ownerProfile?.stripe_connect_status as string | null) ?? null;
+
+  // A destination charge needs a live, fully-onboarded Connect account. Require both
+  // an account id and an 'active' status — a missing id or a non-active status
+  // (e.g. 'pending') has no transfers capability, so Stripe would reject the session.
+  // Block it here with a clear message instead of letting Stripe throw a generic error.
+  if (profileError || !connectId || connectStatus !== "active") {
+    console.error("[links/checkout] connect account not ready:", {
       profile_id: link.profile_id,
       profileError,
       connectId,
-      stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
+      stripe_connect_status: connectStatus,
     });
     return NextResponse.json(
-      { error: "This creator can't accept payments yet." },
+      { error: "Payment not available" },
       { status: 400 }
     );
   }
 
-  // The connect account must be live + onboarded for a destination charge to work.
-  // A "pending" account has no transfers capability and Stripe will reject the
-  // session — log it so that case is obvious in the logs.
   console.log("[links/checkout] using connect account:", {
     connectId,
-    stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
+    stripe_connect_status: connectStatus,
     mode: "live",
   });
 
