@@ -358,13 +358,13 @@ export default async function HomePage({
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
-    .select("link_slug, title, page_type")
+    .select("link_slug, title, page_type, external_url, external_url_label")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string; page_type: string }[];
+  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string; page_type: string; external_url: string | null; external_url_label: string | null }[];
 
   // Fetch gig history — only when profile.show_gig_history is true
   let bookingEvents: { title: string; start: string; end?: string }[] = [];
@@ -688,10 +688,17 @@ const ticket = {
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
             const pl = privateLinks[0];
-            const icon = pl.page_type === "book" ? "📅" : pl.page_type === "event" ? "🎤" : "⬇";
+            const isExternal = pl.page_type === "external";
+            // External links go straight to their URL (no intermediate page);
+            // internal links point at the hosted page at /{link_slug}.
+            const href = isExternal && pl.external_url
+              ? pl.external_url
+              : `https://${profile.slug}.sqrz.com/${pl.link_slug}`;
+            const label = (isExternal ? (pl.external_url_label || pl.title) : pl.title);
+            const icon = isExternal ? "🔗" : "📄";
             return (
               <a
-                href={`https://${profile.slug}.sqrz.com/${pl.link_slug}`}
+                href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -713,7 +720,7 @@ const ticket = {
                   boxSizing: "border-box",
                 }}
               >
-                {icon} {pl.title}
+                {icon} {label}
               </a>
             );
           })()}

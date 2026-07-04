@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ViewTracker from "@/components/ViewTracker";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
@@ -496,9 +496,15 @@ export default async function PrivateLinkPage({
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
     !String(profile.avatar_url).includes("placeholder.");
   const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
-  const pageType = (link.page_type as string) ?? "download";
+  const pageType = (link.page_type as string) ?? "internal";
   const coverImageSrc = normalizeImageUrl(link.cover_image_url as string | null);
   const videoId = getYouTubeId(link.video_url as string | null);
+
+  // External links have no hosted page — send visitors straight to the URL.
+  if (pageType === "external") {
+    const dest = safeUrl(link.external_url as string | null);
+    if (dest) redirect(dest);
+  }
 
   const legalFooterProps = {
     privacyHref: `/${profile.slug}/privacy`,
@@ -533,8 +539,11 @@ export default async function PrivateLinkPage({
 
   const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
 
-  // ─── BOOK ────────────────────────────────────────────────────────────────────
-  if (pageType === "book") {
+  // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
+  // Every non-external link renders a hosted page with a book/contact CTA. Legacy
+  // book/download/event rows are all 'internal' now; prefill_service (if any) just
+  // pre-fills the booking form — it is never required and never gates submission.
+  if (pageType !== "external") {
     const { data: servicesData } = await supabase
       .from("profile_services")
       .select("id, title, description, price_min, price_max, price_label, currency, booking_type, instant_price, instant_currency, instant_tax_rate")
@@ -547,7 +556,19 @@ export default async function PrivateLinkPage({
       ? services.find((s) => s.title === prefillServiceTitle)
       : null;
 
-    const bookCta = (
+    // Payment-gated pages with a destination URL use pay-to-unlock; otherwise the
+    // standard book/contact button — which always creates a booking record on
+    // submit, regardless of which optional fields are filled in.
+    const gatedUrl = safeUrl(link.external_url as string | null);
+    const bookCta = (link.payment_gate as boolean) && gatedUrl ? (
+      <PaymentGateCta
+        linkId={link.id as string}
+        price={link.price as number | null}
+        currency={link.currency as string | null}
+        externalUrl={gatedUrl}
+        label="Unlock"
+      />
+    ) : (
       <BookLinkButton
         username={username}
         services={services}
@@ -614,75 +635,9 @@ export default async function PrivateLinkPage({
     );
   }
 
-  // ─── EVENT ───────────────────────────────────────────────────────────────────
-  if (pageType === "event") {
-    const eventDateStr = formatEventDate(link.event_date as string | null);
-    const venue = [link.event_venue, link.event_city].filter(Boolean).join(" · ");
-    const ctaUrl = safeUrl(link.external_url as string | null);
-    const eventCta = ctaUrl ? (
-      (link.payment_gate as boolean)
-        ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Get Tickets" />
-        : <CtaButton href={ctaUrl} accent={accent}>Get Tickets</CtaButton>
-    ) : null;
-    const eventMeta = (eventDateStr || venue) ? (
-      <div style={{ marginBottom: 16 }}>
-        {eventDateStr && <div style={{ fontSize: 15, fontWeight: 600, color: accent, marginBottom: 4 }}>{eventDateStr}</div>}
-        {venue && <div style={{ fontSize: 14, color: "rgba(255,255,255,0.6)" }}>📍 {venue}</div>}
-      </div>
-    ) : null;
-
-    return (
-      <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Event"} />
-        <ContentSection
-          title={link.title as string | null}
-          meta={eventMeta}
-          cta={eventCta}
-          videoId={videoId}
-          description={link.description as string | null}
-          username={username}
-          profileAvatarSrc={profileAvatarSrc}
-          displayName={displayName}
-          accent={accent}
-        />
-        <LegalFooter {...legalFooterProps} />
-        <AnalyticsGate
-          googleAnalyticsId={profile.pixel_google as string | null}
-          facebookPixelId={profile.pixel_facebook as string | null}
-          hubspotPortalId={profile.hubspot_portal_id as string | null}
-          hubspotEnabled={!!profile.hubspot_portal_id}
-          linkedinPartnerId={profile.pixel_linkedin as string | null}
-        />
-        <TrackingGate
-          profileSlug={profile.slug as string | null}
-          profileId={profile.id as string | null}
-          userTier={profile.plan_id as number | null}
-          hasCustomPixels={hasCustomPixels}
-        />
-        <CookieBanner templateId={profile.template_id as string} />
-        <ProfileInquiryBubble
-          profileId={profile.id as string}
-          profileSlug={profile.slug as string | null}
-          ownerName={displayName}
-          enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
-        />
-        <ViewTracker
-          profileId={profile.id as string}
-          slug={linkSlug}
-          country={country}
-          city={city}
-          referrer={referrer}
-          utmSource={sp.utm_source ?? null}
-          utmMedium={sp.utm_medium ?? null}
-          utmCampaign={sp.utm_campaign ?? null}
-          utmContent={sp.utm_content ?? null}
-          linkId={link.id as string}
-        />
-      </div>
-    );
-  }
-
-  // ─── DOWNLOAD (default) ───────────────────────────────────────────────────────
+  // ─── EXTERNAL FALLBACK ───────────────────────────────────────────────────────
+  // Only reached for an external link whose URL was missing/invalid (the redirect
+  // above didn't fire). Render a minimal page rather than 404.
   const ctaUrl = safeUrl(link.external_url as string | null);
   const downloadCta = ctaUrl ? (
     (link.payment_gate as boolean)
