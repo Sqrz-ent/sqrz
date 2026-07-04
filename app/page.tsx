@@ -692,7 +692,9 @@ const ticket = {
             // External links go straight to their URL (no intermediate page);
             // internal links point at the hosted page at /{link_slug}.
             const href = isExternal && pl.external_url
-              ? pl.external_url
+              // Defensive: prepend https:// for already-saved bare-domain URLs so
+              // they resolve as absolute links, not relative /{slug} paths.
+              ? (/^https?:\/\//i.test(pl.external_url) ? pl.external_url : `https://${pl.external_url}`)
               : `https://${profile.slug}.sqrz.com/${pl.link_slug}`;
             const label = (isExternal ? (pl.external_url_label || pl.title) : pl.title);
             const icon = isExternal ? "🔗" : "📄";
