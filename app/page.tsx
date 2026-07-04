@@ -364,7 +364,7 @@ export default async function HomePage({
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { link_slug: string; title: string; page_type: string; external_url: string | null; external_url_label: string | null }[];
+  const privateLinks = (privateLinksData ?? []) as { link_slug: string | null; title: string; page_type: string; external_url: string | null; external_url_label: string | null }[];
 
   // Fetch gig history — only when profile.show_gig_history is true
   let bookingEvents: { title: string; start: string; end?: string }[] = [];
