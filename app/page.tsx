@@ -37,6 +37,7 @@ import LegalFooter from "@/components/LegalFooter";
 import ProfileLeadCollector from "@/components/ProfileLeadCollector";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
+import HeroImage from "@/components/HeroImage";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
 import { normalizeImageUrl, toOgImageUrl } from "@/lib/image-url";
@@ -447,9 +448,9 @@ const ticket = {
     profile.avatar_url.startsWith("https") &&
     !profile.avatar_url.includes("placeholder.sqrz");
 
-  const heroBackground = hasRealAvatar
-    ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85)), url(${profile.avatar_url})`
-    : getProfileGradient(profile.slug || "");
+  // Gradient background is only used when there's no real avatar; a real avatar
+  // is rendered via <HeroImage> (img + transform) with a separate overlay.
+  const heroBackground = getProfileGradient(profile.slug || "");
 
   const displayName = (profile.brand_name || profile.name || profile.slug) as string;
 
@@ -488,20 +489,20 @@ const ticket = {
     hasCalendarContent
   );
 
-  // Focal point (normalized 0..1) set by the artist in the dashboard. Falls back
-  // to "50% 0%" (the previous "center top") when unset for existing profiles.
-  const focalX = profile.avatar_focal_x;
-  const focalY = profile.avatar_focal_y;
-  const heroPosition = (focalX != null && focalY != null)
-    ? `${Number(focalX) * 100}% ${Number(focalY) * 100}%`
-    : "50% 0%";
+  // Focal point (normalized 0..1) + zoom set by the artist in the dashboard.
+  // Fallback for profiles that never set a focal point: 0.5 / 0 (center-top,
+  // matching the previous "50% 0%"). Zoom defaults to 1 (exactly cover).
+  const heroFocalX = profile.avatar_focal_x != null ? Number(profile.avatar_focal_x) : 0.5;
+  const heroFocalY = profile.avatar_focal_y != null ? Number(profile.avatar_focal_y) : 0;
+  const heroZoom = profile.avatar_zoom != null ? Number(profile.avatar_zoom) : 1;
 
   const heroStyle: React.CSSProperties = {
     ...(hasAnyContent ? { height: 480 } : { minHeight: "100dvh", display: "flex", flexDirection: "column" }),
     position: "relative",
-    backgroundImage: heroBackground,
-    backgroundSize: "cover",
-    backgroundPosition: heroPosition,
+    overflow: "hidden",
+    ...(hasRealAvatar
+      ? {}
+      : { backgroundImage: heroBackground, backgroundSize: "cover", backgroundPosition: "center top" }),
     backgroundColor: "#1a1a1a",
   };
 
@@ -572,6 +573,27 @@ const ticket = {
 
       {/* 🖼️ Profile Hero */}
       <div style={heroStyle}>
+
+        {hasRealAvatar && (
+          <>
+            <HeroImage
+              src={profile.avatar_url as string}
+              focalX={heroFocalX}
+              focalY={heroFocalY}
+              zoom={heroZoom}
+            />
+            {/* Legibility overlay (was baked into the old background gradient) */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.85))",
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        )}
 
         <div
           style={{
