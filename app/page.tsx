@@ -488,12 +488,20 @@ const ticket = {
     hasCalendarContent
   );
 
+  // Focal point (normalized 0..1) set by the artist in the dashboard. Falls back
+  // to "50% 0%" (the previous "center top") when unset for existing profiles.
+  const focalX = profile.avatar_focal_x;
+  const focalY = profile.avatar_focal_y;
+  const heroPosition = (focalX != null && focalY != null)
+    ? `${Number(focalX) * 100}% ${Number(focalY) * 100}%`
+    : "50% 0%";
+
   const heroStyle: React.CSSProperties = {
     ...(hasAnyContent ? { height: 480 } : { minHeight: "100dvh", display: "flex", flexDirection: "column" }),
     position: "relative",
     backgroundImage: heroBackground,
     backgroundSize: "cover",
-    backgroundPosition: "center top",
+    backgroundPosition: heroPosition,
     backgroundColor: "#1a1a1a",
   };
 
