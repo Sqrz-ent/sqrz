@@ -14,6 +14,7 @@ export default function BookLinkButton({
   prefilledTitle,
   prefilledDescription,
   profileName = null,
+  label,
 }: {
   username: string;
   services: Service[];
@@ -24,6 +25,7 @@ export default function BookLinkButton({
   prefilledTitle?: string | null;
   prefilledDescription?: string | null;
   profileName?: string | null;
+  label?: string | null;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -51,7 +53,7 @@ export default function BookLinkButton({
           boxSizing: "border-box",
         }}
       >
-        Book
+        {label || "Book"}
       </button>
       <BookingModal
         open={open}

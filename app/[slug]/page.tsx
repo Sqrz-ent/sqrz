@@ -462,7 +462,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url, payment_gate, price, currency")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url, payment_gate, price, currency, cta_label")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -556,9 +556,11 @@ export default async function PrivateLinkPage({
       ? services.find((s) => s.title === prefillServiceTitle)
       : null;
 
-    // Payment-gated pages with a destination URL use pay-to-unlock; otherwise the
-    // standard book/contact button — which always creates a booking record on
-    // submit, regardless of which optional fields are filled in.
+    // CTA routing:
+    // - external_url + payment_gate → pay-to-unlock then redirect
+    // - external_url + no payment gate → direct redirect button
+    // - otherwise → booking form (optionally prefilled with service)
+    const ctaLabel = (link.cta_label as string | null) || null;
     const gatedUrl = safeUrl(link.external_url as string | null);
     const bookCta = (link.payment_gate as boolean) && gatedUrl ? (
       <PaymentGateCta
@@ -566,7 +568,16 @@ export default async function PrivateLinkPage({
         price={link.price as number | null}
         currency={link.currency as string | null}
         externalUrl={gatedUrl}
-        label="Unlock"
+        label={ctaLabel || "Unlock"}
+      />
+    ) : gatedUrl ? (
+      <DownloadCtaButton
+        href={gatedUrl}
+        accent={accent}
+        profileSlug={username}
+        profileId={profile.id as string}
+        linkSlug={linkSlug}
+        label={ctaLabel || "Open"}
       />
     ) : (
       <BookLinkButton
@@ -579,6 +590,7 @@ export default async function PrivateLinkPage({
         prefilledTitle={link.title as string | null}
         prefilledDescription={link.description as string | null}
         profileName={displayName}
+        label={ctaLabel}
       />
     );
 
