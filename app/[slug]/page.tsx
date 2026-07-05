@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabase-server";
 import ViewTracker from "@/components/ViewTracker";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import BookLinkButton from "@/components/BookLinkButton";
@@ -544,7 +545,9 @@ export default async function PrivateLinkPage({
   // book/download/event rows are all 'internal' now; prefill_service (if any) just
   // pre-fills the booking form — it is never required and never gates submission.
   if (pageType !== "external") {
-    const { data: servicesData } = await supabase
+    // profile_services_public_read RLS gates on is_published; use service role
+    // so services render regardless of publish state (same as dashboard loader).
+    const { data: servicesData } = await supabaseServer
       .from("profile_services")
       .select("id, title, description, price_min, price_max, price_label, currency, booking_type, instant_price, instant_currency, instant_tax_rate")
       .eq("profile_id", profile.id)
