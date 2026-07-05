@@ -359,13 +359,13 @@ export default async function HomePage({
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
-    .select("link_slug, title, page_type, external_url, external_url_label")
+    .select("link_slug, title, external_url, payment_gate, cta_label")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { link_slug: string | null; title: string; page_type: string; external_url: string | null; external_url_label: string | null }[];
+  const privateLinks = (privateLinksData ?? []) as { link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
 
   // Fetch gig history — only when profile.show_gig_history is true
   let bookingEvents: { title: string; start: string; end?: string }[] = [];
@@ -718,16 +718,14 @@ const ticket = {
           {/* Featured link pill */}
           {privateLinks[0] && (() => {
             const pl = privateLinks[0];
-            const isExternal = pl.page_type === "external";
-            // External links go straight to their URL (no intermediate page);
-            // internal links point at the hosted page at /{link_slug}.
-            const href = isExternal && pl.external_url
-              // Defensive: prepend https:// for already-saved bare-domain URLs so
-              // they resolve as absolute links, not relative /{slug} paths.
-              ? (/^https?:\/\//i.test(pl.external_url) ? pl.external_url : `https://${pl.external_url}`)
+            // Skip to destination directly only when: external_url set AND payment gate off.
+            // Payment gate (regardless of connect-to) always routes through the /{slug} page.
+            const skipToUrl = !pl.payment_gate && !!pl.external_url;
+            const href = skipToUrl
+              ? (/^https?:\/\//i.test(pl.external_url!) ? pl.external_url! : `https://${pl.external_url}`)
               : `https://${profile.slug}.sqrz.com/${pl.link_slug}`;
-            const label = (isExternal ? (pl.external_url_label || pl.title) : pl.title);
-            const icon = isExternal ? "🔗" : "📄";
+            const label = pl.cta_label || pl.title;
+            const icon = skipToUrl ? "🔗" : "📄";
             return (
               <a
                 href={href}
