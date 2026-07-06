@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { track } from "@/lib/tracking/track";
 
 type Props = {
   linkId: string;
@@ -8,6 +9,9 @@ type Props = {
   currency: string | null;
   externalUrl: string;
   label: string;
+  profileId?: string | null;
+  profileSlug?: string | null;
+  linkSlug?: string | null;
 };
 
 const ACCENT = "#F5A623";
@@ -17,7 +21,7 @@ function currencySymbol(currency: string | null): string {
   return c === "EUR" ? "€" : c === "GBP" ? "£" : "$";
 }
 
-export default function PaymentGateCta({ linkId, price, currency, externalUrl, label }: Props) {
+export default function PaymentGateCta({ linkId, price, currency, externalUrl, label, profileId, profileSlug, linkSlug }: Props) {
   const [paid, setPaid] = useState(false);
   const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -26,7 +30,16 @@ export default function PaymentGateCta({ linkId, price, currency, externalUrl, l
   // Reveal the link after returning from a successful Stripe payment.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("paid") === "true") setPaid(true);
+    if (params.get("paid") === "true") {
+      setPaid(true);
+      track("payment_gate_unlocked", {
+        profile_slug: profileSlug ?? null,
+        profile_id: profileId ?? null,
+        link_id: linkId,
+        link_slug: linkSlug ?? null,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const sym = currencySymbol(currency);
@@ -35,6 +48,14 @@ export default function PaymentGateCta({ linkId, price, currency, externalUrl, l
   async function handlePay() {
     if (submitting) return;
     const numericAmount = hasFixedPrice ? price! : (parseFloat(amount) || 0);
+    track("payment_gate_clicked", {
+      profile_slug: profileSlug ?? null,
+      profile_id: profileId ?? null,
+      link_id: linkId,
+      link_slug: linkSlug ?? null,
+      amount: numericAmount,
+      currency: currency || "EUR",
+    });
     setSubmitting(true);
     setError(null);
     try {

@@ -38,6 +38,7 @@ import ProfileLeadCollector from "@/components/ProfileLeadCollector";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
+import HeroPill from "@/components/HeroPill";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
 import { normalizeImageUrl, toOgImageUrl } from "@/lib/image-url";
@@ -359,13 +360,13 @@ export default async function HomePage({
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
-    .select("link_slug, title, external_url, payment_gate, cta_label")
+    .select("id, link_slug, title, external_url, payment_gate, cta_label")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
+  const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
 
   // Fetch gig history — only when profile.show_gig_history is true
   let bookingEvents: { title: string; start: string; end?: string }[] = [];
@@ -727,31 +728,16 @@ const ticket = {
             const label = pl.cta_label || pl.title;
             const icon = skipToUrl ? "🔗" : "📄";
             return (
-              <a
+              <HeroPill
                 href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex",
-                  width: "auto",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "10px 16px",
-                  borderRadius: 999,
-                  border: `1px solid ${template.accent}66`,
-                  background: `${template.accent}14`,
-                  color: template.accent,
-                  textDecoration: "none",
-                  textAlign: "center",
-                  fontSize: 14,
-                  fontWeight: 600,
-                  marginTop: 20,
-                  marginBottom: 10,
-                  boxSizing: "border-box",
-                }}
-              >
-                {icon} {label}
-              </a>
+                label={label}
+                icon={icon}
+                accent={template.accent}
+                destination={skipToUrl ? "external" : "page"}
+                profileId={profile.id as string}
+                linkId={pl.id}
+                linkSlug={pl.link_slug}
+              />
             );
           })()}
           

@@ -18,7 +18,15 @@ export default function DownloadCtaButton({ href, accent, profileSlug, profileId
       target="_blank"
       rel="noopener noreferrer"
       onClick={() => {
-        track("download_clicked", { profile_slug: profileSlug, profile_id: profileId, link_slug: linkSlug });
+        // Consolidated with the hero pill: both represent "left to an external URL".
+        // destination:'external' distinguishes these from pill clicks that route to
+        // the hosted /{slug} page (destination:'page').
+        track("external_link_clicked", {
+          profile_slug: profileSlug,
+          profile_id: profileId,
+          link_slug: linkSlug,
+          destination: "external",
+        });
       }}
       style={{
         display: "block",

@@ -572,6 +572,9 @@ export default async function PrivateLinkPage({
         currency={link.currency as string | null}
         externalUrl={gatedUrl}
         label={ctaLabel || "Unlock"}
+        profileId={profile.id as string}
+        profileSlug={username}
+        linkSlug={linkSlug}
       />
     ) : gatedUrl ? (
       <DownloadCtaButton
@@ -656,7 +659,7 @@ export default async function PrivateLinkPage({
   const ctaUrl = safeUrl(link.external_url as string | null);
   const downloadCta = ctaUrl ? (
     (link.payment_gate as boolean)
-      ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Download" />
+      ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Download" profileId={profile.id as string} profileSlug={profile.slug as string} linkSlug={linkSlug} />
       : <DownloadCtaButton
           href={ctaUrl}
           accent={accent}
