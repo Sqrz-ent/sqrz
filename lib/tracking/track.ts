@@ -24,6 +24,11 @@ export async function track(
 
     await fetch("/api/track", {
       method: "POST",
+      // keepalive lets the request survive the page navigation that follows a
+      // click-then-navigate event (e.g. the hero pill / external CTAs opening a
+      // link). Without it the browser tears down the in-flight fetch before it
+      // flushes, so those events silently never land. Payload is tiny (<64KB).
+      keepalive: true,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         event_type: eventType,
