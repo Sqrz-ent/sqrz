@@ -78,19 +78,18 @@ export async function track(
   }
 }
 
-// Consent-free, identifier-free page view. Sends NO session_id and never
-// touches sessionStorage/cookies, so no client identifier is stored — this is
-// an aggregate first-party count that does not require analytics consent under
-// ePrivacy/GDPR. Used to recover ad traffic (esp. Meta in-app browser) that
-// bounces before ever accepting the cookie banner. Fires at most once per load;
-// when consent IS present the identified track() runs instead, so there is no
-// double count.
-export async function trackPageViewCookieless(
+// Generic consent-free, identifier-free event. Sends NO session_id and never
+// touches sessionStorage/cookies, so no client identifier is stored — an
+// aggregate first-party signal that does not require analytics consent under
+// ePrivacy/GDPR. Shares getAttribution() so every cookieless event (page_view,
+// page_exit, widget_*, cta_click) carries identical ad_source/fbclid/UTM tags.
+export async function trackCookieless(
+  eventType: string,
   properties?: Record<string, unknown>
 ): Promise<void> {
   try {
     await post({
-      event_type: "page_view",
+      event_type: eventType,
       session_id: null,
       ...getAttribution(),
       event_properties: { ...(properties ?? {}), cookieless: true },
@@ -98,6 +97,16 @@ export async function trackPageViewCookieless(
   } catch {
     // silent failure
   }
+}
+
+// Consent-free, identifier-free page view. Used to recover ad traffic (esp.
+// Meta in-app browser) that bounces before ever accepting the cookie banner.
+// Fires at most once per load; when consent IS present the identified track()
+// runs instead, so there is no double count.
+export async function trackPageViewCookieless(
+  properties?: Record<string, unknown>
+): Promise<void> {
+  await trackCookieless("page_view", properties);
 }
 
 // Consent-free, identifier-free page-exit engagement ping. Same rules as the
