@@ -39,6 +39,8 @@ import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import HeroPill from "@/components/HeroPill";
+import MusicEmbeds from "@/components/MusicEmbeds";
+import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
 import { normalizeImageUrl, toOgImageUrl } from "@/lib/image-url";
@@ -565,6 +567,7 @@ const ticket = {
       userTier={profile.plan_id as number | null}
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id)}
     />
+    <LinkClickTracker />
 
 {hasActiveServices && (
   <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />
@@ -796,26 +799,11 @@ const ticket = {
         {hasMusicEmbeds && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Listen" title="Music" />
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              {spotifyEmbed && (
-                <iframe src={spotifyEmbed} width="100%" height="152" />
-              )}
-
-              {soundcloudEmbed && (
-                <iframe src={soundcloudEmbed} width="100%" height="300" />
-              )}
-
-              {mixcloudEmbedUrl && (
-                <iframe
-                  src={mixcloudEmbedUrl}
-                  width="100%"
-                  height="120"
-                  frameBorder="0"
-                  allow="autoplay"
-                  style={{ borderRadius: 8 }}
-                />
-              )}
-            </div>
+            <MusicEmbeds
+              spotifyEmbed={spotifyEmbed}
+              soundcloudEmbed={soundcloudEmbed}
+              mixcloudEmbedUrl={mixcloudEmbedUrl}
+            />
           </section>
         )}
 
