@@ -818,7 +818,7 @@ const ticket = {
         {hasVideos && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Watch" title="Video" />
-            <YouTubeGallery videos={profile.profile_videos} />
+            <YouTubeGallery videos={profile.profile_videos} profileId={profile.id as string | null} />
           </section>
         )}
 
