@@ -18,11 +18,12 @@ export async function POST(req: NextRequest) {
     has_custom_pixels,
     referrer,
     session_id,
-    visited_via: visited_via_body,
     utm_source,
     utm_medium,
     utm_campaign,
     utm_content,
+    fbclid,
+    gclid,
     event_properties,
   } = body;
 
@@ -34,10 +35,27 @@ export async function POST(req: NextRequest) {
   const user_agent = req.headers.get("user-agent") ?? null;
 
   const host = req.headers.get("host") ?? "";
-  const visited_via =
-    host.endsWith(".sqrz.com") || host === "sqrz.com"
-      ? "sqrz_domain"
-      : "custom_domain";
+
+  // visited_via — domain origin ONLY. Kept clean for domain billing/analytics:
+  // sqrz_domain = [slug].sqrz.com, custom_domain = the creator's own domain,
+  // null = unknown host.
+  const visited_via = !host
+    ? null
+    : host.endsWith(".sqrz.com") || host === "sqrz.com"
+    ? "sqrz_domain"
+    : "custom_domain";
+
+  // ad_source — ad attribution ONLY, independent of the domain axis. Meta's
+  // in-app browser (Facebook/Instagram WebView) frequently drops UTM params, so
+  // fbclid is the reliable signal — fall back to utm_source when absent. Stored
+  // in event_properties (JSONB) so it's independently queryable, no migration.
+  const utmSourceLc = (utm_source ?? "").toLowerCase();
+  const ad_source =
+    !!fbclid || ["facebook", "instagram", "meta", "fb", "ig"].includes(utmSourceLc)
+      ? "meta_ad"
+      : !!gclid || utmSourceLc === "google"
+      ? "google_ad"
+      : null;
 
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -65,13 +83,22 @@ export async function POST(req: NextRequest) {
     user_agent,
     country,
     session_id: session_id ?? null,
-    visited_via: visited_via ?? visited_via_body ?? null,
+    visited_via,
     utm_source: utm_source ?? null,
     utm_medium: utm_medium ?? null,
     utm_campaign: utm_campaign ?? null,
     utm_content: utm_content ?? null,
     boost_campaign_id,
-    event_properties: event_properties ?? {},
+    event_properties: {
+      ...(event_properties ?? {}),
+      ad_source,
+      // Raw campaign values mirrored into JSONB for future campaign breakdowns.
+      utm_source: utm_source ?? null,
+      utm_medium: utm_medium ?? null,
+      utm_campaign: utm_campaign ?? null,
+      ...(fbclid ? { fbclid } : {}),
+      ...(gclid ? { gclid } : {}),
+    },
   });
 
   if (error) {
