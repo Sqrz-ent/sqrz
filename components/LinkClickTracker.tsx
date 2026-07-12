@@ -12,7 +12,7 @@ import { trackCookieless } from "@/lib/tracking/track";
 // Cookieless (no session_id, no consent dependency), so it also captures ad
 // traffic that never accepted the cookie banner. Anchors that already emit
 // their own tracking can opt out with data-cta-tracked.
-export default function LinkClickTracker() {
+export default function LinkClickTracker({ profileId }: { profileId: string | null }) {
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       const target = e.target as Element | null;
@@ -34,12 +34,13 @@ export default function LinkClickTracker() {
       trackCookieless("cta_click", {
         link_url: anchor.href, // resolved absolute URL
         link_label: label.slice(0, 100),
+        profile_id: profileId,
       });
     };
 
     document.addEventListener("click", onClick, { capture: true });
     return () => document.removeEventListener("click", onClick, { capture: true });
-  }, []);
+  }, [profileId]);
 
   return null;
 }

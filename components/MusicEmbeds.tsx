@@ -7,6 +7,7 @@ type Props = {
   spotifyEmbed: string | null;
   soundcloudEmbed: string | null;
   mixcloudEmbedUrl: string | null;
+  profileId: string | null;
 };
 
 const SC_API_SRC = "https://w.soundcloud.com/player/api.js";
@@ -40,6 +41,7 @@ export default function MusicEmbeds({
   spotifyEmbed,
   soundcloudEmbed,
   mixcloudEmbedUrl,
+  profileId,
 }: Props) {
   const spotifyRef = useRef<HTMLIFrameElement>(null);
   const soundcloudRef = useRef<HTMLIFrameElement>(null);
@@ -59,7 +61,7 @@ export default function MusicEmbeds({
           const type = (entry.target as HTMLElement).dataset.widgetType;
           if (!type || seen.has(type)) continue;
           seen.add(type);
-          trackCookieless("widget_visible", { widget_type: type });
+          trackCookieless("widget_visible", { widget_type: type, profile_id: profileId });
           observer.unobserve(entry.target);
         }
       },
@@ -70,7 +72,7 @@ export default function MusicEmbeds({
       if (el) observer.observe(el);
     }
     return () => observer.disconnect();
-  }, []);
+  }, [profileId]);
 
   // ── SoundCloud Widget API: play / pause / finish / progress milestones ─────
   useEffect(() => {
@@ -88,13 +90,13 @@ export default function MusicEmbeds({
         const firedMilestones = new Set<number>();
 
         widget.bind(SC.Widget.Events.PLAY, () => {
-          trackCookieless("widget_play", { widget_type: "soundcloud" });
+          trackCookieless("widget_play", { widget_type: "soundcloud", profile_id: profileId });
         });
         widget.bind(SC.Widget.Events.PAUSE, () => {
-          trackCookieless("widget_pause", { widget_type: "soundcloud" });
+          trackCookieless("widget_pause", { widget_type: "soundcloud", profile_id: profileId });
         });
         widget.bind(SC.Widget.Events.FINISH, () => {
-          trackCookieless("widget_finish", { widget_type: "soundcloud" });
+          trackCookieless("widget_finish", { widget_type: "soundcloud", profile_id: profileId });
         });
         widget.bind(
           SC.Widget.Events.PLAY_PROGRESS,
@@ -106,6 +108,7 @@ export default function MusicEmbeds({
                 trackCookieless("widget_progress", {
                   widget_type: "soundcloud",
                   milestone_pct: milestone,
+                  profile_id: profileId,
                 });
               }
             }
@@ -119,7 +122,7 @@ export default function MusicEmbeds({
     return () => {
       cancelled = true;
     };
-  }, [soundcloudEmbed]);
+  }, [soundcloudEmbed, profileId]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
