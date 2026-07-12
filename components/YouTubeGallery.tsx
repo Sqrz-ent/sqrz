@@ -62,6 +62,7 @@ export default function YouTubeGallery({
   const [consented, setConsented] = useState(false);
 
   const hostRef = useRef<HTMLDivElement>(null);
+  const playerBoxRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef = useRef<any>(null);
   const firedRef = useRef<Set<number>>(new Set());
@@ -70,6 +71,29 @@ export default function YouTubeGallery({
   useEffect(() => {
     setConsented(readConsent());
   }, []);
+
+  // ── Visibility tracking (same as Spotify/SoundCloud in MusicEmbeds) ────────
+  // Observe the always-rendered player box (works pre-consent too) and fire
+  // widget_visible once at 50% intersection, then unobserve.
+  useEffect(() => {
+    const el = playerBoxRef.current;
+    if (!el) return;
+    let fired = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && !fired) {
+            fired = true;
+            trackCookieless("widget_visible", { widget_type: "youtube", profile_id: profileId });
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.5 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [profileId]);
 
   const activeVideo = videos[activeIndex];
   const activeEmbed = getYouTubeEmbedUrl(activeVideo.url);
@@ -182,6 +206,7 @@ export default function YouTubeGallery({
     <div>
       {/* ▶️ PLAYER */}
       <div
+        ref={playerBoxRef}
         style={{
           borderRadius: 16,
           overflow: "hidden",
