@@ -41,7 +41,7 @@ export default function HeroPill({
           destination,
         });
         // Cookieless CTA click so ad traffic (no consent) is still captured.
-        trackCookieless("cta_click", { link_url: href, link_label: label });
+        trackCookieless("cta_click", { link_url: href, link_label: label, profile_id: profileId });
       }}
       style={{
         display: "inline-flex",

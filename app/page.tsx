@@ -567,7 +567,7 @@ const ticket = {
       userTier={profile.plan_id as number | null}
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id)}
     />
-    <LinkClickTracker />
+    <LinkClickTracker profileId={profile.id as string | null} />
 
 {hasActiveServices && (
   <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />
@@ -803,6 +803,7 @@ const ticket = {
               spotifyEmbed={spotifyEmbed}
               soundcloudEmbed={soundcloudEmbed}
               mixcloudEmbedUrl={mixcloudEmbedUrl}
+              profileId={profile.id as string | null}
             />
           </section>
         )}
