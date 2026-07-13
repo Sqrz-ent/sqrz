@@ -109,6 +109,27 @@ export async function trackPageViewCookieless(
   await trackCookieless("page_view", properties);
 }
 
+// Per-URL debounce for cta_click. Both the delegated LinkClickTracker and
+// HeroPill route through here, so this map is shared across every CTA source on
+// the page. Guards against bursts of duplicate clicks on the same link — e.g.
+// the synthetic/prefetch clicks the Meta in-app browser dispatches — that would
+// otherwise inflate "CTA click" (a conversion-intent signal) beyond real taps.
+const CTA_DEDUPE_MS = 1500;
+const lastCtaByUrl = new Map<string, number>();
+
+// Single entry point for cta_click. Scope it to intentional CTAs at the call
+// site; this function only handles the shared shape + dedupe.
+export async function trackCtaClick(
+  properties: { link_url?: string | null; link_label?: string | null; profile_id?: string | null }
+): Promise<void> {
+  const key = properties.link_url ?? properties.link_label ?? "";
+  const now = Date.now();
+  const last = lastCtaByUrl.get(key);
+  if (last != null && now - last < CTA_DEDUPE_MS) return; // duplicate within window
+  lastCtaByUrl.set(key, now);
+  await trackCookieless("cta_click", properties);
+}
+
 // Consent-free, identifier-free page-exit engagement ping. Same rules as the
 // page_view ping: NO session_id, no client storage. Carries time-on-page (from
 // the module-level pageLoadTime) and the max scroll depth reached, so we can see

@@ -1,6 +1,6 @@
 "use client";
 
-import { track, trackCookieless } from "@/lib/tracking/track";
+import { track, trackCtaClick } from "@/lib/tracking/track";
 
 type HeroPillProps = {
   href: string;
@@ -29,9 +29,6 @@ export default function HeroPill({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      // Already tracked here — tell the delegated LinkClickTracker to skip it so
-      // this CTA isn't counted twice.
-      data-cta-tracked="1"
       onClick={() => {
         // Rich, identified event (consent-gated).
         track("external_link_clicked", {
@@ -40,8 +37,10 @@ export default function HeroPill({
           link_slug: linkSlug,
           destination,
         });
-        // Cookieless CTA click so ad traffic (no consent) is still captured.
-        trackCookieless("cta_click", { link_url: href, link_label: label, profile_id: profileId });
+        // Cookieless CTA click (the featured booking/action link is a real CTA).
+        // Shared per-URL dedupe lives in trackCtaClick. The pill has no data-cta,
+        // so the delegated LinkClickTracker won't double-count it.
+        trackCtaClick({ link_url: href, link_label: label, profile_id: profileId });
       }}
       style={{
         display: "inline-flex",
