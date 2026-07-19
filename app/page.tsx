@@ -43,7 +43,7 @@ import MusicEmbeds from "@/components/MusicEmbeds";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
-import { normalizeImageUrl, toOgImageUrl } from "@/lib/image-url";
+import { toDisplayImageUrl, toOgImageUrl } from "@/lib/image-url";
 
 
 
@@ -429,7 +429,7 @@ export default async function HomePage({
     .eq("profile_id", profile.id as string)
     .order("sort_order", { ascending: true });
   const photoGallery = (photosData ?? [])
-    .map((p: { url: string }) => normalizeImageUrl(p.url))
+    .map((p: { url: string }) => toDisplayImageUrl(p.url, 1200))
     .filter((u): u is string => !!u);
 
   const activeServices = (profile.profile_services ?? []).filter(
@@ -581,7 +581,7 @@ const ticket = {
         {hasRealAvatar && (
           <>
             <HeroImage
-              src={profile.avatar_url as string}
+              src={toDisplayImageUrl(profile.avatar_url as string, 1600) ?? (profile.avatar_url as string)}
               focalX={heroFocalX}
               focalY={heroFocalY}
               zoom={heroZoom}
