@@ -14,7 +14,7 @@ import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
 import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
-import { normalizeImageUrl } from "@/lib/image-url";
+import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
 import type { Service } from "@/types/service";
 
 export const revalidate = 0;
@@ -496,9 +496,11 @@ export default async function PrivateLinkPage({
     profile.avatar_url &&
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
     !String(profile.avatar_url).includes("placeholder.");
-  const profileAvatarSrc = hasRealAvatar ? (profile.avatar_url as string) : null;
+  const profileAvatarSrc = hasRealAvatar
+    ? toDisplayImageUrl(profile.avatar_url as string, 64)
+    : null;
   const pageType = (link.page_type as string) ?? "internal";
-  const coverImageSrc = normalizeImageUrl(link.cover_image_url as string | null);
+  const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600);
   const videoId = getYouTubeId(link.video_url as string | null);
 
   // External links have no hosted page — send visitors straight to the URL.

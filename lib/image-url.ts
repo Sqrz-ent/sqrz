@@ -13,6 +13,28 @@ export function toOgImageUrl(raw: string | null | undefined): string | null {
   return clean;
 }
 
+// Display-side transform for visible <img> renders: Supabase object URLs →
+// render/image endpoint at a bounded width (WebP is auto-negotiated via the
+// browser's Accept header; width-only preserves aspect ratio, which the hero
+// transform math depends on). Non-Supabase URLs pass through unchanged.
+// Must be the LAST function applied to a URL — normalizeImageUrl strips the
+// transform if called afterwards.
+export function toDisplayImageUrl(
+  raw: string | null | undefined,
+  width: number,
+  quality = 75
+): string | null {
+  const clean = normalizeImageUrl(raw); // canonicalize first (sign→public, dropbox, protocol)
+  if (!clean) return null;
+  if (clean.includes("supabase.co/storage/v1/object/public/")) {
+    return (
+      clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+      `?width=${width}&quality=${quality}`
+    );
+  }
+  return clean;
+}
+
 export function normalizeImageUrl(url: string | null | undefined): string | null {
   const raw = url?.trim();
   if (!raw) return null;
