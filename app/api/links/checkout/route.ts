@@ -3,10 +3,9 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
-  // Mirrors app/api/instant-booking/route.ts: live secret key + the live
-  // stripe_connect_id column. (instant-booking has no live/test switching — it is
-  // live-only — so there is nothing else to mirror.) The destination account in
-  // transfer_data must therefore be a LIVE, fully-onboarded Connect account.
+  // Live secret key + the live stripe_connect_id column — no live/test switching
+  // here, so the destination account in transfer_data must be a LIVE,
+  // fully-onboarded Connect account.
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
