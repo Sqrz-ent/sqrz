@@ -590,13 +590,8 @@ export default async function PrivateLinkPage({
     ) : (
       <BookLinkButton
         username={username}
-        services={services}
         profileId={profile.id as string}
-        planId={profile.plan_id as number | null}
         accent={accent}
-        prefillService={prefillServiceTitle}
-        prefilledTitle={link.title as string | null}
-        prefilledDescription={link.description as string | null}
         profileName={displayName}
         label={ctaLabel}
       />

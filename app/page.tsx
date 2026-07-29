@@ -570,7 +570,7 @@ const ticket = {
     <LinkClickTracker profileId={profile.id as string | null} />
 
 {hasActiveServices && (
-  <BookMeButton username={profile.slug} services={activeServices} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />
+  <BookMeButton username={profile.slug} profileId={profile.id} profileName={displayName} />
 )}
 
 

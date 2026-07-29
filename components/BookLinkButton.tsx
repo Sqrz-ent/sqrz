@@ -1,37 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import type { Service } from "@/types/service";
 import BookingModal from "./BookingModal";
 
 export default function BookLinkButton({
   username,
-  services,
   profileId,
-  planId = null,
   accent,
-  prefillService,
-  prefilledTitle,
-  prefilledDescription,
   profileName = null,
   label,
 }: {
   username: string;
-  services: Service[];
   profileId: string;
-  planId?: number | null;
   accent: string;
-  prefillService?: string | null;
-  prefilledTitle?: string | null;
-  prefilledDescription?: string | null;
   profileName?: string | null;
   label?: string | null;
 }) {
   const [open, setOpen] = useState(false);
-
-  const initialService = prefillService
-    ? (services.find((s) => s.title === prefillService) ?? null)
-    : null;
 
   return (
     <>
@@ -59,13 +44,7 @@ export default function BookLinkButton({
         open={open}
         onClose={() => setOpen(false)}
         username={username}
-        services={services}
         profileId={profileId}
-        planId={planId}
-        initialService={initialService}
-        simplified={true}
-        prefilledTitle={prefilledTitle}
-        prefilledDescription={prefilledDescription}
         profileName={profileName}
       />
     </>

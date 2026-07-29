@@ -158,7 +158,6 @@ export default function Services({
   profileName?: string | null;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
 
   if (!services || services.length === 0) return null;
 
@@ -169,7 +168,6 @@ export default function Services({
       profile_slug: username,
       profile_id: profileId,
     });
-    setSelectedService(service);
     setModalOpen(true);
   }
 
@@ -211,10 +209,7 @@ export default function Services({
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         username={username}
-        services={services}
         profileId={profileId}
-        planId={planId}
-        initialService={selectedService}
         profileName={profileName}
       />
     </>

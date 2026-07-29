@@ -1,20 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import type { Service } from "@/types/service";
 import BookingModal from "./BookingModal";
 
 export default function BookMeButton({
   username,
-  services,
   profileId,
-  planId = null,
   profileName = null,
 }: {
   username: string;
-  services: Service[];
   profileId: string;
-  planId?: number | null;
   profileName?: string | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -45,9 +40,7 @@ export default function BookMeButton({
         open={open}
         onClose={() => setOpen(false)}
         username={username}
-        services={services}
         profileId={profileId}
-        planId={planId}
         profileName={profileName}
       />
     </>
