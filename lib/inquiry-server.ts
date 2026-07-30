@@ -217,9 +217,11 @@ export async function bootstrapExistingInquirySession(input: {
 }) {
   const { profileId, visitorToken } = input;
   const profile = await getInquiryProfile(profileId);
-  const hasPremiumAccess = profile?.plan_id != null && Number(profile.plan_id) > 0;
 
-  if (!profile || !hasPremiumAccess || profile.inquiry_chat_enabled === false) {
+  // Inquiry chat is gated solely on the owner's `inquiry_chat_enabled` toggle
+  // (no plan gating during beta — matches the platform-wide removal of plan_id
+  // gates). Column is NOT NULL default true, so `=== false` is the only "off".
+  if (!profile || profile.inquiry_chat_enabled === false) {
     return null;
   }
 
@@ -269,7 +271,8 @@ export async function startInquirySession(input: {
     throw new Error("Profile not found");
   }
 
-  if (profile.plan_id == null || Number(profile.plan_id) <= 0 || profile.inquiry_chat_enabled === false) {
+  // Toggle-only gate (no plan gating during beta) — see bootstrapExistingInquirySession.
+  if (profile.inquiry_chat_enabled === false) {
     throw new Error("Inquiry messaging is not enabled for this profile");
   }
 

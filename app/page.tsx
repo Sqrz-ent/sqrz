@@ -889,7 +889,7 @@ const ticket = {
       profileId={profile.id as string}
       profileSlug={profile.slug as string | null}
       ownerName={displayName}
-      enabled={!!profile.plan_id && Number(profile.plan_id) > 0 && profile.inquiry_chat_enabled !== false}
+      enabled={profile.inquiry_chat_enabled !== false}
     />
     </>
   );
