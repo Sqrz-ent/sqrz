@@ -119,17 +119,16 @@ export default function BookingModal({
         result = rpcData as Record<string, unknown>;
       }
 
-      const booking_id = result.booking_id as string | undefined;
-      const invite_token = (result.invite_token ?? result.token) as string | undefined;
+      if (result.error) throw new Error(String(result.error));
 
-      // Always attempt email — let the route surface errors if fields missing
+      // Always attempt the receipt email — let the route surface errors if fields missing.
+      // The RPC creates a lead now (no booking), so there's no booking_id/invite_token
+      // to send — the email is a plain "we got your message" receipt, no tracking link.
       try {
         const confirmRes = await fetch("/api/booking-confirm", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            booking_id,
-            invite_token,
             requester_name: name,
             requester_email: email,
             artist_name: username,

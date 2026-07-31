@@ -8,7 +8,6 @@ import Script from "next/script";
 import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
-import ProfileCalendar from "@/components/ProfileCalendar";
 import {
   Facebook,
   Instagram,
@@ -121,7 +120,7 @@ import { supabaseServer as supabase } from "@/lib/supabase-server";
 async function getProfileByUsername(username: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_videos(*), profile_services(*), profile_references(*), availability_blocks(id, start_date, end_date, label, show_label)")
+    .select("*, profile_videos(*), profile_services(*), profile_references(*)")
     .eq("slug", username)
     .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
@@ -370,23 +369,6 @@ export default async function HomePage({
 
   const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
 
-  // Fetch gig history — only when profile.show_gig_history is true
-  let bookingEvents: { title: string; start: string; end?: string }[] = [];
-  if (profile.show_gig_history) {
-    const { data: gigHistory } = await supabase
-      .from("bookings")
-      .select("id, title, date_start, date_end")
-      .eq("owner_id", profile.id as string)
-      .in("status", ["confirmed", "completed"])
-      .not("date_start", "is", null);
-
-    bookingEvents = (gigHistory ?? []).map((b: Record<string, unknown>) => ({
-      title: (b.title as string) || "Booked",
-      start: b.date_start as string,
-      end: (b.date_end as string | null) ?? undefined,
-    }));
-  }
-
   // Resolve template key: handle new names, legacy hyphens, and legacy key names
   const rawTemplateKey = typeof profile.template_id === "string" ? profile.template_id : null;
   const templateKey: TemplateKey = (() => {
@@ -469,8 +451,6 @@ const ticket = {
   const hasImageGallery = Boolean(profile.pics?.length > 0);
   const hasVideos = Boolean(profile.profile_videos?.length > 0);
   const hasPhotos = photoGallery.length > 0;
-  const hasCalendarContent =
-    bookingEvents.length > 0 || (profile.availability_blocks ?? []).length > 0;
   const hasSocials = Boolean(
     profile.social_instagram ||
     profile.social_facebook ||
@@ -488,8 +468,7 @@ const ticket = {
     profile.widget_bandsintown ||
     hasImageGallery ||
     hasVideos ||
-    hasPhotos ||
-    hasCalendarContent
+    hasPhotos
   );
 
   // Focal point (normalized 0..1) + zoom set by the artist in the dashboard.
@@ -819,17 +798,6 @@ const ticket = {
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Watch" title="Video" />
             <YouTubeGallery videos={profile.profile_videos} profileId={profile.id as string | null} />
-          </section>
-        )}
-
-        {hasCalendarContent && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Schedule" title="Calendar" />
-            <ProfileCalendar
-              bookingEvents={bookingEvents}
-              availabilityBlocks={profile.availability_blocks ?? []}
-              templateId={rawTemplateKey}
-            />
           </section>
         )}
 

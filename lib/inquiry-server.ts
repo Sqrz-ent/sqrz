@@ -16,7 +16,6 @@ type InquiryThreadRow = {
   owner_stream_user_id: string;
   visitor_name: string | null;
   visitor_email: string | null;
-  converted_booking_id?: string | null;
 };
 
 type ProfileRow = {
@@ -172,45 +171,6 @@ function buildInquirySession(input: {
   };
 }
 
-async function buildConvertedInquiryHandoff(input: {
-  profile: ProfileRow;
-  thread: InquiryThreadRow;
-}) {
-  const { profile, thread } = input;
-  if (!thread.converted_booking_id) {
-    return { thread: null };
-  }
-
-  const { data: buyerParticipant } = await supabaseServer
-    .from("booking_participants")
-    .select("invite_token")
-    .eq("booking_id", thread.converted_booking_id)
-    .eq("role", "buyer")
-    .maybeSingle();
-
-  const inviteToken = (buyerParticipant as { invite_token?: string | null } | null)?.invite_token ?? null;
-  const dashboardBaseUrl = process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "https://dashboard.sqrz.com";
-  const accessUrl = inviteToken
-    ? `${dashboardBaseUrl}/booking/${thread.converted_booking_id}?token=${encodeURIComponent(inviteToken)}`
-    : `${dashboardBaseUrl}/booking/${thread.converted_booking_id}`;
-
-  return {
-    status: "converted" as const,
-    thread: {
-      id: thread.id,
-      visitorName: thread.visitor_name,
-      visitorEmail: thread.visitor_email,
-      channelId: thread.provider_channel_id,
-    },
-    handoff: {
-      bookingId: thread.converted_booking_id,
-      accessUrl,
-      ctaLabel: "Review proposal",
-      ownerDisplayName: formatProfileName(profile),
-    },
-  };
-}
-
 export async function bootstrapExistingInquirySession(input: {
   profileId: string;
   visitorToken: string;
@@ -230,7 +190,7 @@ export async function bootstrapExistingInquirySession(input: {
     .select("*")
     .eq("profile_id", profileId)
     .eq("visitor_token", visitorToken)
-    .in("status", ["open", "converted"])
+    .eq("status", "open")
     .order("updated_at", { ascending: false })
     .maybeSingle();
 
@@ -239,13 +199,6 @@ export async function bootstrapExistingInquirySession(input: {
   }
 
   const inquiryThread = thread as InquiryThreadRow;
-
-  if (inquiryThread.status === "converted") {
-    return buildConvertedInquiryHandoff({
-      profile,
-      thread: inquiryThread,
-    });
-  }
 
   await ensureInquiryStreamResources({
     thread: inquiryThread,
