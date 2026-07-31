@@ -39,6 +39,7 @@ import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import HeroPill from "@/components/HeroPill";
 import MusicEmbeds from "@/components/MusicEmbeds";
+import SchedulingWidget from "@/components/SchedulingWidget";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
@@ -448,6 +449,9 @@ const ticket = {
 
   const showPaymentBanner = params.payment === "success";
   const hasMusicEmbeds = Boolean(spotifyEmbed || soundcloudEmbed || mixcloudEmbedUrl);
+  // Scheduling widget: Calendly only for now, shown whenever a URL is set. Same
+  // free-tier, data-driven visibility as the music/social embeds (no plan gate).
+  const hasScheduling = profile.scheduling_provider === "calendly" && Boolean(profile.scheduling_url);
   const hasImageGallery = Boolean(profile.pics?.length > 0);
   const hasVideos = Boolean(profile.profile_videos?.length > 0);
   const hasPhotos = photoGallery.length > 0;
@@ -468,7 +472,8 @@ const ticket = {
     profile.widget_bandsintown ||
     hasImageGallery ||
     hasVideos ||
-    hasPhotos
+    hasPhotos ||
+    hasScheduling
   );
 
   // Focal point (normalized 0..1) + zoom set by the artist in the dashboard.
@@ -798,6 +803,19 @@ const ticket = {
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Watch" title="Video" />
             <YouTubeGallery videos={profile.profile_videos} profileId={profile.id as string | null} />
+          </section>
+        )}
+
+        {/* Scheduling link-out — after the music/video stack, before the lead
+            collector. Section gated on hasScheduling so an unset field shows no
+            empty heading; the widget also self-guards internally. */}
+        {hasScheduling && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Schedule" title="Book a call" />
+            <SchedulingWidget
+              provider={profile.scheduling_provider as string | null}
+              url={profile.scheduling_url as string | null}
+            />
           </section>
         )}
 
