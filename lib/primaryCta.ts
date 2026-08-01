@@ -8,7 +8,6 @@ export type FeaturedLink = {
   linkSlug: string | null;
   title: string;
   externalUrl: string | null;
-  paymentGate: boolean;
   ctaLabel: string | null;
 };
 
@@ -39,12 +38,13 @@ const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | nul
     const link = profile.featuredLink;
     if (!link) return null;
     const label = link.ctaLabel || link.title;
-    // Skip straight to the destination only when external + no payment gate;
-    // a payment-gated link (regardless of connect-to) always routes through
-    // its own /{slug} page — mirrors the retired hero pill's skipToUrl logic.
-    const skipToUrl = !link.paymentGate && !!link.externalUrl;
-    if (skipToUrl) {
-      const url = /^https?:\/\//i.test(link.externalUrl!) ? link.externalUrl! : `https://${link.externalUrl}`;
+    // External always goes straight to the destination now — no payment-gate
+    // check. (Payment-gated checkout-through-the-internal-page was leftover
+    // from when Instant Payment existed; that's deactivated, and this was the
+    // last read-side remnant of it.) No external_url → genuinely internal,
+    // routes to the link's own /{slug} page.
+    if (link.externalUrl) {
+      const url = /^https?:\/\//i.test(link.externalUrl) ? link.externalUrl : `https://${link.externalUrl}`;
       return { type: "featuredLink", mode: "external", url, label, linkId: link.id, linkSlug: link.linkSlug };
     }
     const pageUrl = `https://${profile.slug}.sqrz.com/${link.linkSlug}`;

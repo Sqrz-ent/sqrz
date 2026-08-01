@@ -360,13 +360,13 @@ export default async function HomePage({
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, title, external_url, payment_gate, cta_label")
+    .select("id, link_slug, title, external_url, cta_label")
     .eq("profile_id", profile.id as string)
     .eq("is_active", true)
     .eq("show_on_profile", true)
     .order("created_at", { ascending: true });
 
-  const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
+  const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; cta_label: string | null }[];
 
   // show_on_profile is exclusive (one at a time, enforced by a DB trigger),
   // so privateLinks[0] — if present — is THE featured link. Feeds the primary
@@ -378,7 +378,6 @@ export default async function HomePage({
         linkSlug: privateLinks[0].link_slug,
         title: privateLinks[0].title,
         externalUrl: privateLinks[0].external_url,
-        paymentGate: privateLinks[0].payment_gate,
         ctaLabel: privateLinks[0].cta_label,
       }
     : null;
