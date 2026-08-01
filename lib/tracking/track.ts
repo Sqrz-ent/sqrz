@@ -109,9 +109,10 @@ export async function trackPageViewCookieless(
   await trackCookieless("page_view", properties);
 }
 
-// Per-URL debounce for cta_click. Both the delegated LinkClickTracker and
-// HeroPill route through here, so this map is shared across every CTA source on
-// the page. Guards against bursts of duplicate clicks on the same link — e.g.
+// Per-URL debounce for cta_click. The delegated LinkClickTracker and the
+// primary CTA's featured-link branch (BookMeButton) both route through here,
+// so this map is shared across every CTA source on the page. Guards against
+// bursts of duplicate clicks on the same link — e.g.
 // the synthetic/prefetch clicks the Meta in-app browser dispatches — that would
 // otherwise inflate "CTA click" (a conversion-intent signal) beyond real taps.
 const CTA_DEDUPE_MS = 1500;

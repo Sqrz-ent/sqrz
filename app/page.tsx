@@ -15,6 +15,7 @@ import {
   Youtube,
 } from "lucide-react";
 import BookMeButton from "@/components/BookMeButton";
+import type { FeaturedLink } from "@/lib/primaryCta";
 import PaymentSuccessBanner from "@/components/PaymentSuccessBanner";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Services from "@/components/Services";
@@ -33,11 +34,9 @@ import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
-import ProfileLeadCollector from "@/components/ProfileLeadCollector";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
-import HeroPill from "@/components/HeroPill";
 import MusicEmbeds from "@/components/MusicEmbeds";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
@@ -369,6 +368,21 @@ export default async function HomePage({
 
   const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; payment_gate: boolean; cta_label: string | null }[];
 
+  // show_on_profile is exclusive (one at a time, enforced by a DB trigger),
+  // so privateLinks[0] — if present — is THE featured link. Feeds the primary
+  // CTA resolver (lib/primaryCta.ts) now; the hero pill that used to render
+  // this was retired in favor of promoting it to the primary CTA.
+  const featuredLink: FeaturedLink | null = privateLinks[0]
+    ? {
+        id: privateLinks[0].id,
+        linkSlug: privateLinks[0].link_slug,
+        title: privateLinks[0].title,
+        externalUrl: privateLinks[0].external_url,
+        paymentGate: privateLinks[0].payment_gate,
+        ctaLabel: privateLinks[0].cta_label,
+      }
+    : null;
+
   // Resolve template key: handle new names, legacy hyphens, and legacy key names
   const rawTemplateKey = typeof profile.template_id === "string" ? profile.template_id : null;
   const templateKey: TemplateKey = (() => {
@@ -555,15 +569,18 @@ const ticket = {
     />
     <LinkClickTracker profileId={profile.id as string | null} />
 
-{(hasActiveServices || hasScheduling) && (
-  <BookMeButton
-    username={profile.slug}
-    profileId={profile.id}
-    profileName={displayName}
-    schedulingProvider={profile.scheduling_provider as string | null}
-    schedulingUrl={profile.scheduling_url as string | null}
-  />
-)}
+{/* Always on now — the primary CTA resolves through featured link →
+    scheduling provider → lead-gen form, in that priority order, and the
+    lead-gen form is the unconditional default fallback (no longer gated on
+    hasActiveServices). See lib/primaryCta.ts. */}
+<BookMeButton
+  username={profile.slug}
+  profileId={profile.id}
+  profileName={displayName}
+  schedulingProvider={profile.scheduling_provider as string | null}
+  schedulingUrl={profile.scheduling_url as string | null}
+  featuredLink={featuredLink}
+/>
 
 
 
@@ -709,33 +726,6 @@ const ticket = {
               </a>
             )}
           </div>
-      
-
-          {/* Featured link pill */}
-          {privateLinks[0] && (() => {
-            const pl = privateLinks[0];
-            // Skip to destination directly only when: external_url set AND payment gate off.
-            // Payment gate (regardless of connect-to) always routes through the /{slug} page.
-            const skipToUrl = !pl.payment_gate && !!pl.external_url;
-            const href = skipToUrl
-              ? (/^https?:\/\//i.test(pl.external_url!) ? pl.external_url! : `https://${pl.external_url}`)
-              : `https://${profile.slug}.sqrz.com/${pl.link_slug}`;
-            const label = pl.cta_label || pl.title;
-            const icon = skipToUrl ? "🔗" : "📄";
-            return (
-              <HeroPill
-                href={href}
-                label={label}
-                icon={icon}
-                accent={template.accent}
-                destination={skipToUrl ? "external" : "page"}
-                profileId={profile.id as string}
-                linkId={pl.id}
-                linkSlug={pl.link_slug}
-              />
-            );
-          })()}
-          
         </div>
       </div>
 
@@ -817,11 +807,6 @@ const ticket = {
         {/* Scheduling is now surfaced via the primary floating CTA (see
             BookMeButton / lib/primaryCta.ts) when configured, not as a
             separate in-flow block here — one "book me" affordance, not two. */}
-
-        {/* Soft email collector — last content block, before the footer */}
-        <section style={sectionShellStyle}>
-          <ProfileLeadCollector profileId={profile.id as string} />
-        </section>
 
       {/* Powered by SQRZ — subtle footer */}
       <div style={{
