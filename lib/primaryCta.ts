@@ -5,6 +5,7 @@
 
 export type PrimaryCtaAction =
   | { type: "scheduling"; provider: "calendly"; url: string; label: string }
+  | { type: "scheduling"; provider: "hubspot"; url: string; label: string }
   | { type: "leadForm"; label: string };
 
 export type ProfileForPrimaryCta = {
@@ -22,6 +23,19 @@ const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | nul
         type: "scheduling",
         provider: "calendly",
         url: profile.scheduling_url,
+        label: "Check availability",
+      };
+    }
+    return null;
+  },
+  (profile) => {
+    if (profile.scheduling_provider === "hubspot" && profile.scheduling_url) {
+      return {
+        type: "scheduling",
+        provider: "hubspot",
+        url: profile.scheduling_url,
+        // Same user-facing intent as Calendly — no per-provider label variance
+        // unless there's a reason for one.
         label: "Check availability",
       };
     }

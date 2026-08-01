@@ -3,6 +3,7 @@
 import { useState } from "react";
 import BookingModal from "./BookingModal";
 import CalendlyPopupButton from "./CalendlyPopupButton";
+import HubSpotMeetingModal from "./HubSpotMeetingModal";
 import { getPrimaryCTA } from "@/lib/primaryCta";
 
 export default function BookMeButton({
@@ -25,8 +26,19 @@ export default function BookMeButton({
     scheduling_url: schedulingUrl,
   });
 
-  if (cta.type === "scheduling") {
+  if (cta.type === "scheduling" && cta.provider === "calendly") {
     return <CalendlyPopupButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+  }
+
+  if (cta.type === "scheduling" && cta.provider === "hubspot") {
+    return (
+      <>
+        <button onClick={() => setOpen(true)} style={floatingButtonStyle}>
+          {cta.label}
+        </button>
+        <HubSpotMeetingModal url={cta.url} open={open} onClose={() => setOpen(false)} />
+      </>
+    );
   }
 
   return (
