@@ -38,6 +38,7 @@ import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import MusicEmbeds from "@/components/MusicEmbeds";
+import SoundeeEmbed from "@/components/SoundeeEmbed"; // TEMPORARY — see component for context
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
@@ -788,6 +789,13 @@ const ticket = {
             />
           </section>
         )}
+
+        {/* TEMPORARY TEST — Soundee storefront embed, always on regardless of
+            profile (hardcoded URL, see components/SoundeeEmbed.tsx). Not a
+            shipped feature; remove or generalize after reviewing it live. */}
+        <section style={sectionShellStyle}>
+          <SoundeeEmbed />
+        </section>
 
         {profile.widget_bandsintown ? (
         <section style={sectionShellStyle}>
