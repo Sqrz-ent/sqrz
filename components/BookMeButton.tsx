@@ -4,6 +4,7 @@ import { useState } from "react";
 import BookingModal from "./BookingModal";
 import CalendlyPopupButton from "./CalendlyPopupButton";
 import HubSpotMeetingModal from "./HubSpotMeetingModal";
+import LinkOutButton from "./LinkOutButton";
 import { getPrimaryCTA } from "@/lib/primaryCta";
 
 export default function BookMeButton({
@@ -39,6 +40,10 @@ export default function BookMeButton({
         <HubSpotMeetingModal url={cta.url} open={open} onClose={() => setOpen(false)} />
       </>
     );
+  }
+
+  if (cta.type === "scheduling" && cta.provider === "linkout") {
+    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
   }
 
   return (

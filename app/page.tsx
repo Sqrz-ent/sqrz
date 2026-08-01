@@ -448,9 +448,12 @@ const ticket = {
 
   const showPaymentBanner = params.payment === "success";
   const hasMusicEmbeds = Boolean(spotifyEmbed || soundcloudEmbed || mixcloudEmbedUrl);
-  // Scheduling widget: Calendly only for now, shown whenever a URL is set. Same
-  // free-tier, data-driven visibility as the music/social embeds (no plan gate).
-  const hasScheduling = profile.scheduling_provider === "calendly" && Boolean(profile.scheduling_url);
+  // Any configured scheduling/reservation provider (Calendly, HubSpot, or the
+  // generic link-out catch-all in lib/primaryCta.ts) — shown whenever a URL is
+  // set. Same free-tier, data-driven visibility as the music/social embeds (no
+  // plan gate). Gates whether BookMeButton renders at all for profiles with no
+  // active services, so this must stay provider-agnostic, not Calendly-only.
+  const hasScheduling = Boolean(profile.scheduling_provider) && Boolean(profile.scheduling_url);
   const hasImageGallery = Boolean(profile.pics?.length > 0);
   const hasVideos = Boolean(profile.profile_videos?.length > 0);
   const hasPhotos = photoGallery.length > 0;
