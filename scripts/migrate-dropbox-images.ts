@@ -1,8 +1,7 @@
 /**
  * Migrate Dropbox image URLs → Supabase Storage
  *
- * Tables:  profile_photos.url
- *          profiles.avatar_url
+ * Tables:  profiles.avatar_url
  *          private_booking_links.cover_image_url
  *
  * Usage:
@@ -68,43 +67,6 @@ async function uploadToStorage(bucket: string, path: string, data: Buffer, conte
   if (error) throw new Error(`Storage upload failed (${bucket}/${path}): ${error.message}`);
   const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(path);
   return publicUrl;
-}
-
-// ── Migrate profile_photos ───────────────────────────────────────────────────
-
-async function migrateProfilePhotos(): Promise<number> {
-  const { data: photos, error } = await supabase
-    .from("profile_photos")
-    .select("id, profile_id, url, sort_order")
-    .ilike("url", "%dropbox%");
-
-  if (error) throw error;
-
-  const count = photos?.length ?? 0;
-  console.log(`\nprofile_photos: ${count} Dropbox URL${count !== 1 ? "s" : ""} found`);
-
-  for (const photo of photos ?? []) {
-    const ext = extFromUrl(photo.url);
-    const ct = contentTypeFromExt(ext);
-    const storagePath = `${photo.profile_id}/gallery/${randomUUID()}.${ext}`;
-
-    console.log(`  photo ${photo.id} (sort_order=${photo.sort_order})`);
-    console.log(`    src: ${photo.url.slice(0, 90)}${photo.url.length > 90 ? "…" : ""}`);
-    console.log(`    dst: profile-media/${storagePath}`);
-
-    if (!DRY_RUN) {
-      const buffer = await downloadImage(photo.url);
-      const publicUrl = await uploadToStorage("profile-media", storagePath, buffer, ct);
-      const { error: dbError } = await supabase
-        .from("profile_photos")
-        .update({ url: publicUrl })
-        .eq("id", photo.id);
-      if (dbError) throw new Error(`DB update failed for photo ${photo.id}: ${dbError.message}`);
-      console.log(`    ✓ → ${publicUrl}`);
-    }
-  }
-
-  return count;
 }
 
 // ── Migrate profiles.avatar_url ──────────────────────────────────────────────
@@ -187,11 +149,10 @@ async function migrateLinkCovers(): Promise<number> {
 async function main() {
   console.log(`Mode: ${DRY_RUN ? "DRY RUN — pass --run to execute" : "LIVE RUN"}`);
 
-  const photoCount = await migrateProfilePhotos();
   const avatarCount = await migrateAvatars();
   const coverCount = await migrateLinkCovers();
 
-  const total = photoCount + avatarCount + coverCount;
+  const total = avatarCount + coverCount;
   if (DRY_RUN) {
     console.log(`\n${total} URL${total !== 1 ? "s" : ""} would be migrated. Re-run with --run to execute.`);
   } else {

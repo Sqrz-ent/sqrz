@@ -32,7 +32,6 @@ import TrackingGate from "@/components/tracking/TrackingGate";
 import CookieBanner from "@/components/CookieBanner";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
-import PhotoGallery from "@/components/PhotoGallery";
 import LegalFooter from "@/components/LegalFooter";
 import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
@@ -418,16 +417,6 @@ export default async function HomePage({
     }
   }
 
-  // Photo gallery — fetched from profile_photos table
-  const { data: photosData } = await supabase
-    .from("profile_photos")
-    .select("url")
-    .eq("profile_id", profile.id as string)
-    .order("sort_order", { ascending: true });
-  const photoGallery = (photosData ?? [])
-    .map((p: { url: string }) => toDisplayImageUrl(p.url, 1200))
-    .filter((u): u is string => !!u);
-
   const activeServices = (profile.profile_services ?? []).filter(
     (s: { is_active: boolean }) => s.is_active === true
   );
@@ -470,7 +459,6 @@ const ticket = {
   const hasScheduling = Boolean(profile.scheduling_provider) && Boolean(profile.scheduling_url);
   const hasImageGallery = Boolean(profile.pics?.length > 0);
   const hasVideos = Boolean(profile.profile_videos?.length > 0);
-  const hasPhotos = photoGallery.length > 0;
   const hasSocials = Boolean(
     profile.social_instagram ||
     profile.social_facebook ||
@@ -489,7 +477,6 @@ const ticket = {
     profile.soundee_url ||
     hasImageGallery ||
     hasVideos ||
-    hasPhotos ||
     hasScheduling
   );
 
@@ -765,13 +752,6 @@ const ticket = {
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Featured" title="Highlights" />
             <ImageGallery pics={profile.pics} />
-          </section>
-        )}
-
-        {hasPhotos && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="See more" title="Gallery" />
-            <PhotoGallery urls={photoGallery} />
           </section>
         )}
 
