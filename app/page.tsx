@@ -760,10 +760,6 @@ const ticket = {
           </section>
         )}
 
-        {profile.profile_references?.length > 0 && (
-          <Experience jobs={profile.profile_references} />
-        )}
-
         {hasImageGallery && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Featured" title="Highlights" />
@@ -814,6 +810,14 @@ const ticket = {
         {/* Scheduling is now surfaced via the primary floating CTA (see
             BookMeButton / lib/primaryCta.ts) when configured, not as a
             separate in-flow block here — one "book me" affordance, not two. */}
+
+        {/* Experience (resume-style trust builder) is reprioritized below the
+            media/asset sections — work samples are more persuasive than a
+            text history, so they're shown first; this stays last, right
+            before the footer. */}
+        {profile.profile_references?.length > 0 && (
+          <Experience jobs={profile.profile_references} />
+        )}
 
       {/* Powered by SQRZ — subtle footer */}
       <div style={{
