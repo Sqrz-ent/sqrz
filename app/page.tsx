@@ -39,7 +39,6 @@ import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import HeroPill from "@/components/HeroPill";
 import MusicEmbeds from "@/components/MusicEmbeds";
-import SchedulingWidget from "@/components/SchedulingWidget";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
@@ -553,8 +552,14 @@ const ticket = {
     />
     <LinkClickTracker profileId={profile.id as string | null} />
 
-{hasActiveServices && (
-  <BookMeButton username={profile.slug} profileId={profile.id} profileName={displayName} />
+{(hasActiveServices || hasScheduling) && (
+  <BookMeButton
+    username={profile.slug}
+    profileId={profile.id}
+    profileName={displayName}
+    schedulingProvider={profile.scheduling_provider as string | null}
+    schedulingUrl={profile.scheduling_url as string | null}
+  />
 )}
 
 
@@ -806,18 +811,9 @@ const ticket = {
           </section>
         )}
 
-        {/* Scheduling link-out — after the music/video stack, before the lead
-            collector. Section gated on hasScheduling so an unset field shows no
-            empty heading; the widget also self-guards internally. */}
-        {hasScheduling && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Schedule" title="Book a call" />
-            <SchedulingWidget
-              provider={profile.scheduling_provider as string | null}
-              url={profile.scheduling_url as string | null}
-            />
-          </section>
-        )}
+        {/* Scheduling is now surfaced via the primary floating CTA (see
+            BookMeButton / lib/primaryCta.ts) when configured, not as a
+            separate in-flow block here — one "book me" affordance, not two. */}
 
         {/* Soft email collector — last content block, before the footer */}
         <section style={sectionShellStyle}>
