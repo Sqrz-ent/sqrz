@@ -37,7 +37,7 @@ import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import MusicEmbeds from "@/components/MusicEmbeds";
-import SoundeeEmbed from "@/components/SoundeeEmbed";
+import ShopSection, { type ShopProduct } from "@/components/ShopSection";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
@@ -136,6 +136,19 @@ async function getActivePartnerRefCode(profileId: string) {
     .maybeSingle();
 
   return (data?.code as string | null) ?? null;
+}
+
+// Only fetched for gumroad/shopify profiles (soundee needs no separate query —
+// it's driven by profiles.soundee_url already in the main select).
+async function getShopProducts(profileId: string): Promise<ShopProduct[]> {
+  const { data } = await supabase
+    .from("shop_products")
+    .select("id, title, image_url, price, currency, buy_url, position")
+    .eq("profile_id", profileId)
+    .order("position", { ascending: true })
+    .limit(4);
+
+  return (data as ShopProduct[] | null) ?? [];
 }
 /* =========================
    SEO METADATA
@@ -247,6 +260,11 @@ export default async function HomePage({
     profile.is_partner === true
       ? await getActivePartnerRefCode(profile.id as string)
       : null;
+
+  const shopProducts =
+    profile.shop_provider === "gumroad" || profile.shop_provider === "shopify"
+      ? await getShopProducts(profile.id as string)
+      : [];
 
   // ── View logging — best-effort, not render-blocking ─────────────────────────
   {
@@ -467,6 +485,16 @@ const ticket = {
     profile.social_linkedin
   );
 
+  // Provider-aware — soundee is driven by soundee_url (unchanged); gumroad/
+  // shopify need at least one fetched product before the section counts as
+  // "there's something here" (matches ShopSection's own empty-grid null-return).
+  const hasShop =
+    profile.shop_provider === "soundee"
+      ? Boolean(profile.soundee_url)
+      : profile.shop_provider === "gumroad" || profile.shop_provider === "shopify"
+      ? shopProducts.length > 0
+      : false;
+
   const hasAnyContent = Boolean(
     profile.bio ||
     hasActiveServices ||
@@ -474,7 +502,7 @@ const ticket = {
     (profile.profile_references?.length > 0) ||
     hasMusicEmbeds ||
     profile.widget_bandsintown ||
-    profile.soundee_url ||
+    hasShop ||
     hasImageGallery ||
     hasVideos ||
     hasScheduling
@@ -774,9 +802,13 @@ const ticket = {
           </section>
         )}
 
-        {profile.soundee_url && (
+        {hasShop && (
           <section style={sectionShellStyle}>
-            <SoundeeEmbed url={profile.soundee_url as string | null} />
+            <ShopSection
+              provider={profile.shop_provider as string | null}
+              soundeeUrl={profile.soundee_url as string | null}
+              products={shopProducts}
+            />
           </section>
         )}
 
