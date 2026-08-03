@@ -755,6 +755,13 @@ const ticket = {
           </section>
         )}
 
+        {hasVideos && (
+          <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Watch" title="Video" />
+            <YouTubeGallery videos={profile.profile_videos} profileId={profile.id as string | null} />
+          </section>
+        )}
+
         {hasMusicEmbeds && (
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="Listen" title="Music" />
@@ -779,13 +786,6 @@ const ticket = {
         <BandsintownWidget bandsintownUrl={profile.widget_bandsintown} />
         </section>
         ) : null}
-
-        {hasVideos && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Watch" title="Video" />
-            <YouTubeGallery videos={profile.profile_videos} profileId={profile.id as string | null} />
-          </section>
-        )}
 
         {/* Scheduling is now surfaced via the primary floating CTA (see
             BookMeButton / lib/primaryCta.ts) when configured, not as a
