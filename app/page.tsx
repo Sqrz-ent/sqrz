@@ -804,6 +804,7 @@ const ticket = {
 
         {hasShop && (
           <section style={sectionShellStyle}>
+            <SectionHeading eyebrow="Shopping" title="Buy" />
             <ShopSection
               provider={profile.shop_provider as string | null}
               soundeeUrl={profile.soundee_url as string | null}
