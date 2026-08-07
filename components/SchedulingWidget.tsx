@@ -31,14 +31,14 @@ export default function SchedulingWidget({ provider, url }: Props) {
   if (!provider || !url) return null;
 
   if (provider === "calendly") {
-    return <CalendlyPopupButton url={url} text="Check availability" style={floatingButtonStyle} />;
+    return <CalendlyPopupButton url={url} text="Book a Call" style={floatingButtonStyle} />;
   }
 
   if (provider === "hubspot") {
     return (
       <>
         <button onClick={() => setOpen(true)} style={floatingButtonStyle}>
-          Check availability
+          Book a Call
         </button>
         <HubSpotMeetingModal url={url} open={open} onClose={() => setOpen(false)} />
       </>
@@ -47,5 +47,5 @@ export default function SchedulingWidget({ provider, url }: Props) {
 
   // Any other configured provider (OpenTable, Resy, Tock, SevenRooms,
   // Eventbrite, Dice, Ticket Tailor, …) — same catch-all as the primary CTA.
-  return <LinkOutButton url={url} text="Check availability" style={floatingButtonStyle} />;
+  return <LinkOutButton url={url} text="Book a Call" style={floatingButtonStyle} />;
 }

@@ -56,7 +56,7 @@ const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | nul
         type: "scheduling",
         provider: "calendly",
         url: profile.scheduling_url,
-        label: "Check availability",
+        label: "Book a Call",
       };
     }
     return null;
@@ -69,7 +69,7 @@ const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | nul
         url: profile.scheduling_url,
         // Same user-facing intent as Calendly — no per-provider label variance
         // unless there's a reason for one.
-        label: "Check availability",
+        label: "Book a Call",
       };
     }
     return null;
@@ -89,7 +89,7 @@ const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | nul
         type: "scheduling",
         provider: "linkout",
         url: profile.scheduling_url,
-        label: "Check availability",
+        label: "Book a Call",
       };
     }
     return null;
