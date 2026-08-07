@@ -186,10 +186,6 @@ function ContentSection({
           outside this content flow — see the page-level return below. */}
       {cta && <div style={{ marginTop: 24 }}>{cta}</div>}
 
-      {/* Inline shop widget (show_shop_widget) — same ShopSection the profile
-          page uses. */}
-      {shopWidget && <div style={{ marginTop: 24 }}>{shopWidget}</div>}
-
       {/* YouTube embed */}
       {videoId && <div style={{ marginTop: 32 }}><VideoEmbed videoId={videoId} /></div>}
 
@@ -199,6 +195,11 @@ function ContentSection({
           <RichDescription text={description} />
         </div>
       )}
+
+      {/* Inline shop widget (show_shop_widget) — same ShopSection the profile
+          page uses. Ordered after Description, before "Back to Profile"
+          (2026-08-08 reorder). */}
+      {shopWidget && <div style={{ marginTop: 32 }}>{shopWidget}</div>}
 
       {/* View full profile — outlined, full width */}
       <a
