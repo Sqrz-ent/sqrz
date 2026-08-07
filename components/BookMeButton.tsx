@@ -7,6 +7,7 @@ import HubSpotMeetingModal from "./HubSpotMeetingModal";
 import LinkOutButton from "./LinkOutButton";
 import { getPrimaryCTA, type FeaturedLink } from "@/lib/primaryCta";
 import { track, trackCtaClick } from "@/lib/tracking/track";
+import { floatingButtonStyle } from "@/lib/floatingCta";
 
 export default function BookMeButton({
   username,
@@ -97,21 +98,6 @@ export default function BookMeButton({
 }
 
 /* styles */
-
-const floatingButtonStyle = {
-  position: "fixed" as const,
-  top: 20,
-  right: 20,
-  padding: "12px 12px",
-  borderRadius: 24,
-  border: "none",
-  background: "var(--accent-color)",
-  color: "#000",
-  fontWeight: 600,
-  fontSize: 14,
-  cursor: "pointer",
-  zIndex: 900,
-};
 
 // Same look as floatingButtonStyle, plus the declarations an <a> needs that a
 // <button> gets for free (no default text-decoration, no default centering).

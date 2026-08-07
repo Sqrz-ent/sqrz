@@ -1,10 +1,11 @@
 // Shop — provider-aware rendering, resolved by profiles.shop_provider.
-// soundee: the existing single-link/embed widget, unchanged. gumroad/shopify:
-// a small grid of shop_products cards, plain link-out only (no embed script/
-// iframe — avoids the multi-script-tag conflict risk flagged for Gumroad's
-// own overlay embed). null/unset: nothing, same convention as every other
-// optional widget on this page.
-import SoundeeEmbed from "./SoundeeEmbed";
+// soundee: a plain "View my shop" link-out button (2026-08-08 — was an iframe
+// embed; see SoundeeLinkButton for why). gumroad/shopify: a small grid of
+// shop_products cards, plain link-out only (no embed script/iframe — avoids
+// the multi-script-tag conflict risk flagged for Gumroad's own overlay embed).
+// null/unset: nothing, same convention as every other optional widget on this
+// page. Shared by the profile page and private link pages (show_shop_widget).
+import SoundeeLinkButton from "./SoundeeLinkButton";
 
 export type ShopProduct = {
   id: string;
@@ -71,7 +72,7 @@ export default function ShopSection({
   if (!provider) return null;
 
   if (provider === "soundee") {
-    return <SoundeeEmbed url={soundeeUrl} />;
+    return <SoundeeLinkButton url={soundeeUrl} />;
   }
 
   if (provider === "gumroad" || provider === "shopify") {

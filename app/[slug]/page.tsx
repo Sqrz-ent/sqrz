@@ -127,6 +127,7 @@ function RichDescription({ text }: { text: string }) {
 function ContentSection({
   title,
   cta,
+  shopWidget,
   videoId,
   description,
   username,
@@ -136,6 +137,7 @@ function ContentSection({
 }: {
   title: string | null;
   cta: React.ReactNode;
+  shopWidget?: React.ReactNode;
   videoId: string | null;
   description: string | null;
   username: string;
@@ -179,8 +181,14 @@ function ContentSection({
         </h1>
       )}
 
-      {/* Primary CTA — cta_source-driven (scheduling/shop), or nothing */}
+      {/* Download/payment-gate CTA — a separate, still-live mechanism. The
+          floating scheduling CTA (show_scheduling_cta) renders elsewhere,
+          outside this content flow — see the page-level return below. */}
       {cta && <div style={{ marginTop: 24 }}>{cta}</div>}
+
+      {/* Inline shop widget (show_shop_widget) — same ShopSection the profile
+          page uses. */}
+      {shopWidget && <div style={{ marginTop: 24 }}>{shopWidget}</div>}
 
       {/* YouTube embed */}
       {videoId && <div style={{ marginTop: 32 }}><VideoEmbed videoId={videoId} /></div>}
@@ -338,7 +346,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, cta_source")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -418,23 +426,28 @@ export default async function PrivateLinkPage({
   const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
-  // Simplified to a single-offer layout (2026-08-08): Hero, Description, Promo
-  // Video, one deliberate CTA — no more profile-style bloat (service pill/terms
-  // matched via the now-unused prefill_service, the generic "book me" lead-gen
-  // form). The download/payment-gate CTA (external_url) is a separate, still-
-  // live mechanism, untouched — it takes priority when configured, since it's
-  // not "no CTA configured", it's a deliberately different CTA type. Only when
-  // NEITHER is set does cta_source decide: the account-level widget the link
-  // creator explicitly chose (scheduling or shop, reusing the exact profile-page
-  // components), or nothing at all if cta_source is null — no fallback of any
-  // kind, unlike the main profile page's own lead-gen fallback (untouched).
+  // Single-offer layout (2026-08-08, then revised same day): Hero, Description,
+  // Promo Video, and two INDEPENDENT CTA toggles — no more profile-style bloat
+  // (service pill/terms matched via the now-unused prefill_service, the generic
+  // "book me" lead-gen form). Replaces the earlier single-choice cta_source
+  // design: show_scheduling_cta and show_shop_widget can each be on/off
+  // independently, so a page can have both a floating scheduling button and an
+  // inline shop section at once, either alone, or neither (no fallback of any
+  // kind, unlike the main profile page's own lead-gen fallback — untouched).
+  // The download/payment-gate CTA (external_url) is a separate, still-live
+  // mechanism, untouched — it takes priority over show_scheduling_cta in the
+  // inline `cta` slot, since it's a deliberately different CTA type, not
+  // "nothing configured". show_scheduling_cta is independent of that slot
+  // entirely — it floats (see the page-level render below), matching the
+  // profile page's primary CTA placement exactly, not the inline slot.
   if (pageType !== "external") {
     const ctaLabel = (link.cta_label as string | null) || null;
     const gatedUrl = safeUrl(link.external_url as string | null);
-    const ctaSource = link.cta_source as string | null;
+    const showSchedulingCta = link.show_scheduling_cta as boolean;
+    const showShopWidget = link.show_shop_widget as boolean;
 
     const shopProducts =
-      ctaSource === "shop" &&
+      showShopWidget &&
       (profile.shop_provider === "gumroad" || profile.shop_provider === "shopify")
         ? await getShopProducts(profile.id as string)
         : [];
@@ -459,12 +472,9 @@ export default async function PrivateLinkPage({
         linkSlug={linkSlug}
         label={ctaLabel || "Open"}
       />
-    ) : ctaSource === "scheduling" ? (
-      <SchedulingWidget
-        provider={profile.scheduling_provider as string | null}
-        url={profile.scheduling_url as string | null}
-      />
-    ) : ctaSource === "shop" ? (
+    ) : null;
+
+    const shopWidget = showShopWidget ? (
       <ShopSection
         provider={profile.shop_provider as string | null}
         soundeeUrl={profile.soundee_url as string | null}
@@ -475,10 +485,17 @@ export default async function PrivateLinkPage({
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
+        {showSchedulingCta && (
+          <SchedulingWidget
+            provider={profile.scheduling_provider as string | null}
+            url={profile.scheduling_url as string | null}
+          />
+        )}
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
           title={link.title as string | null}
           cta={bookCta}
+          shopWidget={shopWidget}
           videoId={videoId}
           description={link.description as string | null}
           username={username}
