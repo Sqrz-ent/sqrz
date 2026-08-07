@@ -37,7 +37,8 @@ import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import MusicEmbeds from "@/components/MusicEmbeds";
-import ShopSection, { type ShopProduct } from "@/components/ShopSection";
+import ShopSection from "@/components/ShopSection";
+import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
@@ -136,19 +137,6 @@ async function getActivePartnerRefCode(profileId: string) {
     .maybeSingle();
 
   return (data?.code as string | null) ?? null;
-}
-
-// Only fetched for gumroad/shopify profiles (soundee needs no separate query —
-// it's driven by profiles.soundee_url already in the main select).
-async function getShopProducts(profileId: string): Promise<ShopProduct[]> {
-  const { data } = await supabase
-    .from("shop_products")
-    .select("id, title, image_url, price, currency, buy_url, position")
-    .eq("profile_id", profileId)
-    .order("position", { ascending: true })
-    .limit(4);
-
-  return (data as ShopProduct[] | null) ?? [];
 }
 /* =========================
    SEO METADATA

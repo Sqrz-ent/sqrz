@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { supabaseServer } from "@/lib/supabase-server";
 import ViewTracker from "@/components/ViewTracker";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
-import BookLinkButton from "@/components/BookLinkButton";
 import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
 import CookieBanner from "@/components/CookieBanner";
@@ -14,8 +12,10 @@ import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
 import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
+import SchedulingWidget from "@/components/SchedulingWidget";
+import ShopSection from "@/components/ShopSection";
+import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
-import type { Service } from "@/types/service";
 
 export const revalidate = 0;
 
@@ -40,18 +40,6 @@ function safeUrl(url: string | null | undefined): string | null {
   return url.startsWith("http") ? url : `https://${url}`;
 }
 
-function formatEventDate(dateStr: string | null): string | null {
-  if (!dateStr) return null;
-  try {
-    const d = new Date(dateStr);
-    const day = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
-    return `${day} · ${time}`;
-  } catch {
-    return dateStr;
-  }
-}
-
 // ─── Layout primitives ────────────────────────────────────────────────────────
 
 const shell: React.CSSProperties = {
@@ -66,66 +54,6 @@ const container: React.CSSProperties = {
   padding: 24,
   boxSizing: "border-box",
 };
-
-function getCurrencySymbol(currency?: string): string {
-  if (!currency) return "€";
-  const map: Record<string, string> = { eur: "€", usd: "$", gbp: "£", chf: "CHF " };
-  return map[currency.toLowerCase()] ?? currency.toUpperCase() + " ";
-}
-
-function ServiceTerms({ service, accent }: { service: Service; accent: string }) {
-  const sym = getCurrencySymbol(service.currency);
-  const hasRange = service.price_min != null && service.price_max != null && service.price_min > 0 && service.price_max > 0;
-  const priceNode = hasRange ? (
-    <span style={{ fontSize: 15, fontWeight: 700, color: accent }}>
-      {sym}{service.price_min} – {sym}{service.price_max}
-    </span>
-  ) : service.price_label ? (
-    <span style={{ fontSize: 14, color: "rgba(255,255,255,0.4)" }}>{service.price_label}</span>
-  ) : null;
-
-  const rawDesc = service.description?.trim();
-
-  // Parse description into segments: paragraph → line | bullet
-  type Segment = { type: "para"; lines: ({ type: "line"; text: string } | { type: "bullet"; text: string })[] };
-  const segments: Segment[] = rawDesc
-    ? rawDesc.split(/\n\n+/).map((para) => ({
-        type: "para" as const,
-        lines: para.split("\n").map((line) =>
-          line.trimStart().startsWith("* ")
-            ? { type: "bullet" as const, text: line.trimStart().slice(2) }
-            : { type: "line" as const, text: line }
-        ),
-      }))
-    : [];
-
-  if (!priceNode && segments.length === 0) return null;
-
-  return (
-    <div style={{ marginTop: 28, paddingTop: 20, borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.25)", display: "block", marginBottom: 10 }}>
-        Service Terms
-      </span>
-      {priceNode && <div style={{ marginBottom: segments.length > 0 ? 12 : 0 }}>{priceNode}</div>}
-      {segments.map((seg, i) => (
-        <div key={i} style={{ marginBottom: i < segments.length - 1 ? 10 : 0 }}>
-          {seg.lines.map((line, j) =>
-            line.type === "bullet" ? (
-              <div key={j} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 3 }}>
-                <span style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, flexShrink: 0, lineHeight: "1.5" }}>•</span>
-                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5 }}>{line.text}</span>
-              </div>
-            ) : (
-              <span key={j} style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", lineHeight: 1.5, display: "inline" }}>
-                {line.text}{j < seg.lines.length - 1 && <br />}
-              </span>
-            )
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function PoweredBy() {
   return (
@@ -169,31 +97,6 @@ function VideoEmbed({ videoId }: { videoId: string }) {
   );
 }
 
-function CtaButton({ href, accent, children }: { href: string; accent: string; children: React.ReactNode }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{
-        display: "block",
-        width: "100%",
-        padding: "16px",
-        background: accent,
-        color: "#fff",
-        borderRadius: 8,
-        fontSize: 16,
-        fontWeight: 700,
-        textAlign: "center",
-        textDecoration: "none",
-        boxSizing: "border-box",
-      }}
-    >
-      {children}
-    </a>
-  );
-}
-
 function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
   if (!coverImageSrc) return null;
   return (
@@ -204,19 +107,6 @@ function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt:
         alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
       />
-    </div>
-  );
-}
-
-function ServicePill({ label, accent }: { label: string; accent: string }) {
-  return (
-    <div style={{
-      display: "inline-flex", alignItems: "center", gap: 6,
-      background: `${accent}18`, border: `1px solid ${accent}44`,
-      borderRadius: 8, padding: "5px 12px",
-      fontSize: 13, fontWeight: 600, color: accent,
-    }}>
-      {label}
     </div>
   );
 }
@@ -236,24 +126,18 @@ function RichDescription({ text }: { text: string }) {
 
 function ContentSection({
   title,
-  pill,
-  meta,
   cta,
   videoId,
   description,
-  extra,
   username,
   profileAvatarSrc,
   displayName,
   accent,
 }: {
   title: string | null;
-  pill?: React.ReactNode;
-  meta?: React.ReactNode;
   cta: React.ReactNode;
   videoId: string | null;
   description: string | null;
-  extra?: React.ReactNode;
   username: string;
   profileAvatarSrc: string | null;
   displayName: string | null;
@@ -295,13 +179,7 @@ function ContentSection({
         </h1>
       )}
 
-      {/* Service pill (book type only) */}
-      {pill && <div style={{ marginTop: 8 }}>{pill}</div>}
-
-      {/* Event date/venue meta */}
-      {meta && <div style={{ marginTop: 8 }}>{meta}</div>}
-
-      {/* Primary CTA (includes lead-gate form if applicable) */}
+      {/* Primary CTA — cta_source-driven (scheduling/shop), or nothing */}
       {cta && <div style={{ marginTop: 24 }}>{cta}</div>}
 
       {/* YouTube embed */}
@@ -313,9 +191,6 @@ function ContentSection({
           <RichDescription text={description} />
         </div>
       )}
-
-      {/* Service terms */}
-      {extra && <div style={{ marginTop: 16 }}>{extra}</div>}
 
       {/* View full profile — outlined, full width */}
       <a
@@ -455,7 +330,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, soundee_url")
     .eq("slug", username)
     .single();
 
@@ -463,7 +338,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, event_date, event_venue, event_city, prefill_service, expires_at, max_uses, use_count, lead_gate, video_url, payment_gate, price, currency, cta_label")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, cta_source")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -543,30 +418,27 @@ export default async function PrivateLinkPage({
   const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
-  // Every non-external link renders a hosted page with a book/contact CTA. Legacy
-  // book/download/event rows are all 'internal' now; prefill_service (if any) just
-  // pre-fills the booking form — it is never required and never gates submission.
+  // Simplified to a single-offer layout (2026-08-08): Hero, Description, Promo
+  // Video, one deliberate CTA — no more profile-style bloat (service pill/terms
+  // matched via the now-unused prefill_service, the generic "book me" lead-gen
+  // form). The download/payment-gate CTA (external_url) is a separate, still-
+  // live mechanism, untouched — it takes priority when configured, since it's
+  // not "no CTA configured", it's a deliberately different CTA type. Only when
+  // NEITHER is set does cta_source decide: the account-level widget the link
+  // creator explicitly chose (scheduling or shop, reusing the exact profile-page
+  // components), or nothing at all if cta_source is null — no fallback of any
+  // kind, unlike the main profile page's own lead-gen fallback (untouched).
   if (pageType !== "external") {
-    // profile_services_public_read RLS gates on is_published; use service role
-    // so services render regardless of publish state (same as dashboard loader).
-    const { data: servicesData } = await supabaseServer
-      .from("profile_services")
-      .select("id, title, description, price_min, price_max, price_label, currency, booking_type, instant_price, instant_currency, instant_tax_rate")
-      .eq("profile_id", profile.id)
-      .order("sort_order", { ascending: true });
-
-    const services = (servicesData ?? []) as Service[];
-    const prefillServiceTitle = link.prefill_service as string | null;
-    const matchedService = prefillServiceTitle
-      ? services.find((s) => s.title === prefillServiceTitle)
-      : null;
-
-    // CTA routing:
-    // - external_url + payment_gate → pay-to-unlock then redirect
-    // - external_url + no payment gate → direct redirect button
-    // - otherwise → booking form (optionally prefilled with service)
     const ctaLabel = (link.cta_label as string | null) || null;
     const gatedUrl = safeUrl(link.external_url as string | null);
+    const ctaSource = link.cta_source as string | null;
+
+    const shopProducts =
+      ctaSource === "shop" &&
+      (profile.shop_provider === "gumroad" || profile.shop_provider === "shopify")
+        ? await getShopProducts(profile.id as string)
+        : [];
+
     const bookCta = (link.payment_gate as boolean) && gatedUrl ? (
       <PaymentGateCta
         linkId={link.id as string}
@@ -587,15 +459,18 @@ export default async function PrivateLinkPage({
         linkSlug={linkSlug}
         label={ctaLabel || "Open"}
       />
-    ) : (
-      <BookLinkButton
-        username={username}
-        profileId={profile.id as string}
-        accent={accent}
-        profileName={displayName}
-        label={ctaLabel}
+    ) : ctaSource === "scheduling" ? (
+      <SchedulingWidget
+        provider={profile.scheduling_provider as string | null}
+        url={profile.scheduling_url as string | null}
       />
-    );
+    ) : ctaSource === "shop" ? (
+      <ShopSection
+        provider={profile.shop_provider as string | null}
+        soundeeUrl={profile.soundee_url as string | null}
+        products={shopProducts}
+      />
+    ) : null;
 
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
@@ -603,11 +478,9 @@ export default async function PrivateLinkPage({
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
           title={link.title as string | null}
-          pill={matchedService && <ServicePill label={matchedService.title} accent={accent} />}
           cta={bookCta}
           videoId={videoId}
           description={link.description as string | null}
-          extra={matchedService && <ServiceTerms service={matchedService} accent={accent} />}
           username={username}
           profileAvatarSrc={profileAvatarSrc}
           displayName={displayName}
