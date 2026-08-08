@@ -203,7 +203,6 @@ export default async function HomePage({
   searchParams: Promise<{
     preview?: string;
     username?: string;
-    claim?: string;
     payment?: string;
     booking_id?: string;
     guest_token?: string;
@@ -348,21 +347,6 @@ export default async function HomePage({
     })();
   }
 
-  // Claim banner — verify token matches this profile and hasn't been claimed yet
-  let showClaimBanner = false;
-  const claimParam = params.claim;
-  if (claimParam && profile.slug) {
-    const { data: claimValid } = await supabase
-      .from("profiles")
-      .select("id, slug, claim_token, is_claimed")
-      .eq("slug", profile.slug as string)
-      .eq("claim_token", claimParam)
-      .eq("is_claimed", false)
-      .maybeSingle();
-    if (claimValid) showClaimBanner = true;
-  }
-
-
   // Fetch active private links for this profile
   const { data: privateLinksData } = await supabase
     .from("private_booking_links")
@@ -433,8 +417,6 @@ const ticket = {
     provider: "eventim",
     url: "https://www.eventim.de/event/...",
   };
-
-  const claimUrl = `https://dashboard.sqrz.com/claim?token=${encodeURIComponent(claimParam ?? "")}&slug=${encodeURIComponent(profile.slug as string ?? "")}`;
 
   const hasRealAvatar =
     profile.avatar_url &&
@@ -517,42 +499,6 @@ const ticket = {
     <>
     <RefCapture refCode={params.ref} />
     {showPaymentBanner && <PaymentSuccessBanner />}
-    {showClaimBanner && (
-      <div style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-        background: "#F5A623",
-        color: "#fff",
-        padding: "14px 20px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 16,
-        boxShadow: "0 2px 12px rgba(245,166,35,0.4)",
-        flexWrap: "wrap",
-        fontFamily: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
-      }}>
-        <span style={{ fontSize: 15, fontWeight: 600 }}>
-          Is this you? Claim this profile and take control of your page.
-        </span>
-        <a
-          href={claimUrl}
-          style={{
-            background: "#fff",
-            color: "#F5A623",
-            fontWeight: 800,
-            fontSize: 14,
-            padding: "8px 18px",
-            borderRadius: 20,
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Claim Profile →
-        </a>
-      </div>
-    )}
     <main className={`profile-page ${template.bodyClass}`}>
 
 
@@ -659,37 +605,16 @@ const ticket = {
             {displayName}
           </h1>
 
-          {/* Empty-state tagline + claim CTA */}
+          {/* Empty-state tagline */}
           {!hasAnyContent && (
-            <>
-              <p style={{
-                fontSize: 15,
-                color: "rgba(255,255,255,0.45)",
-                margin: "0 0 24px",
-                fontWeight: 400,
-              }}>
-                Creative Professional on SQRZ
-              </p>
-              {showClaimBanner && (
-                <a
-                  href={claimUrl}
-                  style={{
-                    display: "inline-block",
-                    padding: "11px 28px",
-                    borderRadius: 999,
-                    border: `1px solid ${template.accent}99`,
-                    background: "transparent",
-                    color: template.accent,
-                    fontSize: 15,
-                    fontWeight: 600,
-                    textDecoration: "none",
-                    whiteSpace: "nowrap",
-                  }}
-                >
-                  Claim this profile →
-                </a>
-              )}
-            </>
+            <p style={{
+              fontSize: 15,
+              color: "rgba(255,255,255,0.45)",
+              margin: "0 0 24px",
+              fontWeight: 400,
+            }}>
+              Creative Professional on SQRZ
+            </p>
           )}
 
           <div
