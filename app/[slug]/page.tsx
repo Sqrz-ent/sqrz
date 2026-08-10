@@ -100,12 +100,20 @@ function VideoEmbed({ videoId }: { videoId: string }) {
 function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
   if (!coverImageSrc) return null;
   return (
-    <div style={{ width: "100%", height: "50vh", overflow: "hidden" }}>
+    <div style={{ position: "relative", width: "100%", aspectRatio: "2 / 1", maxHeight: "60vh", overflow: "hidden" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={coverImageSrc}
         alt={alt}
         style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+      {/* Soft fade from the bottom edge of the hero into the page background */}
+      <div
+        style={{
+          position: "absolute", left: 0, right: 0, bottom: 0, height: "20%",
+          background: "linear-gradient(to bottom, rgba(10,10,10,0) 0%, #0a0a0a 100%)",
+          pointerEvents: "none",
+        }}
       />
     </div>
   );
