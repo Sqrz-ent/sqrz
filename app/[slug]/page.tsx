@@ -140,6 +140,8 @@ function ContentSection({
   description,
   username,
   profileAvatarSrc,
+  avatarFocalX,
+  avatarFocalY,
   displayName,
   accent,
 }: {
@@ -150,6 +152,8 @@ function ContentSection({
   description: string | null;
   username: string;
   profileAvatarSrc: string | null;
+  avatarFocalX: number;
+  avatarFocalY: number;
   displayName: string | null;
   accent: string;
 }) {
@@ -163,7 +167,7 @@ function ContentSection({
           <img
             src={profileAvatarSrc}
             alt={displayName ?? username}
-            style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
+            style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover", objectPosition: `${avatarFocalX * 100}% ${avatarFocalY * 100}%`, flexShrink: 0 }}
           />
         ) : (
           <div
@@ -347,7 +351,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, soundee_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, soundee_url")
     .eq("slug", username)
     .single();
 
@@ -391,6 +395,13 @@ export default async function PrivateLinkPage({
   const profileAvatarSrc = hasRealAvatar
     ? toDisplayImageUrl(profile.avatar_url as string, 64)
     : null;
+  // avatar_url doubles as the wide hero source, so its focal point marks the
+  // important part of the photo. The small circle can't reuse the hero's
+  // zoom/scale (object-fit:cover already fills it — zoom would over-magnify),
+  // but it should honour the focal point via object-position instead of a blind
+  // center-crop. Defaults match the hero (0.5 / 0 = top-centre).
+  const avatarFocalX = profile.avatar_focal_x != null ? Number(profile.avatar_focal_x) : 0.5;
+  const avatarFocalY = profile.avatar_focal_y != null ? Number(profile.avatar_focal_y) : 0;
   const pageType = (link.page_type as string) ?? "internal";
   const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600);
   const videoId = getYouTubeId(link.video_url as string | null);
@@ -509,6 +520,8 @@ export default async function PrivateLinkPage({
           description={link.description as string | null}
           username={username}
           profileAvatarSrc={profileAvatarSrc}
+          avatarFocalX={avatarFocalX}
+          avatarFocalY={avatarFocalY}
           displayName={displayName}
           accent={accent}
         />
@@ -576,6 +589,8 @@ export default async function PrivateLinkPage({
         description={link.description as string | null}
         username={username}
         profileAvatarSrc={profileAvatarSrc}
+        avatarFocalX={avatarFocalX}
+        avatarFocalY={avatarFocalY}
         displayName={displayName}
         accent={accent}
       />
