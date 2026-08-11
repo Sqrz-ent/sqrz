@@ -540,7 +540,10 @@ const ticket = {
         {hasRealAvatar && (
           <>
             <HeroImage
-              src={toDisplayImageUrl(profile.avatar_url as string, 1600) ?? (profile.avatar_url as string)}
+              // Aspect-preserved (contain) so HeroImage's computeCoverTransform
+              // receives correct natural dims — a bare width request crushes any
+              // source wider than 1600 (see toDisplayImageUrl).
+              src={toDisplayImageUrl(profile.avatar_url as string, 1600, { height: 1600, resize: "contain" }) ?? (profile.avatar_url as string)}
               focalX={heroFocalX}
               focalY={heroFocalY}
               zoom={heroZoom}

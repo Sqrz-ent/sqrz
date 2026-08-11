@@ -393,10 +393,14 @@ export default async function PrivateLinkPage({
     !String(profile.avatar_url).includes("placeholder.sqrz.com") &&
     !String(profile.avatar_url).includes("placeholder.");
   const profileAvatarSrc = hasRealAvatar
-    ? toDisplayImageUrl(profile.avatar_url as string, 64)
+    ? // Square, center-cropped derivative for the small circle — cover, not the
+      // default contain, so it fills the 32px circle without letterboxing.
+      toDisplayImageUrl(profile.avatar_url as string, 64, { height: 64, resize: "cover" })
     : null;
   const pageType = (link.page_type as string) ?? "internal";
-  const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600);
+  // Large hero cover — aspect-preserved (contain); the 2:1 container's own
+  // object-fit:cover does the framing.
+  const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600, { height: 1600, resize: "contain" });
   const videoId = getYouTubeId(link.video_url as string | null);
 
   // External links have no hosted page — send visitors straight to the URL.
