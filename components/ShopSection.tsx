@@ -1,17 +1,21 @@
 // Shop — provider-aware rendering, resolved by profiles.shop_provider.
-// soundee: the existing single-link/embed widget, unchanged. gumroad/shopify:
-// a small grid of shop_products cards, plain link-out only (no embed script/
-// iframe — avoids the multi-script-tag conflict risk flagged for Gumroad's
-// own overlay embed). beatstars: reuses the soundee_url column, same as
-// soundee — but note that column must hold BeatStars' *player embed* URL
-// (https://player.beatstars.com/?storeId=<id>, from the artist's Studio →
-// Players embed-code generator), not the storefront homepage URL
-// (username.beatstars.com) — BeatStars has no documented way to derive one
-// from the other, confirmed against their own docs before implementing.
-// null/unset: nothing, same convention as every other optional widget on
-// this page. Shared by the profile page and private link pages
-// (show_shop_widget).
-import SoundeeEmbed from "./SoundeeEmbed";
+// beatstars: an inline iframe sourced from profiles.beatstars_url, which
+// must hold BeatStars' *player embed* URL (https://player.beatstars.com/
+// ?storeId=<id>, from the artist's Studio → Players embed-code generator),
+// not the storefront homepage URL (username.beatstars.com) — BeatStars has
+// no documented way to derive one from the other, confirmed against their
+// own docs before implementing. gumroad/shopify: a small grid of
+// shop_products cards, plain link-out only (no embed script/iframe —
+// avoids the multi-script-tag conflict risk flagged for Gumroad's own
+// overlay embed). null/unset: nothing, same convention as every other
+// optional widget on this page. Shared by the profile page and private
+// link pages (show_shop_widget).
+//
+// Soundee (the provider this column/component was originally built for) was
+// swapped out for BeatStars entirely on 2026-08-13 — shop_provider's DB
+// CHECK constraint no longer allows 'soundee', so a dedicated Soundee
+// rendering branch has no way to ever run; removed rather than kept as dead
+// code (see SoundeeEmbed.tsx's removal in the same commit).
 
 export type ShopProduct = {
   id: string;
@@ -68,24 +72,20 @@ function ProductCard({ product }: { product: ShopProduct }) {
 
 export default function ShopSection({
   provider,
-  soundeeUrl,
+  beatstarsUrl,
   products,
 }: {
   provider: string | null;
-  soundeeUrl: string | null;
+  beatstarsUrl: string | null;
   products: ShopProduct[];
 }) {
   if (!provider) return null;
 
-  if (provider === "soundee") {
-    return <SoundeeEmbed url={soundeeUrl} />;
-  }
-
   if (provider === "beatstars") {
-    if (!soundeeUrl) return null;
+    if (!beatstarsUrl) return null;
     return (
       <iframe
-        src={soundeeUrl}
+        src={beatstarsUrl}
         title="BeatStars store"
         width="100%"
         height="500"
