@@ -2,11 +2,15 @@
 // soundee: the existing single-link/embed widget, unchanged. gumroad/shopify:
 // a small grid of shop_products cards, plain link-out only (no embed script/
 // iframe — avoids the multi-script-tag conflict risk flagged for Gumroad's
-// own overlay embed). beatstars: display-only addition, plain link-out card
-// reusing the soundee_url column (no dedicated input/picker changes — the DB
-// value is already there). null/unset: nothing, same convention as every
-// other optional widget on this page. Shared by the profile page and private
-// link pages (show_shop_widget).
+// own overlay embed). beatstars: reuses the soundee_url column, same as
+// soundee — but note that column must hold BeatStars' *player embed* URL
+// (https://player.beatstars.com/?storeId=<id>, from the artist's Studio →
+// Players embed-code generator), not the storefront homepage URL
+// (username.beatstars.com) — BeatStars has no documented way to derive one
+// from the other, confirmed against their own docs before implementing.
+// null/unset: nothing, same convention as every other optional widget on
+// this page. Shared by the profile page and private link pages
+// (show_shop_widget).
 import SoundeeEmbed from "./SoundeeEmbed";
 
 export type ShopProduct = {
@@ -80,15 +84,13 @@ export default function ShopSection({
   if (provider === "beatstars") {
     if (!soundeeUrl) return null;
     return (
-      <a
-        href={soundeeUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={beatstarsCardStyle}
-      >
-        <BeatStarsIcon />
-        <span style={beatstarsLabelStyle}>Shop on BeatStars</span>
-      </a>
+      <iframe
+        src={soundeeUrl}
+        title="BeatStars store"
+        width="100%"
+        height="500"
+        style={embedStyle}
+      />
     );
   }
 
@@ -106,35 +108,14 @@ export default function ShopSection({
   return null;
 }
 
-// No official BeatStars logo asset in this repo — a generic play/beat glyph
-// stands in as the icon, matching the plain-glyph treatment TikTok's social
-// icon already gets above (app/page.tsx) rather than pulling in a brand SVG.
-function BeatStarsIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
-      <path d="M8 5v14l11-7z" />
-    </svg>
-  );
-}
-
 /* styles — mirrors Services.tsx's card language (accent color, muted card bg) */
 
-const beatstarsCardStyle = {
-  display: "flex",
-  alignItems: "center",
-  gap: 10,
-  padding: "12px 16px",
-  borderRadius: 14,
-  background: "#dedede19",
-  border: "1px solid #dedede3e",
-  color: "rgba(255,255,255,0.92)",
-  textDecoration: "none",
-  width: "fit-content",
-};
-
-const beatstarsLabelStyle = {
-  fontSize: 14,
-  fontWeight: 600,
+// Matches MusicEmbeds.tsx's iframe treatment (no frame border, same
+// borderRadius as its Mixcloud embed) for visual consistency across the
+// profile's embedded-media sections.
+const embedStyle = {
+  border: "none",
+  borderRadius: 8,
 };
 
 const gridStyle = {
