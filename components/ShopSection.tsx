@@ -2,9 +2,11 @@
 // soundee: the existing single-link/embed widget, unchanged. gumroad/shopify:
 // a small grid of shop_products cards, plain link-out only (no embed script/
 // iframe — avoids the multi-script-tag conflict risk flagged for Gumroad's
-// own overlay embed). null/unset: nothing, same convention as every other
-// optional widget on this page. Shared by the profile page and private link
-// pages (show_shop_widget).
+// own overlay embed). beatstars: display-only addition, plain link-out card
+// reusing the soundee_url column (no dedicated input/picker changes — the DB
+// value is already there). null/unset: nothing, same convention as every
+// other optional widget on this page. Shared by the profile page and private
+// link pages (show_shop_widget).
 import SoundeeEmbed from "./SoundeeEmbed";
 
 export type ShopProduct = {
@@ -75,6 +77,21 @@ export default function ShopSection({
     return <SoundeeEmbed url={soundeeUrl} />;
   }
 
+  if (provider === "beatstars") {
+    if (!soundeeUrl) return null;
+    return (
+      <a
+        href={soundeeUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={beatstarsCardStyle}
+      >
+        <BeatStarsIcon />
+        <span style={beatstarsLabelStyle}>Shop on BeatStars</span>
+      </a>
+    );
+  }
+
   if (provider === "gumroad" || provider === "shopify") {
     if (!products.length) return null;
     return (
@@ -89,7 +106,36 @@ export default function ShopSection({
   return null;
 }
 
+// No official BeatStars logo asset in this repo — a generic play/beat glyph
+// stands in as the icon, matching the plain-glyph treatment TikTok's social
+// icon already gets above (app/page.tsx) rather than pulling in a brand SVG.
+function BeatStarsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
 /* styles — mirrors Services.tsx's card language (accent color, muted card bg) */
+
+const beatstarsCardStyle = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  padding: "12px 16px",
+  borderRadius: 14,
+  background: "#dedede19",
+  border: "1px solid #dedede3e",
+  color: "rgba(255,255,255,0.92)",
+  textDecoration: "none",
+  width: "fit-content",
+};
+
+const beatstarsLabelStyle = {
+  fontSize: 14,
+  fontWeight: 600,
+};
 
 const gridStyle = {
   display: "grid",

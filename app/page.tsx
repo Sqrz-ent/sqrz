@@ -455,11 +455,12 @@ const ticket = {
     profile.social_linkedin
   );
 
-  // Provider-aware — soundee is driven by soundee_url (unchanged); gumroad/
-  // shopify need at least one fetched product before the section counts as
-  // "there's something here" (matches ShopSection's own empty-grid null-return).
+  // Provider-aware — soundee/beatstars are both driven by soundee_url
+  // (unchanged); gumroad/shopify need at least one fetched product before
+  // the section counts as "there's something here" (matches ShopSection's
+  // own empty-grid null-return).
   const hasShop =
-    profile.shop_provider === "soundee"
+    profile.shop_provider === "soundee" || profile.shop_provider === "beatstars"
       ? Boolean(profile.soundee_url)
       : profile.shop_provider === "gumroad" || profile.shop_provider === "shopify"
       ? shopProducts.length > 0
