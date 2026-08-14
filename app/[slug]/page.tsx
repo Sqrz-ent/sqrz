@@ -14,6 +14,8 @@ import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import SchedulingWidget from "@/components/SchedulingWidget";
 import ShopSection from "@/components/ShopSection";
+import LinkOutButton from "@/components/LinkOutButton";
+import { floatingButtonStyle } from "@/lib/floatingCta";
 import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
 
@@ -351,7 +353,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url")
     .eq("slug", username)
     .single();
 
@@ -463,6 +465,12 @@ export default async function PrivateLinkPage({
     const showSchedulingCta = link.show_scheduling_cta as boolean;
     const showShopWidget = link.show_shop_widget as boolean;
 
+    // Floating "Visit Store" button — gated on this link's show_shop_widget
+    // toggle (the primary gate), and only shown when there's actually a store
+    // to link to (shop_provider set + shop_store_url present).
+    const shopStoreUrl = safeUrl(profile.shop_store_url as string | null);
+    const showVisitStore = showShopWidget && !!profile.shop_provider && !!shopStoreUrl;
+
     const shopProducts =
       showShopWidget &&
       (profile.shop_provider === "gumroad" || profile.shop_provider === "shopify")
@@ -507,6 +515,9 @@ export default async function PrivateLinkPage({
             provider={profile.scheduling_provider as string | null}
             url={profile.scheduling_url as string | null}
           />
+        )}
+        {showVisitStore && (
+          <LinkOutButton url={shopStoreUrl as string} text="Visit Store" style={floatingButtonStyle} />
         )}
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
