@@ -14,17 +14,8 @@ import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import SchedulingWidget from "@/components/SchedulingWidget";
 import ShopSection from "@/components/ShopSection";
-import LinkOutButton from "@/components/LinkOutButton";
-import { floatingButtonStyle } from "@/lib/floatingCta";
 import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
-
-// Provider label for the "Visit [Provider] Store" floating CTA below.
-const SHOP_PROVIDER_LABELS: Record<string, string> = {
-  beatstars: "BeatStars",
-  shopify: "Shopify",
-  gumroad: "Gumroad",
-};
 
 export const revalidate = 0;
 
@@ -360,7 +351,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, beatstars_store_url, shop_store_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url")
     .eq("slug", username)
     .single();
 
@@ -453,21 +444,17 @@ export default async function PrivateLinkPage({
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
   // Single-offer layout (2026-08-08, then revised same day): Hero, Description,
-  // Promo Video, and two independently-toggled CTA slots — no more profile-style
-  // bloat (service pill/terms matched via the now-unused prefill_service, the
-  // generic "book me" lead-gen form). show_scheduling_cta and show_shop_widget
-  // stay independent toggles (either, both, or neither can be on), but what
-  // show_scheduling_cta actually renders changed 2026-08-14: it's now a shared
-  // floating-slot resolver — Scheduling ("Book …") or Shop ("Visit … Store"),
-  // whichever of profiles.scheduling_provider/shop_provider is configured
-  // (mutually exclusive at the account level, enforced upstream in the
-  // dashboard/iOS Business UI) — see floatingActionCta below. show_shop_widget
-  // (the inline product grid/player) is untouched by that change — it's a
-  // completely separate slot and can be on regardless of what the floating
-  // button shows. The download/payment-gate CTA (external_url) is a separate,
-  // still-live mechanism, untouched — it takes priority over the floating slot
-  // in the inline `cta` slot, since it's a deliberately different CTA type, not
-  // "nothing configured". The floating slot is independent of that inline slot
+  // Promo Video, and two INDEPENDENT CTA toggles — no more profile-style bloat
+  // (service pill/terms matched via the now-unused prefill_service, the generic
+  // "book me" lead-gen form). Replaces the earlier single-choice cta_source
+  // design: show_scheduling_cta and show_shop_widget can each be on/off
+  // independently, so a page can have both a floating scheduling button and an
+  // inline shop section at once, either alone, or neither (no fallback of any
+  // kind, unlike the main profile page's own lead-gen fallback — untouched).
+  // The download/payment-gate CTA (external_url) is a separate, still-live
+  // mechanism, untouched — it takes priority over show_scheduling_cta in the
+  // inline `cta` slot, since it's a deliberately different CTA type, not
+  // "nothing configured". show_scheduling_cta is independent of that slot
   // entirely — it floats (see the page-level render below), matching the
   // profile page's primary CTA placement exactly, not the inline slot.
   if (pageType !== "external") {
@@ -512,36 +499,15 @@ export default async function PrivateLinkPage({
       />
     ) : null;
 
-    // The floating action button (upper-right, show_scheduling_cta) is a
-    // single shared slot: Scheduling ("Book …") or Shop ("Visit … Store") —
-    // mutually exclusive at the account level (profiles.scheduling_provider
-    // vs. shop_provider, enforced in the dashboard/iOS Business UI, never
-    // both by design). Scheduling wins predictably if old data still has
-    // both set (same priority the Business UI's own conflict warning
-    // documents) — never both, never a crash. show_shop_widget (the inline
-    // product grid/player rendered as shopWidget above) is a completely
-    // separate, untouched toggle — this only concerns the floating button.
-    const schedulingProvider = profile.scheduling_provider as string | null;
-    const shopProviderForCta = profile.shop_provider as string | null;
-    const shopStoreUrl =
-      shopProviderForCta === "beatstars"
-        ? (profile.beatstars_store_url as string | null)
-        : (profile.shop_store_url as string | null);
-
-    const floatingActionCta = !showSchedulingCta ? null : schedulingProvider ? (
-      <SchedulingWidget provider={schedulingProvider} url={profile.scheduling_url as string | null} />
-    ) : shopProviderForCta && shopStoreUrl ? (
-      <LinkOutButton
-        url={shopStoreUrl}
-        text={`Visit ${SHOP_PROVIDER_LABELS[shopProviderForCta] ?? shopProviderForCta} Store`}
-        style={floatingButtonStyle}
-      />
-    ) : null;
-
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        {floatingActionCta}
+        {showSchedulingCta && (
+          <SchedulingWidget
+            provider={profile.scheduling_provider as string | null}
+            url={profile.scheduling_url as string | null}
+          />
+        )}
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
           title={link.title as string | null}
