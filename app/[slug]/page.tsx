@@ -14,8 +14,18 @@ import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import SchedulingWidget from "@/components/SchedulingWidget";
 import ShopSection from "@/components/ShopSection";
+import LinkOutButton from "@/components/LinkOutButton";
+import { floatingButtonStyle } from "@/lib/floatingCta";
 import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
+
+// "Visit … Store" floating-button label per shop provider. Scoped to
+// shopify/gumroad (they have a storefront URL, profiles.shop_store_url);
+// beatstars uses its inline player embed instead, no floating store button.
+const SHOP_STORE_LABELS: Record<string, string> = {
+  shopify: "Shopify",
+  gumroad: "Gumroad",
+};
 
 export const revalidate = 0;
 
@@ -351,7 +361,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url")
     .eq("slug", username)
     .single();
 
@@ -443,20 +453,18 @@ export default async function PrivateLinkPage({
   const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
-  // Single-offer layout (2026-08-08, then revised same day): Hero, Description,
-  // Promo Video, and two INDEPENDENT CTA toggles — no more profile-style bloat
-  // (service pill/terms matched via the now-unused prefill_service, the generic
-  // "book me" lead-gen form). Replaces the earlier single-choice cta_source
-  // design: show_scheduling_cta and show_shop_widget can each be on/off
-  // independently, so a page can have both a floating scheduling button and an
-  // inline shop section at once, either alone, or neither (no fallback of any
-  // kind, unlike the main profile page's own lead-gen fallback — untouched).
-  // The download/payment-gate CTA (external_url) is a separate, still-live
-  // mechanism, untouched — it takes priority over show_scheduling_cta in the
-  // inline `cta` slot, since it's a deliberately different CTA type, not
-  // "nothing configured". show_scheduling_cta is independent of that slot
-  // entirely — it floats (see the page-level render below), matching the
-  // profile page's primary CTA placement exactly, not the inline slot.
+  // Single-offer layout (2026-08-08 reset): Hero, Description, Promo Video, plus
+  // two independently-toggled slots. show_shop_widget = the inline shop
+  // (ShopSection: beatstars player embed OR shopify/gumroad product grid) —
+  // untouched. show_scheduling_cta = the FLOATING action button (top-right),
+  // which as of 2026-08-14 is a shared slot: it renders "Book …" when the
+  // profile has a scheduling integration, or "Visit … Store" when the profile
+  // has a shopify/gumroad shop with a storefront URL — never both. Scheduling
+  // and Shop are mutually exclusive at the account level (enforced at write
+  // time in the dashboard/iOS Business pages), so in practice only one is set;
+  // if legacy data has both, scheduling wins here (deterministic, never a
+  // crash). The download/payment-gate CTA (external_url) is a separate,
+  // still-live inline mechanism, untouched.
   if (pageType !== "external") {
     const ctaLabel = (link.cta_label as string | null) || null;
     const gatedUrl = safeUrl(link.external_url as string | null);
@@ -499,15 +507,32 @@ export default async function PrivateLinkPage({
       />
     ) : null;
 
+    // Floating action button (top-right) — resolved when show_scheduling_cta is
+    // on. Scheduling requires BOTH provider and url (a dangling provider with no
+    // url renders nothing and must fall through to shop, not swallow the slot).
+    // Shop "Visit Store" is shopify/gumroad + a storefront URL; beatstars has no
+    // floating store button (it shows its inline player via show_shop_widget).
+    const schedulingProvider = profile.scheduling_provider as string | null;
+    const schedulingUrl = profile.scheduling_url as string | null;
+    const shopProvider = profile.shop_provider as string | null;
+    const shopStoreUrl = safeUrl(profile.shop_store_url as string | null);
+    const shopStoreReady =
+      (shopProvider === "shopify" || shopProvider === "gumroad") && !!shopStoreUrl;
+
+    const floatingActionCta = !showSchedulingCta ? null : schedulingProvider && schedulingUrl ? (
+      <SchedulingWidget provider={schedulingProvider} url={schedulingUrl} />
+    ) : shopStoreReady ? (
+      <LinkOutButton
+        url={shopStoreUrl as string}
+        text={`Visit ${SHOP_STORE_LABELS[shopProvider as string] ?? "the"} Store`}
+        style={floatingButtonStyle}
+      />
+    ) : null;
+
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        {showSchedulingCta && (
-          <SchedulingWidget
-            provider={profile.scheduling_provider as string | null}
-            url={profile.scheduling_url as string | null}
-          />
-        )}
+        {floatingActionCta}
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection
           title={link.title as string | null}
