@@ -109,22 +109,35 @@ function VideoEmbed({ videoId }: { videoId: string }) {
 // this wrapper's previous plain object-fit:cover had no object-position
 // override, which is CSS center/center by default; the fallback preserves
 // that exact existing look for every link that hasn't set a focal point yet.
+//
+// Sizing (2026-08-17, second pass) — now the EXACT SAME mechanism as the
+// profile hero, not just visually similar numbers: fixed height: 480 (no
+// aspect-ratio, no max-height clamp), full-bleed width from an unconstrained
+// parent. Previously this used `aspect-ratio: 2/1; max-height: 60vh`, which
+// LOOKED like a single fixed ratio but actually rendered differently by
+// viewport (mobile stayed a genuine unclamped 2:1, while a realistic
+// 1280×800 desktop viewport got clamped by max-height to an effective
+// 1280:480) — a real but indirect and viewport-height-dependent way of
+// arriving at roughly hero-shaped numbers. Matching app/page.tsx's own
+// heroStyle mechanism directly (see its `height: 480` in the hasAnyContent
+// branch) makes the two surfaces render identically for the same reason,
+// not coincidentally — and lets the iOS picker reuse the hero's exact
+// picker configuration wholesale (see sqrz-ios/CLAUDE.md), no separate
+// mobileFraction math needed.
 function CoverImage({
   coverImageSrc,
-  alt,
   focalX,
   focalY,
   zoom,
 }: {
   coverImageSrc: string | null;
-  alt: string;
   focalX: number;
   focalY: number;
   zoom: number;
 }) {
   if (!coverImageSrc) return null;
   return (
-    <div style={{ position: "relative", width: "100%", aspectRatio: "2 / 1", maxHeight: "60vh", overflow: "hidden" }}>
+    <div style={{ position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
       <HeroImage src={coverImageSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
       {/* Soft fade from the bottom edge of the hero into the page background */}
       <div
@@ -601,7 +614,6 @@ export default async function PrivateLinkPage({
         )}
         <CoverImage
           coverImageSrc={coverImageSrc}
-          alt={(link.title as string) ?? "Cover"}
           focalX={coverFocalX}
           focalY={coverFocalY}
           zoom={coverZoom}
@@ -674,12 +686,11 @@ export default async function PrivateLinkPage({
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
       <CoverImage
-          coverImageSrc={coverImageSrc}
-          alt={(link.title as string) ?? "Cover"}
-          focalX={coverFocalX}
-          focalY={coverFocalY}
-          zoom={coverZoom}
-        />
+        coverImageSrc={coverImageSrc}
+        focalX={coverFocalX}
+        focalY={coverFocalY}
+        zoom={coverZoom}
+      />
       <ContentSection
         title={link.title as string | null}
         cta={downloadCta}
