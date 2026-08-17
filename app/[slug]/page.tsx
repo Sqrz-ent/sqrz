@@ -18,6 +18,7 @@ import LinkOutButton from "@/components/LinkOutButton";
 import { floatingButtonStyle } from "@/lib/floatingCta";
 import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
+import HeroImage from "@/components/HeroImage";
 
 export const revalidate = 0;
 
@@ -99,16 +100,32 @@ function VideoEmbed({ videoId }: { videoId: string }) {
   );
 }
 
-function CoverImage({ coverImageSrc, alt }: { coverImageSrc: string | null; alt: string }) {
+// Focal point + zoom (2026-08-17) reuse HeroImage as-is — it's already a
+// fully generic <img>+computeCoverTransform client component (src/focalX/
+// focalY/zoom, no profile-specific coupling), so this drops straight in as
+// the wrapper's image layer rather than duplicating any transform math.
+// Null focalX/focalY/zoom (no crop chosen yet) fall back to true center/
+// zoom-1 here — unlike the profile hero's center-TOP (0.5/0) default, since
+// this wrapper's previous plain object-fit:cover had no object-position
+// override, which is CSS center/center by default; the fallback preserves
+// that exact existing look for every link that hasn't set a focal point yet.
+function CoverImage({
+  coverImageSrc,
+  alt,
+  focalX,
+  focalY,
+  zoom,
+}: {
+  coverImageSrc: string | null;
+  alt: string;
+  focalX: number;
+  focalY: number;
+  zoom: number;
+}) {
   if (!coverImageSrc) return null;
   return (
     <div style={{ position: "relative", width: "100%", aspectRatio: "2 / 1", maxHeight: "60vh", overflow: "hidden" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={coverImageSrc}
-        alt={alt}
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-      />
+      <HeroImage src={coverImageSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
       {/* Soft fade from the bottom edge of the hero into the page background */}
       <div
         style={{
@@ -361,7 +378,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget, show_external_cta")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget, show_external_cta, cover_focal_x, cover_focal_y, cover_zoom")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -400,9 +417,18 @@ export default async function PrivateLinkPage({
       toDisplayImageUrl(profile.avatar_url as string, 64, { height: 64, resize: "cover" })
     : null;
   const pageType = (link.page_type as string) ?? "internal";
-  // Large hero cover — aspect-preserved (contain); the 2:1 container's own
-  // object-fit:cover does the framing.
+  // Large hero cover — aspect-preserved (contain) so HeroImage's
+  // computeCoverTransform receives correct natural dims (same reasoning as
+  // the profile hero's own avatar request, see app/page.tsx).
   const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600, { height: 1600, resize: "contain" });
+  // Focal point (normalized 0..1) + zoom set via FocalPickerView on iOS.
+  // Fallback for links that never set one: 0.5 / 0.5 (true center, matching
+  // this wrapper's previous unstyled object-fit:cover default) / zoom 1
+  // (exactly cover) — see CoverImage's own comment for why this differs from
+  // the profile hero's center-TOP default.
+  const coverFocalX = link.cover_focal_x != null ? Number(link.cover_focal_x) : 0.5;
+  const coverFocalY = link.cover_focal_y != null ? Number(link.cover_focal_y) : 0.5;
+  const coverZoom = link.cover_zoom != null ? Number(link.cover_zoom) : 1;
   const videoId = getYouTubeId(link.video_url as string | null);
 
   // External links have no hosted page — send visitors straight to the URL.
@@ -573,7 +599,13 @@ export default async function PrivateLinkPage({
             style={floatingButtonStyle}
           />
         )}
-        <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
+        <CoverImage
+          coverImageSrc={coverImageSrc}
+          alt={(link.title as string) ?? "Cover"}
+          focalX={coverFocalX}
+          focalY={coverFocalY}
+          zoom={coverZoom}
+        />
         <ContentSection
           title={link.title as string | null}
           cta={bookCta}
@@ -641,7 +673,13 @@ export default async function PrivateLinkPage({
 
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-      <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
+      <CoverImage
+          coverImageSrc={coverImageSrc}
+          alt={(link.title as string) ?? "Cover"}
+          focalX={coverFocalX}
+          focalY={coverFocalY}
+          zoom={coverZoom}
+        />
       <ContentSection
         title={link.title as string | null}
         cta={downloadCta}
