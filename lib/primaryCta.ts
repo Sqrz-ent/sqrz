@@ -1,7 +1,18 @@
-// Resolves the single primary floating CTA on a public profile from whatever
-// booking/scheduling integrations the artist has configured. SQRZ hands off
-// pre-booking traffic and gets out of the way — once a visitor has a direct
-// way to book, that's the one path, not a second competing lead-gen popup.
+// Resolves the single primary floating CTA on a public profile from the
+// artist's explicit Action Button selection (profiles.action_button_source).
+// SQRZ hands off pre-booking traffic and gets out of the way — once a
+// visitor has a direct way to book, that's the one path, not a second
+// competing lead-gen popup.
+//
+// Rewritten 2026-08-17: replaces the old priority-fallback chain (a starred
+// private link always won if present, then scheduling activated automatically
+// the moment provider+url were both set, with no way to have scheduling
+// configured but NOT active). That chain is gone — action_button_source is
+// now a direct, explicit single-select written by the artist (iOS: LinksView's
+// per-link star + BusinessView's Scheduling/Shopping/External star, all four
+// writing the same two profiles columns, action_button_source/_link_id, with
+// DB-trigger-free exclusivity — there's only ever one value in one place).
+// Filling in a section's fields no longer activates it on its own.
 
 export type FeaturedLink = {
   id: string;
@@ -17,92 +28,78 @@ export type PrimaryCtaAction =
   | { type: "scheduling"; provider: "calendly"; url: string; label: string }
   | { type: "scheduling"; provider: "hubspot"; url: string; label: string }
   | { type: "scheduling"; provider: "linkout"; url: string; label: string }
+  | { type: "shop"; url: string; label: string }
+  | { type: "external"; url: string; label: string }
   | { type: "leadForm"; label: string };
 
 export type ProfileForPrimaryCta = {
   slug?: string | null;
+  action_button_source?: string | null;
   scheduling_provider?: string | null;
   scheduling_url?: string | null;
+  shop_store_url?: string | null;
+  external_link_url?: string | null;
+  external_link_label?: string | null;
+  // Pre-resolved by the caller from action_button_link_id when
+  // action_button_source === "private_link" — see app/page.tsx. Not queried
+  // in here; this module stays a pure function of already-fetched data.
   featuredLink?: FeaturedLink | null;
 };
 
-// Ordered list of action-provider resolvers, first match wins. Adding a new
-// provider (Cal.com, a merch link, a waitlist, "in person only", …) later is
-// one more entry here — no changes to callers or to getPrimaryCTA itself.
-const resolvers: Array<(profile: ProfileForPrimaryCta) => PrimaryCtaAction | null> = [
-  // Top priority: a Private Link toggled "featured" (profiles.private_booking_
-  // links.show_on_profile — exclusive one-at-a-time via a DB trigger, same
-  // field the retired hero pill read). Wins over any scheduling provider,
-  // since the artist explicitly chose this as their one thing to push.
-  (profile) => {
+// A bare "spotify.com" needs a protocol to resolve as an absolute link rather
+// than a relative path. Mirrors web's normalizeExternalUrl() in _app.links.tsx.
+function withProtocol(url: string): string {
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
+
+export function getPrimaryCTA(profile: ProfileForPrimaryCta): PrimaryCtaAction {
+  if (profile.action_button_source === "private_link" && profile.featuredLink) {
     const link = profile.featuredLink;
-    if (!link) return null;
     const label = link.ctaLabel || link.title;
-    // External always goes straight to the destination now — no payment-gate
-    // check. (Payment-gated checkout-through-the-internal-page was leftover
-    // from when Instant Payment existed; that's deactivated, and this was the
-    // last read-side remnant of it.) No external_url → genuinely internal,
-    // routes to the link's own /{slug} page.
+    // No external_url → genuinely internal, routes to the link's own /{slug}
+    // page (which renders its own CTA config independently — a different,
+    // per-link concept from this account-level selection).
     if (link.externalUrl) {
-      const url = /^https?:\/\//i.test(link.externalUrl) ? link.externalUrl : `https://${link.externalUrl}`;
-      return { type: "featuredLink", mode: "external", url, label, linkId: link.id, linkSlug: link.linkSlug };
+      return {
+        type: "featuredLink",
+        mode: "external",
+        url: withProtocol(link.externalUrl),
+        label,
+        linkId: link.id,
+        linkSlug: link.linkSlug,
+      };
     }
     const pageUrl = `https://${profile.slug}.sqrz.com/${link.linkSlug}`;
     return { type: "featuredLink", mode: "page", url: pageUrl, label, linkId: link.id, linkSlug: link.linkSlug };
-  },
-  (profile) => {
-    if (profile.scheduling_provider === "calendly" && profile.scheduling_url) {
-      return {
-        type: "scheduling",
-        provider: "calendly",
-        url: profile.scheduling_url,
-        label: "Book a Call",
-      };
-    }
-    return null;
-  },
-  (profile) => {
-    if (profile.scheduling_provider === "hubspot" && profile.scheduling_url) {
-      return {
-        type: "scheduling",
-        provider: "hubspot",
-        url: profile.scheduling_url,
-        // Same user-facing intent as Calendly — no per-provider label variance
-        // unless there's a reason for one.
-        label: "Book a Call",
-      };
-    }
-    return null;
-  },
-  // Catch-all for any other configured provider (OpenTable, Resy, Tock,
-  // SevenRooms, Eventbrite, Dice, Ticket Tailor, …) — just open the link in a
-  // new tab. Covers every current and future generic provider with one
-  // branch; only Calendly/HubSpot need their own true integration.
-  (profile) => {
-    if (
-      profile.scheduling_provider &&
-      profile.scheduling_provider !== "calendly" &&
-      profile.scheduling_provider !== "hubspot" &&
-      profile.scheduling_url
-    ) {
-      return {
-        type: "scheduling",
-        provider: "linkout",
-        url: profile.scheduling_url,
-        label: "Book a Call",
-      };
-    }
-    return null;
-  },
-];
-
-export function getPrimaryCTA(profile: ProfileForPrimaryCta): PrimaryCtaAction {
-  for (const resolve of resolvers) {
-    const action = resolve(profile);
-    if (action) return action;
   }
-  // Fallback: no featured link, no scheduling integration — the lead-gen
-  // form. On by default now, independent of hasActiveServices; only the two
-  // higher-priority tiers above supersede it.
+
+  if (profile.action_button_source === "scheduling" && profile.scheduling_provider && profile.scheduling_url) {
+    if (profile.scheduling_provider === "calendly") {
+      return { type: "scheduling", provider: "calendly", url: profile.scheduling_url, label: "Book a Call" };
+    }
+    if (profile.scheduling_provider === "hubspot") {
+      return { type: "scheduling", provider: "hubspot", url: profile.scheduling_url, label: "Book a Call" };
+    }
+    // Catch-all for any other configured provider (OpenTable, Resy, Tock,
+    // SevenRooms, Eventbrite, Dice, Ticket Tailor, …) — just open the link in
+    // a new tab. Only Calendly/HubSpot need their own true integration.
+    return { type: "scheduling", provider: "linkout", url: profile.scheduling_url, label: "Book a Call" };
+  }
+
+  if (profile.action_button_source === "shop" && profile.shop_store_url) {
+    return { type: "shop", url: withProtocol(profile.shop_store_url), label: "Visit my Store" };
+  }
+
+  if (profile.action_button_source === "external" && profile.external_link_url) {
+    return {
+      type: "external",
+      url: withProtocol(profile.external_link_url),
+      label: profile.external_link_label || "Visit Link",
+    };
+  }
+
+  // Selected-but-not-actually-configured (e.g. "scheduling" chosen with no
+  // provider/url set yet, or a starred link that's since been deleted) falls
+  // through to here too, same as no selection at all — never a broken button.
   return { type: "leadForm", label: "Book me" };
 }

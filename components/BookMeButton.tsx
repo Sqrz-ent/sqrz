@@ -13,23 +13,35 @@ export default function BookMeButton({
   username,
   profileId,
   profileName = null,
+  actionButtonSource = null,
   schedulingProvider = null,
   schedulingUrl = null,
+  shopStoreUrl = null,
+  externalLinkUrl = null,
+  externalLinkLabel = null,
   featuredLink = null,
 }: {
   username: string;
   profileId: string;
   profileName?: string | null;
+  actionButtonSource?: string | null;
   schedulingProvider?: string | null;
   schedulingUrl?: string | null;
+  shopStoreUrl?: string | null;
+  externalLinkUrl?: string | null;
+  externalLinkLabel?: string | null;
   featuredLink?: FeaturedLink | null;
 }) {
   const [open, setOpen] = useState(false);
 
   const cta = getPrimaryCTA({
     slug: username,
+    action_button_source: actionButtonSource,
     scheduling_provider: schedulingProvider,
     scheduling_url: schedulingUrl,
+    shop_store_url: shopStoreUrl,
+    external_link_url: externalLinkUrl,
+    external_link_label: externalLinkLabel,
     featuredLink,
   });
 
@@ -77,6 +89,17 @@ export default function BookMeButton({
   }
 
   if (cta.type === "scheduling" && cta.provider === "linkout") {
+    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+  }
+
+  // Shop and External (2026-08-17) — both are just "open a URL," same as the
+  // linkout scheduling provider above; no dedicated popup/modal component
+  // needed for either.
+  if (cta.type === "shop") {
+    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+  }
+
+  if (cta.type === "external") {
     return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
   }
 

@@ -353,7 +353,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url, ticketing_url")
     .eq("slug", username)
     .single();
 
@@ -361,7 +361,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget, show_ticketing_cta")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -446,30 +446,60 @@ export default async function PrivateLinkPage({
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
   // Single-offer layout (2026-08-08, then revised same day): Hero, Description,
-  // Promo Video, and two INDEPENDENT CTA toggles — no more profile-style bloat
-  // (service pill/terms matched via the now-unused prefill_service, the generic
+  // Promo Video, and CTA toggles — no more profile-style bloat (service
+  // pill/terms matched via the now-unused prefill_service, the generic
   // "book me" lead-gen form). Replaces the earlier single-choice cta_source
-  // design: show_scheduling_cta and show_shop_widget can each be on/off
-  // independently, so a page can have both a floating scheduling button and an
-  // inline shop section at once, either alone, or neither (no fallback of any
-  // kind, unlike the main profile page's own lead-gen fallback — untouched).
+  // design.
+  //
+  // Floating-CTA slot (2026-08-15, extended to 3 options): show_scheduling_cta,
+  // show_shop_widget, and show_ticketing_cta are three INDEPENDENT DB booleans
+  // (not a single enum column) — deliberately NOT consolidated, because
+  // sqrz-ios's CreateLinkView writes show_scheduling_cta/show_shop_widget
+  // directly today and changing that write path is out of this task's scope
+  // (sqrz-profiles only; see the show_ticketing_cta migration comment). "Only
+  // one active at a time" for the floating slot is instead enforced here via
+  // a priority resolver (scheduling > shop > ticketing) — the exact same
+  // first-match-wins shape this repo already uses in lib/primaryCta.ts for a
+  // conceptually identical problem. In practice all three have always been
+  // set mutually exclusively anyway (checked live data before this change:
+  // zero existing rows had more than one on), so this resolver formalizes an
+  // existing invariant rather than changing real behavior — it just now also
+  // protects against two floating buttons ever stacking if that ever changes.
+  // The inline shop section (`shopWidget` below) is NOT part of this
+  // resolution — it stays independently gated on the raw show_shop_widget,
+  // exactly as before, so "floating scheduling + inline shop at once" (a
+  // deliberately supported combo per the original design) still works.
   // The download/payment-gate CTA (external_url) is a separate, still-live
-  // mechanism, untouched — it takes priority over show_scheduling_cta in the
-  // inline `cta` slot, since it's a deliberately different CTA type, not
-  // "nothing configured". show_scheduling_cta is independent of that slot
-  // entirely — it floats (see the page-level render below), matching the
-  // profile page's primary CTA placement exactly, not the inline slot.
+  // mechanism, untouched — it takes priority in the inline `cta` slot, since
+  // it's a deliberately different CTA type, not "nothing configured". None of
+  // the three floating-slot toggles touch that inline slot — they float (see
+  // the page-level render below), matching the profile page's primary CTA
+  // placement exactly.
   if (pageType !== "external") {
     const ctaLabel = (link.cta_label as string | null) || null;
     const gatedUrl = safeUrl(link.external_url as string | null);
     const showSchedulingCta = link.show_scheduling_cta as boolean;
     const showShopWidget = link.show_shop_widget as boolean;
+    const showTicketingCtaRaw = link.show_ticketing_cta as boolean;
+    const ticketingUrl = safeUrl(profile.ticketing_url as string | null);
 
-    // Floating "Visit Store" button — gated on this link's show_shop_widget
-    // toggle (the primary gate), and only shown when there's actually a store
-    // to link to (shop_provider set + shop_store_url present).
+    // Priority resolver for the floating slot — first match wins, matching
+    // lib/primaryCta.ts's own pattern. Each candidate also requires its
+    // underlying data to actually be present (a toggle with nothing to link
+    // to doesn't count), same guard shop already had.
+    const activeFloatingCta = showSchedulingCta
+      ? "scheduling"
+      : showShopWidget && !!profile.shop_provider && !!safeUrl(profile.shop_store_url as string | null)
+      ? "shop"
+      : showTicketingCtaRaw && !!ticketingUrl
+      ? "ticketing"
+      : null;
+
+    // Floating "Visit Store" button — only when shop actually won the
+    // floating slot (see activeFloatingCta above).
     const shopStoreUrl = safeUrl(profile.shop_store_url as string | null);
-    const showVisitStore = showShopWidget && !!profile.shop_provider && !!shopStoreUrl;
+    const showVisitStore = activeFloatingCta === "shop";
+    const showTicketingCta = activeFloatingCta === "ticketing";
 
     const shopProducts =
       showShopWidget &&
@@ -510,7 +540,7 @@ export default async function PrivateLinkPage({
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
         <RefCapture refCode={sp.ref} />
-        {showSchedulingCta && (
+        {activeFloatingCta === "scheduling" && (
           <SchedulingWidget
             provider={profile.scheduling_provider as string | null}
             url={profile.scheduling_url as string | null}
@@ -518,6 +548,9 @@ export default async function PrivateLinkPage({
         )}
         {showVisitStore && (
           <LinkOutButton url={shopStoreUrl as string} text="Visit Store" style={floatingButtonStyle} />
+        )}
+        {showTicketingCta && (
+          <LinkOutButton url={ticketingUrl as string} text="Buy Tickets" style={floatingButtonStyle} />
         )}
         <CoverImage coverImageSrc={coverImageSrc} alt={(link.title as string) ?? "Cover"} />
         <ContentSection

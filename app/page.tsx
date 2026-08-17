@@ -347,30 +347,32 @@ export default async function HomePage({
     })();
   }
 
-  // Fetch active private links for this profile
-  const { data: privateLinksData } = await supabase
-    .from("private_booking_links")
-    .select("id, link_slug, title, external_url, cta_label")
-    .eq("profile_id", profile.id as string)
-    .eq("is_active", true)
-    .eq("show_on_profile", true)
-    .order("created_at", { ascending: true });
+  // Resolve the featured link only when it's actually the artist's selected
+  // Action Button source (profiles.action_button_source === "private_link") —
+  // replaces the old show_on_profile=true query (that column is retired as a
+  // selection mechanism, see lib/primaryCta.ts's header comment). A stale/
+  // deleted action_button_link_id (FK is ON DELETE SET NULL, but a link could
+  // in principle be inactive) just resolves to no row, which getPrimaryCTA
+  // treats the same as no selection — never a broken button.
+  let featuredLink: FeaturedLink | null = null;
+  if (profile.action_button_source === "private_link" && profile.action_button_link_id) {
+    const { data: linkData } = await supabase
+      .from("private_booking_links")
+      .select("id, link_slug, title, external_url, cta_label")
+      .eq("id", profile.action_button_link_id as string)
+      .eq("is_active", true)
+      .maybeSingle();
 
-  const privateLinks = (privateLinksData ?? []) as { id: string; link_slug: string | null; title: string; external_url: string | null; cta_label: string | null }[];
-
-  // show_on_profile is exclusive (one at a time, enforced by a DB trigger),
-  // so privateLinks[0] — if present — is THE featured link. Feeds the primary
-  // CTA resolver (lib/primaryCta.ts) now; the hero pill that used to render
-  // this was retired in favor of promoting it to the primary CTA.
-  const featuredLink: FeaturedLink | null = privateLinks[0]
-    ? {
-        id: privateLinks[0].id,
-        linkSlug: privateLinks[0].link_slug,
-        title: privateLinks[0].title,
-        externalUrl: privateLinks[0].external_url,
-        ctaLabel: privateLinks[0].cta_label,
-      }
-    : null;
+    if (linkData) {
+      featuredLink = {
+        id: linkData.id,
+        linkSlug: linkData.link_slug,
+        title: linkData.title,
+        externalUrl: linkData.external_url,
+        ctaLabel: linkData.cta_label,
+      };
+    }
+  }
 
   // Resolve template key: handle new names, legacy hyphens, and legacy key names
   const rawTemplateKey = typeof profile.template_id === "string" ? profile.template_id : null;
@@ -519,16 +521,21 @@ const ticket = {
     />
     <LinkClickTracker profileId={profile.id as string | null} />
 
-{/* Always on now — the primary CTA resolves through featured link →
-    scheduling provider → lead-gen form, in that priority order, and the
-    lead-gen form is the unconditional default fallback (no longer gated on
-    hasActiveServices). See lib/primaryCta.ts. */}
+{/* Always on now — resolves directly from the artist's explicit
+    action_button_source selection (scheduling/shop/external/private_link),
+    defaulting to the lead-gen form when unset or when the selected source
+    isn't actually configured. No priority chain, no auto-activation — see
+    lib/primaryCta.ts. */}
 <BookMeButton
   username={profile.slug}
   profileId={profile.id}
   profileName={displayName}
+  actionButtonSource={profile.action_button_source as string | null}
   schedulingProvider={profile.scheduling_provider as string | null}
   schedulingUrl={profile.scheduling_url as string | null}
+  shopStoreUrl={profile.shop_store_url as string | null}
+  externalLinkUrl={profile.external_link_url as string | null}
+  externalLinkLabel={profile.external_link_label as string | null}
   featuredLink={featuredLink}
 />
 
