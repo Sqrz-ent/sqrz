@@ -1,5 +1,17 @@
 import { getConsentState } from "./getConsentState";
 
+// Meta/TikTok pixel globals — only ever present on window once AnalyticsGate's
+// consent-gated <Script> blocks have actually run for a configured pixel ID.
+// That's exactly the guard fireLeadConversionPixels() below relies on: no
+// separate "is a pixel configured / was consent given" check needed here,
+// since an absent global already means one of those wasn't true.
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
+    ttq?: { track: (...args: unknown[]) => void };
+  }
+}
+
 // Timestamp of first module use in this page load — the basis for time-on-page.
 // Module-level (not sessionStorage), so it carries no identifier and resets on
 // every fresh load, exactly like the cookieless pings that consume it.
@@ -137,6 +149,25 @@ export async function trackCtaClick(
 // engagement quality for ad traffic that never accepts the cookie banner.
 // keepalive lets it flush during visibilitychange/unload as Meta's in-app
 // browser tears the WebView down.
+// Fires the standard "lead captured" conversion event on every configured
+// vendor pixel — call this at the ONE moment a visitor's inquiry actually
+// becomes a lead (currently: BookingModal's successful create_booking_request
+// submission). Meta's own standard event for this is 'Lead'; TikTok has no
+// literal "Lead" event in its taxonomy — 'SubmitForm' is the closest, precise
+// match (a visitor submitted a data-collection form), not 'Contact' (TikTok's
+// docs frame that one around phone/chat contact initiation, not form data).
+// No pixel-ID/consent check needed here — see the declare global comment
+// above for why an absent fbq/ttq already implies one of those wasn't true.
+export function fireLeadConversionPixels(): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.fbq === "function") {
+    window.fbq("track", "Lead");
+  }
+  if (typeof window.ttq?.track === "function") {
+    window.ttq.track("SubmitForm");
+  }
+}
+
 export async function trackPageExitCookieless(
   maxScrollDepthPct: number,
   properties?: Record<string, unknown>

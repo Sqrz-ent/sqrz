@@ -18,6 +18,7 @@ import LinkOutButton from "@/components/LinkOutButton";
 import { floatingButtonStyle } from "@/lib/floatingCta";
 import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
+import AvatarImg from "@/components/AvatarImg";
 import HeroImage from "@/components/HeroImage";
 
 export const revalidate = 0;
@@ -126,11 +127,13 @@ function VideoEmbed({ videoId }: { videoId: string }) {
 // mobileFraction math needed.
 function CoverImage({
   coverImageSrc,
+  coverImageFallbackSrc,
   focalX,
   focalY,
   zoom,
 }: {
   coverImageSrc: string | null;
+  coverImageFallbackSrc?: string | null;
   focalX: number;
   focalY: number;
   zoom: number;
@@ -138,7 +141,7 @@ function CoverImage({
   if (!coverImageSrc) return null;
   return (
     <div style={{ position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
-      <HeroImage src={coverImageSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
+      <HeroImage src={coverImageSrc} fallbackSrc={coverImageFallbackSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
       {/* Soft fade from the bottom edge of the hero into the page background */}
       <div
         style={{
@@ -172,6 +175,7 @@ function ContentSection({
   description,
   username,
   profileAvatarSrc,
+  profileAvatarFallbackSrc,
   displayName,
   accent,
 }: {
@@ -182,6 +186,7 @@ function ContentSection({
   description: string | null;
   username: string;
   profileAvatarSrc: string | null;
+  profileAvatarFallbackSrc?: string | null;
   displayName: string | null;
   accent: string;
 }) {
@@ -191,9 +196,9 @@ function ContentSection({
       {/* Avatar + name */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 24 }}>
         {profileAvatarSrc ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <AvatarImg
             src={profileAvatarSrc}
+            fallbackSrc={profileAvatarFallbackSrc}
             alt={displayName ?? username}
             // Fixed crop, NOT the hero focal point: avatar_url is hero-tuned, and
             // a wide-photo focal point amplifies the mis-crop in this tiny circle.
@@ -268,16 +273,28 @@ function ContentSection({
 // Supabase-hosted images → render endpoint (600×314, quality=75, no redirects, correct Content-Type).
 // All other URLs → returned as-is after normalisation.
 // Returns null if the input is null/empty/invalid.
+//
+// TEMPORARY (2026-08-21): Supabase Image Transformations is disabled on the
+// current (Free tier) plan — the render endpoint 403s "FeatureNotEnabled" for
+// every request, tenant-wide. og:image has no onError/retry mechanism, so
+// this skips the render-endpoint rewrite entirely and always returns the raw,
+// untransformed object URL. Full-size images cost more bandwidth egress in
+// the meantime. REVERT to the render-endpoint rewrite below once Pro is
+// reactivated — do not delete it, just re-enable it. (Same fix, same reason,
+// as lib/image-url.ts's exported toOgImageUrl — this is a separate, undeduped
+// local copy, not a re-export of that one.)
 function toOgImageUrl(raw: string | null): string | null {
   const clean = normalizeImageUrl(raw);
   if (!clean) return null;
-  if (clean.includes("supabase.co/storage/v1/object/public/")) {
-    return (
-      clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-      "?width=600&height=314&resize=cover&quality=75"
-    );
-  }
   return clean;
+  // Original behavior, restore once Image Transformations is back:
+  // if (clean.includes("supabase.co/storage/v1/object/public/")) {
+  //   return (
+  //     clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+  //     "?width=600&height=314&resize=cover&quality=75"
+  //   );
+  // }
+  // return clean;
 }
 
 export async function generateMetadata({
@@ -383,7 +400,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url, external_link_url, external_link_label")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, pixel_tiktok, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url, external_link_url, external_link_label")
     .eq("slug", username)
     .single();
 
@@ -429,11 +446,19 @@ export default async function PrivateLinkPage({
       // default contain, so it fills the 32px circle without letterboxing.
       toDisplayImageUrl(profile.avatar_url as string, 64, { height: 64, resize: "cover" })
     : null;
+  // Raw fallback for AvatarImg's onError — see components/AvatarImg.tsx.
+  // TEMPORARY while Image Transformations is disabled (Free tier).
+  const profileAvatarFallbackSrc = hasRealAvatar
+    ? normalizeImageUrl(profile.avatar_url as string)
+    : null;
   const pageType = (link.page_type as string) ?? "internal";
   // Large hero cover — aspect-preserved (contain) so HeroImage's
   // computeCoverTransform receives correct natural dims (same reasoning as
   // the profile hero's own avatar request, see app/page.tsx).
   const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600, { height: 1600, resize: "contain" });
+  // Raw fallback for HeroImage's onError — see components/HeroImage.tsx.
+  // TEMPORARY while Image Transformations is disabled (Free tier).
+  const coverImageFallbackSrc = normalizeImageUrl(link.cover_image_url as string | null);
   // Focal point (normalized 0..1) + zoom set via FocalPickerView on iOS.
   // Fallback for links that never set one: 0.5 / 0.5 (true center, matching
   // this wrapper's previous unstyled object-fit:cover default) / zoom 1
@@ -481,7 +506,7 @@ export default async function PrivateLinkPage({
     );
   }
 
-  const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id);
+  const hasCustomPixels = !!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id);
 
   // ─── INTERNAL PAGE ───────────────────────────────────────────────────────────
   // Single-offer layout (2026-08-08, then revised same day): Hero, Description,
@@ -614,6 +639,7 @@ export default async function PrivateLinkPage({
         )}
         <CoverImage
           coverImageSrc={coverImageSrc}
+          coverImageFallbackSrc={coverImageFallbackSrc}
           focalX={coverFocalX}
           focalY={coverFocalY}
           zoom={coverZoom}
@@ -626,6 +652,7 @@ export default async function PrivateLinkPage({
           description={link.description as string | null}
           username={username}
           profileAvatarSrc={profileAvatarSrc}
+          profileAvatarFallbackSrc={profileAvatarFallbackSrc}
           displayName={displayName}
           accent={accent}
         />
@@ -636,6 +663,7 @@ export default async function PrivateLinkPage({
           hubspotPortalId={profile.hubspot_portal_id as string | null}
           hubspotEnabled={!!profile.hubspot_portal_id}
           linkedinPartnerId={profile.pixel_linkedin as string | null}
+          tiktokPixelId={profile.pixel_tiktok as string | null}
         />
         <TrackingGate
           profileSlug={profile.slug as string | null}
@@ -687,6 +715,7 @@ export default async function PrivateLinkPage({
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
       <CoverImage
         coverImageSrc={coverImageSrc}
+        coverImageFallbackSrc={coverImageFallbackSrc}
         focalX={coverFocalX}
         focalY={coverFocalY}
         zoom={coverZoom}
@@ -698,6 +727,7 @@ export default async function PrivateLinkPage({
         description={link.description as string | null}
         username={username}
         profileAvatarSrc={profileAvatarSrc}
+        profileAvatarFallbackSrc={profileAvatarFallbackSrc}
         displayName={displayName}
         accent={accent}
       />
@@ -708,6 +738,7 @@ export default async function PrivateLinkPage({
         hubspotPortalId={profile.hubspot_portal_id as string | null}
         hubspotEnabled={!!profile.hubspot_portal_id}
         linkedinPartnerId={profile.pixel_linkedin as string | null}
+        tiktokPixelId={profile.pixel_tiktok as string | null}
       />
       <TrackingGate
         profileSlug={profile.slug as string | null}

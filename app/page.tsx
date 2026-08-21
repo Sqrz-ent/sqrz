@@ -42,7 +42,7 @@ import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
-import { toDisplayImageUrl, toOgImageUrl } from "@/lib/image-url";
+import { toDisplayImageUrl, toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
 
@@ -511,13 +511,14 @@ const ticket = {
       hubspotPortalId={profile.hubspot_portal_id}
       hubspotEnabled={!!profile.hubspot_portal_id}
       linkedinPartnerId={profile.pixel_linkedin}
+      tiktokPixelId={profile.pixel_tiktok}
       isPreview={isPreview}
     />
     <TrackingGate
       profileSlug={profile.slug as string | null}
       profileId={profile.id as string | null}
       userTier={profile.plan_id as number | null}
-      hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.hubspot_portal_id)}
+      hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id)}
     />
     <LinkClickTracker profileId={profile.id as string | null} />
 
@@ -551,6 +552,9 @@ const ticket = {
               // receives correct natural dims — a bare width request crushes any
               // source wider than 1600 (see toDisplayImageUrl).
               src={toDisplayImageUrl(profile.avatar_url as string, 1600, { height: 1600, resize: "contain" }) ?? (profile.avatar_url as string)}
+              // Raw fallback for HeroImage's onError — see components/HeroImage.tsx.
+              // TEMPORARY while Image Transformations is disabled (Free tier).
+              fallbackSrc={normalizeImageUrl(profile.avatar_url as string)}
               focalX={heroFocalX}
               focalY={heroFocalY}
               zoom={heroZoom}

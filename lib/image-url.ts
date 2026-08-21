@@ -1,16 +1,27 @@
 // Converts a raw image URL to an OG-safe URL.
 // Supabase-hosted images → render endpoint (600×314, quality=75, correct Content-Type, under 300 KB).
 // All other URLs → returned as-is after normalisation.
+//
+// TEMPORARY (2026-08-21): Supabase Image Transformations is disabled on the
+// current (Free tier) plan — the render endpoint 403s "FeatureNotEnabled" for
+// every request, tenant-wide. og:image has no onError/retry mechanism (a
+// crawler either fetches the declared URL or it doesn't — there's no runtime
+// signal to fall back on), so this skips the render-endpoint rewrite entirely
+// and always returns the raw, untransformed object URL. Full-size images cost
+// more bandwidth egress in the meantime. REVERT to the render-endpoint rewrite
+// below once Pro is reactivated — do not delete it, just re-enable it.
 export function toOgImageUrl(raw: string | null | undefined): string | null {
   const clean = normalizeImageUrl(raw);
   if (!clean) return null;
-  if (clean.includes("supabase.co/storage/v1/object/public/")) {
-    return (
-      clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
-      "?width=600&height=314&resize=cover&quality=75"
-    );
-  }
   return clean;
+  // Original behavior, restore once Image Transformations is back:
+  // if (clean.includes("supabase.co/storage/v1/object/public/")) {
+  //   return (
+  //     clean.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/") +
+  //     "?width=600&height=314&resize=cover&quality=75"
+  //   );
+  // }
+  // return clean;
 }
 
 // Display-side transform for visible <img> renders: Supabase object URLs →

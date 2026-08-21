@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { computeCoverTransform } from "@/lib/heroTransform";
 
 // Renders the hero avatar as an <img> + transform (not background-image) so we can
@@ -11,13 +11,18 @@ import { computeCoverTransform } from "@/lib/heroTransform";
 // Before JS measures the container / the image loads, it falls back to plain
 // object-fit:cover + object-position (today's behavior), which is exact for the
 // default zoom=1 case — so existing profiles paint identically with no flash.
+//
+// `fallbackSrc` (optional): the raw, untransformed object URL for the same
+// image. See the onError handler below for why this exists.
 export default function HeroImage({
   src,
+  fallbackSrc,
   focalX,
   focalY,
   zoom,
 }: {
   src: string;
+  fallbackSrc?: string | null;
   focalX: number;
   focalY: number;
   zoom: number;
@@ -25,6 +30,23 @@ export default function HeroImage({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
+
+  // TEMPORARY (2026-08-21): Supabase Image Transformations is disabled on the
+  // current (Free tier) plan — `src` (a toDisplayImageUrl()-transformed render-
+  // endpoint URL) 403s "FeatureNotEnabled" for every request, tenant-wide. On
+  // load failure, fall back once to the raw, untransformed object URL so the
+  // image still renders — at full original size, which costs more bandwidth
+  // egress than the resized transform would have. REVERT once Pro is
+  // reactivated: remove currentSrc/triedFallback/onError below and go back to
+  // rendering `src` directly (or just leave this in place as a harmless no-op
+  // safety net — it only ever fires when the primary src actually fails).
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const triedFallback = useRef(false);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+    triedFallback.current = false;
+  }, [src]);
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -45,11 +67,17 @@ export default function HeroImage({
     <div ref={wrapRef} style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={src}
+        src={currentSrc}
         alt=""
         onLoad={(e) =>
           setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })
         }
+        onError={() => {
+          if (!triedFallback.current && fallbackSrc && fallbackSrc !== currentSrc) {
+            triedFallback.current = true;
+            setCurrentSrc(fallbackSrc);
+          }
+        }}
         style={
           t && natural
             ? {

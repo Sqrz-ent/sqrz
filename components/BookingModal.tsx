@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { track } from "@/lib/tracking/track";
+import { track, fireLeadConversionPixels } from "@/lib/tracking/track";
 
 // Derives a booking title from the first non-empty line of the inquiry message,
 // falling back to a generic label when the message is a single line or empty.
@@ -125,6 +125,7 @@ export default function BookingModal({
         profile_slug: username,
         profile_id: profileId,
       });
+      fireLeadConversionPixels();
       setSuccess(true);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
