@@ -19,7 +19,6 @@ import type { FeaturedLink } from "@/lib/primaryCta";
 import PaymentSuccessBanner from "@/components/PaymentSuccessBanner";
 import { getSoundCloudEmbedUrl } from "@/lib/soundcloud";
 import Services from "@/components/Services";
-import Experience from "@/components/Experience";
 import {
   PROFILE_TEMPLATES,
   DEFAULT_TEMPLATE,
@@ -120,7 +119,7 @@ import { supabaseServer as supabase } from "@/lib/supabase-server";
 async function getProfileByUsername(username: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*, profile_videos(*), profile_services(*), profile_references(*)")
+    .select("*, profile_videos(*), profile_services(*)")
     .eq("slug", username)
     .order("sort_order", { referencedTable: "profile_videos", ascending: true })
     .single();
@@ -478,7 +477,6 @@ const ticket = {
     profile.bio ||
     hasActiveServices ||
     hasSocials ||
-    (profile.profile_references?.length > 0) ||
     hasMusicEmbeds ||
     profile.widget_bandsintown ||
     hasShop ||
@@ -755,14 +753,6 @@ const ticket = {
         {/* Scheduling is now surfaced via the primary floating CTA (see
             BookMeButton / lib/primaryCta.ts) when configured, not as a
             separate in-flow block here — one "book me" affordance, not two. */}
-
-        {/* Experience (resume-style trust builder) is reprioritized below the
-            media/asset sections — work samples are more persuasive than a
-            text history, so they're shown first; this stays last, right
-            before the footer. */}
-        {profile.profile_references?.length > 0 && (
-          <Experience jobs={profile.profile_references} />
-        )}
 
       {/* Powered by SQRZ — subtle footer */}
       <div style={{
