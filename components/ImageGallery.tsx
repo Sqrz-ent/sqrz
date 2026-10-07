@@ -1,8 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 type Pic = any;
+
+// next/image only accepts remote hosts allowlisted in next.config.ts's
+// images.remotePatterns (currently just Supabase Storage) — anything else
+// (e.g. a Dropbox-hosted pic, see lib/image-url.ts's normalizeImageUrl)
+// would throw at request time. Use the optimizer where we know it's safe,
+// and fall back to a plain <img> (still lazy-loaded) for everything else.
+const SUPABASE_STORAGE_HOST = "fmjefvdtnmgdfauedpmg.supabase.co/storage/v1/object/public/";
+
+function isOptimizableSrc(src: string): boolean {
+  return src.includes(SUPABASE_STORAGE_HOST);
+}
 
 export default function ImageGallery({
   pics,
@@ -34,24 +46,42 @@ export default function ImageGallery({
     setIndex((i) => (i === normalizedPics.length - 1 ? 0 : i + 1));
   }
 
+  const currentSrc = normalizedPics[index];
+
   return (
     <div
       style={{
         position: "relative",
+        height: 320,
         borderRadius: 16,
         overflow: "hidden",
       }}
     >
-      <img
-        src={normalizedPics[index]}
-        alt={`Gallery image ${index + 1}`}
-        style={{
-          width: "100%",
-          height: 320,
-          objectFit: "cover",
-          display: "block",
-        }}
-      />
+      {isOptimizableSrc(currentSrc) ? (
+        <Image
+          key={currentSrc}
+          src={currentSrc}
+          alt={`Gallery image ${index + 1}`}
+          fill
+          sizes="(max-width: 720px) 100vw, 720px"
+          quality={75}
+          style={{ objectFit: "cover" }}
+          // Below-the-fold content — default (lazy) loading, no `priority`.
+        />
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={currentSrc}
+          alt={`Gallery image ${index + 1}`}
+          loading="lazy"
+          style={{
+            width: "100%",
+            height: 320,
+            objectFit: "cover",
+            display: "block",
+          }}
+        />
+      )}
 
       {normalizedPics.length > 1 && (
         <button onClick={prev} style={navStyle("left")}>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { computeCoverTransform } from "@/lib/heroTransform";
 
 // Renders the hero avatar as an <img> + transform (not background-image) so we can
@@ -12,17 +13,19 @@ import { computeCoverTransform } from "@/lib/heroTransform";
 // object-fit:cover + object-position (today's behavior), which is exact for the
 // default zoom=1 case — so existing profiles paint identically with no flash.
 //
-// `fallbackSrc` (optional): the raw, untransformed object URL for the same
-// image. See the onError handler below for why this exists.
+// Uses next/image (not a raw <img>) so the hero is actually resized/compressed
+// server-side instead of shipping the full original file — Supabase's own Image
+// Transformations endpoint is disabled on the current plan (see lib/image-url.ts),
+// so this goes through the Next.js optimizer instead (next.config.ts allowlists
+// the Supabase storage hostname). `priority` preloads it since it's always the
+// first meaningful paint on the page.
 export default function HeroImage({
   src,
-  fallbackSrc,
   focalX,
   focalY,
   zoom,
 }: {
   src: string;
-  fallbackSrc?: string | null;
   focalX: number;
   focalY: number;
   zoom: number;
@@ -30,23 +33,6 @@ export default function HeroImage({
   const wrapRef = useRef<HTMLDivElement>(null);
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
-
-  // TEMPORARY (2026-08-21): Supabase Image Transformations is disabled on the
-  // current (Free tier) plan — `src` (a toDisplayImageUrl()-transformed render-
-  // endpoint URL) 403s "FeatureNotEnabled" for every request, tenant-wide. On
-  // load failure, fall back once to the raw, untransformed object URL so the
-  // image still renders — at full original size, which costs more bandwidth
-  // egress than the resized transform would have. REVERT once Pro is
-  // reactivated: remove currentSrc/triedFallback/onError below and go back to
-  // rendering `src` directly (or just leave this in place as a harmless no-op
-  // safety net — it only ever fires when the primary src actually fails).
-  const [currentSrc, setCurrentSrc] = useState(src);
-  const triedFallback = useRef(false);
-
-  useEffect(() => {
-    setCurrentSrc(src);
-    triedFallback.current = false;
-  }, [src]);
 
   useLayoutEffect(() => {
     const el = wrapRef.current;
@@ -65,19 +51,21 @@ export default function HeroImage({
 
   return (
     <div ref={wrapRef} style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={currentSrc}
+      <Image
+        src={src}
         alt=""
+        width={1600}
+        height={1600}
+        quality={75}
+        priority
+        // Hero is full-bleed (no max-width on its container), so the
+        // requested size should track actual viewport width rather than
+        // just the 1x/2x of `width` Next defaults to without `sizes` —
+        // lets phones get a much smaller download than desktop.
+        sizes="100vw"
         onLoad={(e) =>
           setNatural({ w: e.currentTarget.naturalWidth, h: e.currentTarget.naturalHeight })
         }
-        onError={() => {
-          if (!triedFallback.current && fallbackSrc && fallbackSrc !== currentSrc) {
-            triedFallback.current = true;
-            setCurrentSrc(fallbackSrc);
-          }
-        }}
         style={
           t && natural
             ? {

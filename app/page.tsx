@@ -42,7 +42,7 @@ import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import PartnerJoinBanner from "@/components/PartnerJoinBanner";
-import { toDisplayImageUrl, toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
+import { toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
 
@@ -243,18 +243,25 @@ export default async function HomePage({
 
   if (!profile) notFound();
 
-  const partnerRefCode =
+  // Neither call depends on the other's result — only on `profile`, which is
+  // already resolved above — so run them concurrently instead of one after
+  // the other. Conditional skip logic is unchanged: a profile that doesn't
+  // need a given query still resolves to its old default (null / []) without
+  // ever issuing it.
+  const [partnerRefCode, shopProducts] = await Promise.all([
     profile.is_partner === true
-      ? await getActivePartnerRefCode(profile.id as string)
-      : null;
-
-  const shopProducts =
+      ? getActivePartnerRefCode(profile.id as string)
+      : Promise.resolve(null),
     profile.shop_provider === "gumroad" || profile.shop_provider === "shopify"
-      ? await getShopProducts(profile.id as string)
-      : [];
+      ? getShopProducts(profile.id as string)
+      : Promise.resolve([]),
+  ]);
 
   // ── View logging — best-effort, not render-blocking ─────────────────────────
-  {
+  // Skipped entirely in preview mode (?preview=true) — the owner looking at
+  // their own profile (e.g. from the iOS Preview tab) should never count as a
+  // real visitor view.
+  if (!isPreview) {
     const adminSupabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -548,13 +555,11 @@ const ticket = {
         {hasRealAvatar && (
           <>
             <HeroImage
-              // Aspect-preserved (contain) so HeroImage's computeCoverTransform
-              // receives correct natural dims — a bare width request crushes any
-              // source wider than 1600 (see toDisplayImageUrl).
-              src={toDisplayImageUrl(profile.avatar_url as string, 1600, { height: 1600, resize: "contain" }) ?? (profile.avatar_url as string)}
-              // Raw fallback for HeroImage's onError — see components/HeroImage.tsx.
-              // TEMPORARY while Image Transformations is disabled (Free tier).
-              fallbackSrc={normalizeImageUrl(profile.avatar_url as string)}
+              // Raw object URL — HeroImage now goes through next/image, which
+              // does its own resizing/optimization (see next.config.ts's
+              // remotePatterns), so no Supabase render-endpoint rewrite is
+              // needed here anymore.
+              src={normalizeImageUrl(profile.avatar_url as string) ?? (profile.avatar_url as string)}
               focalX={heroFocalX}
               focalY={heroFocalY}
               zoom={heroZoom}
@@ -805,13 +810,18 @@ const ticket = {
       externalPrivacyUrl={(profile.external_privacy_url as string) ?? null}
       responsiblePerson={(profile.responsible_person as string) ?? null}
     />
-    <CookieBanner templateId={profile.template_id as string} />
-    <ProfileInquiryBubble
-      profileId={profile.id as string}
-      profileSlug={profile.slug as string | null}
-      ownerName={displayName}
-      enabled={profile.inquiry_chat_enabled !== false}
-    />
+    {/* Neither is needed for a preview (owner viewing their own profile,
+        e.g. from the iOS Preview tab) — skip mounting both entirely rather
+        than rendering them disabled. */}
+    {!isPreview && <CookieBanner templateId={profile.template_id as string} />}
+    {!isPreview && (
+      <ProfileInquiryBubble
+        profileId={profile.id as string}
+        profileSlug={profile.slug as string | null}
+        ownerName={displayName}
+        enabled={profile.inquiry_chat_enabled !== false}
+      />
+    )}
     </>
   );
 }

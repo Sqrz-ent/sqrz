@@ -127,13 +127,11 @@ function VideoEmbed({ videoId }: { videoId: string }) {
 // mobileFraction math needed.
 function CoverImage({
   coverImageSrc,
-  coverImageFallbackSrc,
   focalX,
   focalY,
   zoom,
 }: {
   coverImageSrc: string | null;
-  coverImageFallbackSrc?: string | null;
   focalX: number;
   focalY: number;
   zoom: number;
@@ -141,7 +139,7 @@ function CoverImage({
   if (!coverImageSrc) return null;
   return (
     <div style={{ position: "relative", width: "100%", height: 480, overflow: "hidden" }}>
-      <HeroImage src={coverImageSrc} fallbackSrc={coverImageFallbackSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
+      <HeroImage src={coverImageSrc} focalX={focalX} focalY={focalY} zoom={zoom} />
       {/* Soft fade from the bottom edge of the hero into the page background */}
       <div
         style={{
@@ -452,13 +450,11 @@ export default async function PrivateLinkPage({
     ? normalizeImageUrl(profile.avatar_url as string)
     : null;
   const pageType = (link.page_type as string) ?? "internal";
-  // Large hero cover — aspect-preserved (contain) so HeroImage's
-  // computeCoverTransform receives correct natural dims (same reasoning as
-  // the profile hero's own avatar request, see app/page.tsx).
-  const coverImageSrc = toDisplayImageUrl(link.cover_image_url as string | null, 1600, { height: 1600, resize: "contain" });
-  // Raw fallback for HeroImage's onError — see components/HeroImage.tsx.
-  // TEMPORARY while Image Transformations is disabled (Free tier).
-  const coverImageFallbackSrc = normalizeImageUrl(link.cover_image_url as string | null);
+  // Raw object URL — HeroImage now goes through next/image for resizing
+  // (see components/HeroImage.tsx + next.config.ts's remotePatterns), so no
+  // Supabase render-endpoint rewrite is needed here anymore (mirrors the
+  // same fix on the main profile hero, app/page.tsx).
+  const coverImageSrc = normalizeImageUrl(link.cover_image_url as string | null);
   // Focal point (normalized 0..1) + zoom set via FocalPickerView on iOS.
   // Fallback for links that never set one: 0.5 / 0.5 (true center, matching
   // this wrapper's previous unstyled object-fit:cover default) / zoom 1
@@ -639,7 +635,6 @@ export default async function PrivateLinkPage({
         )}
         <CoverImage
           coverImageSrc={coverImageSrc}
-          coverImageFallbackSrc={coverImageFallbackSrc}
           focalX={coverFocalX}
           focalY={coverFocalY}
           zoom={coverZoom}
@@ -715,7 +710,6 @@ export default async function PrivateLinkPage({
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
       <CoverImage
         coverImageSrc={coverImageSrc}
-        coverImageFallbackSrc={coverImageFallbackSrc}
         focalX={coverFocalX}
         focalY={coverFocalY}
         zoom={coverZoom}

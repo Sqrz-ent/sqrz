@@ -133,6 +133,7 @@ export default function MusicEmbeds({
           src={spotifyEmbed}
           width="100%"
           height="152"
+          loading="lazy"
         />
       )}
 
@@ -143,6 +144,7 @@ export default function MusicEmbeds({
           src={soundcloudEmbed}
           width="100%"
           height="300"
+          loading="lazy"
         />
       )}
 
