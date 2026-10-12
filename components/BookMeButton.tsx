@@ -8,6 +8,7 @@ import LinkOutButton from "./LinkOutButton";
 import { getPrimaryCTA, type FeaturedLink } from "@/lib/primaryCta";
 import { track, trackCtaClick } from "@/lib/tracking/track";
 import { floatingButtonStyle } from "@/lib/floatingCta";
+import { recordOutreachEngagement } from "@/lib/outreach/engagement";
 
 export default function BookMeButton({
   username,
@@ -46,7 +47,14 @@ export default function BookMeButton({
   });
 
   if (cta.type === "featuredLink" && cta.mode === "external") {
-    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+    return (
+      <LinkOutButton
+        url={cta.url}
+        text={cta.label}
+        style={floatingButtonStyle}
+        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+      />
+    );
   }
 
   if (cta.type === "featuredLink" && cta.mode === "page") {
@@ -66,6 +74,9 @@ export default function BookMeButton({
             destination: "page",
           });
           trackCtaClick({ link_url: cta.url, link_label: cta.label, profile_id: profileId });
+          // Additive — outreach engagement is a no-op whenever no ?r= token
+          // is active on this load (see lib/outreach/engagement.ts).
+          recordOutreachEngagement({ linkTap: true });
         }}
       >
         {cta.label}
@@ -89,18 +100,39 @@ export default function BookMeButton({
   }
 
   if (cta.type === "scheduling" && cta.provider === "linkout") {
-    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+    return (
+      <LinkOutButton
+        url={cta.url}
+        text={cta.label}
+        style={floatingButtonStyle}
+        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+      />
+    );
   }
 
   // Shop and External (2026-08-17) — both are just "open a URL," same as the
   // linkout scheduling provider above; no dedicated popup/modal component
   // needed for either.
   if (cta.type === "shop") {
-    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+    return (
+      <LinkOutButton
+        url={cta.url}
+        text={cta.label}
+        style={floatingButtonStyle}
+        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+      />
+    );
   }
 
   if (cta.type === "external") {
-    return <LinkOutButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+    return (
+      <LinkOutButton
+        url={cta.url}
+        text={cta.label}
+        style={floatingButtonStyle}
+        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+      />
+    );
   }
 
   return (

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { trackCookieless } from "@/lib/tracking/track";
+import { recordOutreachEngagement } from "@/lib/outreach/engagement";
 
 type Props = {
   spotifyEmbed: string | null;
@@ -91,6 +92,9 @@ export default function MusicEmbeds({
 
         widget.bind(SC.Widget.Events.PLAY, () => {
           trackCookieless("widget_play", { widget_type: "soundcloud", profile_id: profileId });
+          // Additive — outreach engagement is a no-op whenever no ?r= token
+          // is active on this load (see lib/outreach/engagement.ts).
+          recordOutreachEngagement({ play: true });
         });
         widget.bind(SC.Widget.Events.PAUSE, () => {
           trackCookieless("widget_pause", { widget_type: "soundcloud", profile_id: profileId });

@@ -28,6 +28,7 @@ import {
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
+import OutreachEngagementGate from "@/components/outreach/OutreachEngagementGate";
 import CookieBanner from "@/components/CookieBanner";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
@@ -526,6 +527,7 @@ const ticket = {
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id)}
     />
     <LinkClickTracker profileId={profile.id as string | null} />
+    <OutreachEngagementGate profileSlug={profile.slug as string | null} />
 
 {/* Always on now — resolves directly from the artist's explicit
     action_button_source selection (scheduling/shop/external/private_link),

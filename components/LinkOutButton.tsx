@@ -10,14 +10,21 @@ export default function LinkOutButton({
   url,
   text,
   style,
+  onOpen,
 }: {
   url: string;
   text: string;
   style: CSSProperties;
+  // Optional, additive — fired alongside window.open, never required.
+  // Existing/other callers that don't pass it are unaffected.
+  onOpen?: () => void;
 }) {
   return (
     <button
-      onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
+      onClick={() => {
+        window.open(url, "_blank", "noopener,noreferrer");
+        onOpen?.();
+      }}
       style={style}
     >
       {text}
