@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { trackCtaClick } from "@/lib/tracking/track";
-import { recordOutreachEngagement } from "@/lib/outreach/engagement";
+import { recordOutreachEngagement, recordOutreachEvent } from "@/lib/outreach/engagement";
 
 // Delegated, cookieless CTA click tracking. OPT-IN: only anchors explicitly
 // marked with data-cta are tracked, so cta_click means real conversion intent —
@@ -41,6 +41,7 @@ export default function LinkClickTracker({ profileId }: { profileId: string | nu
       // Additive — outreach engagement is a no-op whenever no ?r= token is
       // active on this load (see lib/outreach/engagement.ts).
       recordOutreachEngagement({ linkTap: true });
+      recordOutreachEvent("cta_tap", label.slice(0, 100));
     };
 
     document.addEventListener("click", onClick, { capture: true });

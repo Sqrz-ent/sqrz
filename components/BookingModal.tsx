@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { track, fireLeadConversionPixels } from "@/lib/tracking/track";
+import { recordOutreachEvent } from "@/lib/outreach/engagement";
 
 // Derives a booking title from the first non-empty line of the inquiry message,
 // falling back to a generic label when the message is a single line or empty.
@@ -43,6 +44,9 @@ export default function BookingModal({
       profile_slug: username,
       profile_id: profileId,
     });
+    // Additive, no-op without an active outreach session. Never the form
+    // contents — just the discrete "contact form opened" fact.
+    recordOutreachEvent("contact_open");
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -125,6 +129,9 @@ export default function BookingModal({
         profile_slug: username,
         profile_id: profileId,
       });
+      // Additive, no-op without an active outreach session. Never the form
+      // contents — just the discrete "contact form submitted" fact.
+      recordOutreachEvent("contact_submit");
       fireLeadConversionPixels();
       setSuccess(true);
     } catch (err: unknown) {

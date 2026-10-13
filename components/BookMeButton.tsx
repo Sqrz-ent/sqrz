@@ -8,7 +8,7 @@ import LinkOutButton from "./LinkOutButton";
 import { getPrimaryCTA, type FeaturedLink } from "@/lib/primaryCta";
 import { track, trackCtaClick } from "@/lib/tracking/track";
 import { floatingButtonStyle } from "@/lib/floatingCta";
-import { recordOutreachEngagement } from "@/lib/outreach/engagement";
+import { recordOutreachEngagement, recordOutreachEvent } from "@/lib/outreach/engagement";
 
 export default function BookMeButton({
   username,
@@ -52,7 +52,10 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+        onOpen={() => {
+          recordOutreachEngagement({ linkTap: true });
+          recordOutreachEvent("cta_tap", cta.label);
+        }}
       />
     );
   }
@@ -77,6 +80,7 @@ export default function BookMeButton({
           // Additive — outreach engagement is a no-op whenever no ?r= token
           // is active on this load (see lib/outreach/engagement.ts).
           recordOutreachEngagement({ linkTap: true });
+          recordOutreachEvent("cta_tap", cta.label);
         }}
       >
         {cta.label}
@@ -105,7 +109,10 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+        onOpen={() => {
+          recordOutreachEngagement({ linkTap: true });
+          recordOutreachEvent("cta_tap", cta.label);
+        }}
       />
     );
   }
@@ -119,7 +126,10 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+        onOpen={() => {
+          recordOutreachEngagement({ linkTap: true });
+          recordOutreachEvent("cta_tap", cta.label);
+        }}
       />
     );
   }
@@ -130,7 +140,10 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => recordOutreachEngagement({ linkTap: true })}
+        onOpen={() => {
+          recordOutreachEngagement({ linkTap: true });
+          recordOutreachEvent("cta_tap", cta.label);
+        }}
       />
     );
   }

@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from "react";
 import type { Service } from "@/types/service";
 import BookingModal from "./BookingModal";
 import { track } from "@/lib/tracking/track";
+import { recordOutreachEvent } from "@/lib/outreach/engagement";
 
 function formatMoney(amount: number, currency: string) {
   try {
@@ -30,7 +31,6 @@ function unitLabel(unit?: string): string {
 }
 
 function getPriceRangePill(s: Service): string | null {
-  if (s.booking_type === "instant") return null;
   if (s.price_label === "Price on request") return null;
   if (s.price_min == null && s.price_max == null) return null;
   const currency = safeCurrency(s.currency);
@@ -43,22 +43,11 @@ function getPriceRangePill(s: Service): string | null {
   return null;
 }
 
-function getInstantPricePill(s: Service, planId: number | null): string | null {
-  if (s.instant_price == null) return null;
-  const currency = safeCurrency(s.instant_currency);
-  const sqrzFeeRate = planId === 5 ? 0.03 : planId === 1 ? 0.05 : 0.0;
-  const taxRate = (s.instant_tax_rate ?? 0) / 100;
-  const total = s.instant_price * (1 + taxRate + sqrzFeeRate);
-  return `${formatMoney(total, currency)} · Instant Booking`;
-}
-
 function ServiceCard({
   s,
-  planId,
   onBook,
 }: {
   s: Service;
-  planId: number | null;
   onBook: (service: Service) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -83,8 +72,7 @@ function ServiceCard({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [s.description]);
 
-  const isInstant = s.booking_type === "instant";
-  const pricePill = isInstant ? getInstantPricePill(s, planId) : getPriceRangePill(s);
+  const pricePill = getPriceRangePill(s);
 
   return (
     <div style={cardStyle}>
@@ -93,21 +81,12 @@ function ServiceCard({
           <span style={serviceNameStyle}>{s.title}</span>
         </div>
 
-        {isInstant ? (
-          <button
-            onClick={() => onBook(s)}
-            style={filledBtnStyle}
-          >
-            Book Now
-          </button>
-        ) : (
-          <button
-            onClick={() => onBook(s)}
-            style={outlineBtnStyle}
-          >
-            Request Price
-          </button>
-        )}
+        <button
+          onClick={() => onBook(s)}
+          style={outlineBtnStyle}
+        >
+          Request Price
+        </button>
       </div>
 
       {pricePill && (
@@ -148,12 +127,13 @@ export default function Services({
   services,
   username,
   profileId,
-  planId = null,
   profileName = null,
 }: {
   services: Service[];
   username: string;
   profileId: string;
+  // Kept in the prop type (unused now that instant-booking's fee calc is
+  // gone) so the existing caller (app/page.tsx) doesn't need to change.
   planId?: number | null;
   profileName?: string | null;
 }) {
@@ -168,6 +148,10 @@ export default function Services({
       profile_slug: username,
       profile_id: profileId,
     });
+    // Additive — a no-op whenever no ?r= token is active on this load (see
+    // lib/outreach/engagement.ts). A service tap opening the contact modal
+    // is expected to also fire contact_open right after — see BookingModal.
+    recordOutreachEvent("service_tap", service.title);
     setModalOpen(true);
   }
 
@@ -200,7 +184,7 @@ export default function Services({
         <h3 style={titleStyle}>Services & Pricing</h3>
         <div style={listStyle}>
           {services.map((s, i) => (
-            <ServiceCard key={i} s={s} planId={planId} onBook={handleBook} />
+            <ServiceCard key={i} s={s} onBook={handleBook} />
           ))}
         </div>
       </section>
@@ -275,33 +259,6 @@ const serviceNameStyle = {
   fontSize: 16,
   fontWeight: 600,
   color: "text-accent",
-};
-
-const instantBadgeStyle = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: "0.06em",
-  textTransform: "uppercase" as const,
-  color: "var(--accent-color, #F5A623)",
-  border: "1px solid var(--accent-color, #F5A623)",
-  borderRadius: 20,
-  padding: "1px 7px",
-  opacity: 0.85,
-  whiteSpace: "nowrap" as const,
-  flexShrink: 0,
-};
-
-const filledBtnStyle = {
-  flexShrink: 0,
-  padding: "6px 14px",
-  borderRadius: 20,
-  border: "none",
-  background: "var(--accent-color, #F5A623)",
-  color: "#000",
-  fontWeight: 600,
-  fontSize: 13,
-  cursor: "pointer",
-  whiteSpace: "nowrap" as const,
 };
 
 const outlineBtnStyle = {

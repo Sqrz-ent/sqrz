@@ -20,6 +20,7 @@ import { getShopProducts } from "@/lib/shop";
 import { normalizeImageUrl, toDisplayImageUrl } from "@/lib/image-url";
 import AvatarImg from "@/components/AvatarImg";
 import HeroImage from "@/components/HeroImage";
+import OutreachEngagementGate from "@/components/outreach/OutreachEngagementGate";
 
 export const revalidate = 0;
 
@@ -633,6 +634,7 @@ export default async function PrivateLinkPage({
             style={floatingButtonStyle}
           />
         )}
+        <OutreachEngagementGate profileSlug={username} />
         <CoverImage
           coverImageSrc={coverImageSrc}
           focalX={coverFocalX}
@@ -708,6 +710,7 @@ export default async function PrivateLinkPage({
 
   return (
     <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
+      <OutreachEngagementGate profileSlug={username} />
       <CoverImage
         coverImageSrc={coverImageSrc}
         focalX={coverFocalX}

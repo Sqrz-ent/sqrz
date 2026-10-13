@@ -1,6 +1,7 @@
 "use client";
 
 import { track } from "@/lib/tracking/track";
+import { recordOutreachEvent } from "@/lib/outreach/engagement";
 
 type DownloadCtaButtonProps = {
   href: string;
@@ -27,6 +28,8 @@ export default function DownloadCtaButton({ href, accent, profileSlug, profileId
           link_slug: linkSlug,
           destination: "external",
         });
+        // Additive — a no-op whenever no ?r= token is active on this load.
+        recordOutreachEvent("download", label);
       }}
       style={{
         display: "block",

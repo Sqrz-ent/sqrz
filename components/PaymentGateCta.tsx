@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { track } from "@/lib/tracking/track";
+import { recordOutreachEvent } from "@/lib/outreach/engagement";
 
 type Props = {
   linkId: string;
@@ -99,6 +100,11 @@ export default function PaymentGateCta({ linkId, price, currency, externalUrl, l
     return (
       <a
         href={externalUrl}
+        onClick={() => {
+          // Additive — a no-op whenever no ?r= token is active on this load.
+          // Doesn't change this component's existing behavior otherwise.
+          recordOutreachEvent("download", label || "Continue →");
+        }}
         style={{
           display: "block",
           textAlign: "center",
