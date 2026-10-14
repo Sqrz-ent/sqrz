@@ -4,7 +4,6 @@ import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ViewTracker from "@/components/ViewTracker";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
-import RefCapture from "@/components/RefCapture";
 import LegalFooter from "@/components/LegalFooter";
 import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
@@ -384,7 +383,7 @@ export default async function PrivateLinkPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ username?: string; ref?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string }>;
+  searchParams: Promise<{ username?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string }>;
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
@@ -617,7 +616,6 @@ export default async function PrivateLinkPage({
 
     return (
       <div style={{ ...shell, "--accent-color": accent } as React.CSSProperties}>
-        <RefCapture refCode={sp.ref} />
         {activeFloatingCta === "scheduling" && (
           <SchedulingWidget
             provider={profile.scheduling_provider as string | null}

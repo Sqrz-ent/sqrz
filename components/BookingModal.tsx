@@ -61,19 +61,6 @@ export default function BookingModal({
 
   if (!open) return null;
 
-  // ─── Stored ref code ──────────────────────────────────────────────────────
-  function getStoredRef(): string | null {
-    const ref = localStorage.getItem("sqrz_booking_ref");
-    const expires = localStorage.getItem("sqrz_booking_ref_expires");
-    if (!ref || !expires) return null;
-    if (new Date(expires) < new Date()) {
-      localStorage.removeItem("sqrz_booking_ref");
-      localStorage.removeItem("sqrz_booking_ref_expires");
-      return null;
-    }
-    return ref;
-  }
-
   // ─── Submit ───────────────────────────────────────────────────────────────
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -105,7 +92,6 @@ export default function BookingModal({
         p_from_email: email,
         p_title: deriveTitle(message),
         p_message: message,
-        p_booking_ref_code: getStoredRef(),
         p_utm_source:   utmSource   ?? undefined,
         p_utm_medium:   utmMedium   ?? undefined,
         p_utm_campaign: utmCampaign ?? undefined,

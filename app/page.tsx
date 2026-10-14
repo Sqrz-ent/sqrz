@@ -32,7 +32,6 @@ import CookieBanner from "@/components/CookieBanner";
 import TicketLinkButton from "@/components/TicketLinkButton";
 import BandsintownWidget from "@/components/BandsintownWidget";
 import LegalFooter from "@/components/LegalFooter";
-import RefCapture from "@/components/RefCapture";
 import CollapsibleBio from "@/components/CollapsibleBio";
 import HeroImage from "@/components/HeroImage";
 import MusicEmbeds from "@/components/MusicEmbeds";
@@ -482,7 +481,6 @@ const ticket = {
 
   return (
     <>
-    <RefCapture refCode={params.ref} />
     {showPaymentBanner && <PaymentSuccessBanner />}
     <main className={`profile-page ${template.bodyClass}`}>
 
