@@ -5,7 +5,6 @@ import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
 
-import ImageGallery from "@/components/ImageGallery";
 import { getSpotifyEmbedUrl } from "@/lib/spotify";
 import YouTubeGallery from "@/components/YouTubeGallery";
 import {
@@ -454,7 +453,6 @@ const ticket = {
   // plan gate). Gates whether BookMeButton renders at all for profiles with no
   // active services, so this must stay provider-agnostic, not Calendly-only.
   const hasScheduling = Boolean(profile.scheduling_provider) && Boolean(profile.scheduling_url);
-  const hasImageGallery = Boolean(profile.pics?.length > 0);
   const hasVideos = Boolean(profile.profile_videos?.length > 0);
   const hasSocials = Boolean(
     profile.social_instagram ||
@@ -481,7 +479,6 @@ const ticket = {
     hasMusicEmbeds ||
     profile.widget_bandsintown ||
     hasShop ||
-    hasImageGallery ||
     hasVideos ||
     hasScheduling
   );
@@ -705,13 +702,6 @@ const ticket = {
           <section style={sectionShellStyle}>
             <SectionHeading eyebrow="About" title="Get to know me" />
             <CollapsibleBio bio={profile.bio as string} />
-          </section>
-        )}
-
-        {hasImageGallery && (
-          <section style={sectionShellStyle}>
-            <SectionHeading eyebrow="Featured" title="Highlights" />
-            <ImageGallery pics={profile.pics} />
           </section>
         )}
 
