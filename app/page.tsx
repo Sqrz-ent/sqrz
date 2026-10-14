@@ -40,7 +40,6 @@ import ShopSection from "@/components/ShopSection";
 import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
-import PartnerJoinBanner from "@/components/PartnerJoinBanner";
 import { toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
@@ -127,16 +126,6 @@ async function getProfileByUsername(username: string) {
   return data ?? null;
 }
 
-async function getActivePartnerRefCode(profileId: string) {
-  const { data } = await supabase
-    .from("referral_codes")
-    .select("code")
-    .eq("owner_id", profileId)
-    .eq("is_active", true)
-    .maybeSingle();
-
-  return (data?.code as string | null) ?? null;
-}
 /* =========================
    SEO METADATA
 ========================= */
@@ -242,19 +231,10 @@ export default async function HomePage({
 
   if (!profile) notFound();
 
-  // Neither call depends on the other's result — only on `profile`, which is
-  // already resolved above — so run them concurrently instead of one after
-  // the other. Conditional skip logic is unchanged: a profile that doesn't
-  // need a given query still resolves to its old default (null / []) without
-  // ever issuing it.
-  const [partnerRefCode, shopProducts] = await Promise.all([
-    profile.is_partner === true
-      ? getActivePartnerRefCode(profile.id as string)
-      : Promise.resolve(null),
+  const shopProducts =
     profile.shop_provider === "gumroad" || profile.shop_provider === "shopify"
-      ? getShopProducts(profile.id as string)
-      : Promise.resolve([]),
-  ]);
+      ? await getShopProducts(profile.id as string)
+      : [];
 
   // ── View logging — best-effort, not render-blocking ─────────────────────────
   // Skipped entirely in preview mode (?preview=true) — the owner looking at
@@ -689,12 +669,6 @@ const ticket = {
           maxWidth: 720,
         }}
       >
-
-        {partnerRefCode && (
-          <section style={sectionShellStyle}>
-            <PartnerJoinBanner refCode={partnerRefCode} />
-          </section>
-        )}
 
         {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
 
