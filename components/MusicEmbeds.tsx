@@ -136,7 +136,7 @@ export default function MusicEmbeds({
           data-widget-type="spotify"
           src={spotifyEmbed}
           width="100%"
-          height="152"
+          height="352"
           loading="lazy"
         />
       )}
