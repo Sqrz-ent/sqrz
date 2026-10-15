@@ -147,7 +147,7 @@ export default function MusicEmbeds({
           data-widget-type="soundcloud"
           src={soundcloudEmbed}
           width="100%"
-          height="300"
+          height="450"
           loading="lazy"
         />
       )}
