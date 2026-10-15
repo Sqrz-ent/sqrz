@@ -1,6 +1,7 @@
 /* Studio template */
 .tpl-studio {
   background: #080f1a;
+  --bg-color: #080f1a;
   color: #ffffff;
   --accent-color: #38BDF8;
   --surface-color: #162030;

@@ -1,6 +1,7 @@
 /* Neon template */
 .tpl-neon {
   background: #0d0d1a;
+  --bg-color: #0d0d1a;
   color: #ffffff;
   --accent-color: #A855F7;
   --surface-color: #1a1a24;

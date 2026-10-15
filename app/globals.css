@@ -124,3 +124,23 @@ body {
     font-size: 16px !important;
   }
 }
+
+/* BeatStars embed scroll-fade hint (ShopSection.tsx) — at <=961px BeatStars'
+   own player swaps to a more compact mobile layout where it isn't obvious
+   there's more than one track below the fold. This fades the bottom edge
+   to the page's own background so it reads as "more below, scroll" rather
+   than looking like the whole embed. pointer-events: none so it never
+   blocks the iframe's own scroll/tap handling. Desktop (>961px, where
+   BeatStars already shows its track list inline) is untouched. */
+@media (max-width: 961px) {
+  .beatstars-embed-fade::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--bg-color));
+    pointer-events: none;
+  }
+}

@@ -83,14 +83,22 @@ export default function ShopSection({
 
   if (provider === "beatstars") {
     if (!beatstarsUrl) return null;
+    // beatstars-embed-fade (see app/globals.css) overlays a bottom-edge
+    // fade to the page's own --bg-color at <=961px, where BeatStars' own
+    // player switches to a compact mobile layout that doesn't otherwise
+    // signal there's more than one track to scroll to. overflow: hidden +
+    // the same borderRadius as the iframe keeps the fade's corners
+    // matching instead of poking out past the iframe's rounded corners.
     return (
-      <iframe
-        src={beatstarsUrl}
-        title="BeatStars store"
-        width="100%"
-        height="500"
-        style={embedStyle}
-      />
+      <div className="beatstars-embed-fade" style={beatstarsWrapperStyle}>
+        <iframe
+          src={beatstarsUrl}
+          title="BeatStars store"
+          width="100%"
+          height="500"
+          style={embedStyle}
+        />
+      </div>
     );
   }
 
@@ -115,6 +123,16 @@ export default function ShopSection({
 // profile's embedded-media sections.
 const embedStyle = {
   border: "none",
+  borderRadius: 8,
+};
+
+// Wraps the BeatStars iframe for the bottom scroll-fade overlay (see
+// app/globals.css's .beatstars-embed-fade) — same borderRadius as the
+// iframe itself, clipped via overflow so the fade's corners match rather
+// than squaring off past the iframe's rounded corners.
+const beatstarsWrapperStyle = {
+  position: "relative" as const,
+  overflow: "hidden",
   borderRadius: 8,
 };
 

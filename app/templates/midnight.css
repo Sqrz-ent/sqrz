@@ -1,6 +1,7 @@
 /* Midnight template */
 .tpl-midnight {
   background: #0a0a0a;
+  --bg-color: #0a0a0a;
   color: #ffffff;
   --accent-color: #F3B130;
   --surface-color: #1a1a1a;
