@@ -436,7 +436,7 @@ export default async function PrivateLinkPage({
   // jitsu_events pings — see lib/tracking/visitor.ts.
   const viewId = newViewId();
 
-  // Collect tracking data — sent via client-side beacon after 5 seconds
+  // Collect tracking data — sent by the ViewTracker beacon once the page is visible
   const country = headersList.get("x-vercel-ip-country") ?? null;
   const city = decodeURIComponent(headersList.get("x-vercel-ip-city") ?? "") || null;
   const referrer = headersList.get("referer") ?? null;

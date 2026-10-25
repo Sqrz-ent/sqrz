@@ -17,20 +17,32 @@ type Props = {
   viewId: string
 }
 
-// Private-link page views are only counted once this beacon lands — i.e. the
-// page actually ran JS and stayed open 5 seconds. Fingerprint and bot
+// The ONLY writer of profile_views for both the main profile page and private
+// links: a view counts once a real browser has run this page's JS and actually
+// shown it. Server-only fetches (crawlers, link-preview bots, uptime monitors)
+// never run JS; pages prerendered in the background (Meta's in-app browser
+// prefetches ad destinations) only count if the visitor actually opens them.
+// Fires immediately on visibility rather than after a dwell delay, so ad
+// visitors who bounce within seconds are still counted. Fingerprint and bot
 // filtering are done server-side in /api/track-view.
 export default function ViewTracker(props: Props) {
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let sent = false
+    const send = () => {
+      if (sent || document.visibilityState !== 'visible') return
+      sent = true
+      document.removeEventListener('visibilitychange', send)
       fetch('/api/track-view', {
         method: 'POST',
+        keepalive: true,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...props, sessionId: props.viewId }),
       }).catch(() => {}) // silent fail — never block the page
-    }, 5000)
+    }
 
-    return () => clearTimeout(timer)
+    send()
+    document.addEventListener('visibilitychange', send)
+    return () => document.removeEventListener('visibilitychange', send)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null

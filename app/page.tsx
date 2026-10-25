@@ -1,6 +1,5 @@
 import React from "react";
 import { headers } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
@@ -39,8 +38,8 @@ import ShopSection from "@/components/ShopSection";
 import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
-import { isLikelyBot } from "@/lib/tracking/botFilter";
-import { newViewId, visitorFingerprint } from "@/lib/tracking/visitor";
+import { newViewId } from "@/lib/tracking/visitor";
+import ViewTracker from "@/components/ViewTracker";
 import { toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
@@ -236,66 +235,23 @@ export default async function HomePage({
       ? await getShopProducts(profile.id as string)
       : [];
 
-  // Per-load id shared by the profile_views row below and every jitsu_events
-  // ping this page fires (via TrackingGate) — see lib/tracking/visitor.ts.
+  // Per-load id shared by this load's profile_views row (written by the
+  // ViewTracker beacon below) and every jitsu_events ping (via TrackingGate) —
+  // see lib/tracking/visitor.ts.
   const viewId = newViewId();
 
-  // ── View logging — best-effort, not render-blocking ─────────────────────────
-  // Skipped entirely in preview mode (?preview=true) — the owner looking at
-  // their own profile (e.g. from the iOS Preview tab) should never count as a
-  // real visitor view.
-  if (!isPreview) {
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    const referrer = headersList.get("referer");
-
-    const visitor_fingerprint = visitorFingerprint(headersList);
-
-    const country = headersList.get('x-vercel-ip-country') ?? null;
-    const city = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
-
-    // Skip logging for bots, crawlers, datacenter and anonymized traffic —
-    // shared rules, see lib/tracking/botFilter.ts.
-    const isBot = isLikelyBot({ userAgent: headersList.get("user-agent"), country, city });
-
-    if (country === 'CN') return;
-    if (!isBot) void (async () => {
-      try {
-        let boost_campaign_id: string | null = null;
-        if (params.utm_campaign?.startsWith("boost_")) {
-          const { data: campaign } = await adminSupabase
-            .from("boost_campaigns")
-            .select("id")
-            .eq("utm_campaign", params.utm_campaign)
-            .eq("profile_id", profile.id)
-            .maybeSingle();
-          boost_campaign_id = campaign?.id ?? null;
-        }
-
-        const { error: viewError } = await adminSupabase.from("profile_views").insert({
-          profile_id: profile.id,
-          session_id: viewId,
-          visitor_fingerprint,
-          utm_source: params.utm_source || params.ref || null,
-          utm_medium: params.utm_medium || null,
-          utm_campaign: params.utm_campaign || null,
-          utm_content: params.utm_content || null,
-          boost_campaign_id,
-          referrer: referrer || null,
-          country_code: country,
-          city: city,
-        });
-
-        if (viewError) {
-          console.error("[views] insert error:", viewError.message);
-        }
-      } catch (error) {
-        console.error("[views] logging failed:", error);
-      }
-    })();
-  }
+  // ── View logging ─────────────────────────────────────────────────────────────
+  // No server-side insert: a view only counts once the ViewTracker beacon
+  // lands, i.e. a real browser ran the page's JS and actually showed it. Plain
+  // HTTP fetches (Meta's ad-review/preview crawlers, uptime monitors) never
+  // run JS, so they never count — regardless of the UA they send. Bot/
+  // datacenter filtering and boost_campaign_id resolution happen on the
+  // beacon request (/api/track-view + the resolve_boost_campaign_id trigger).
+  // Preview mode (?preview=true, e.g. the iOS Preview tab) renders no beacon —
+  // the owner looking at their own profile never counts.
+  const viewCountry = headersList.get('x-vercel-ip-country') ?? null;
+  const viewCity = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
+  if (!isPreview && viewCountry === 'CN') return;
 
   // Resolve the featured link only when it's actually the artist's selected
   // Action Button source (profiles.action_button_source === "private_link") —
@@ -468,6 +424,21 @@ const ticket = {
 
       viewId={viewId}
     />
+    {!isPreview && (
+      <ViewTracker
+        profileId={profile.id as string}
+        slug={profile.slug as string}
+        country={viewCountry}
+        city={viewCity}
+        referrer={headersList.get("referer")}
+        utmSource={params.utm_source || params.ref || null}
+        utmMedium={params.utm_medium || null}
+        utmCampaign={params.utm_campaign || null}
+        utmContent={params.utm_content || null}
+        linkId={null}
+        viewId={viewId}
+      />
+    )}
     <LinkClickTracker profileId={profile.id as string | null} />
     <OutreachEngagementGate profileSlug={profile.slug as string | null} />
 
