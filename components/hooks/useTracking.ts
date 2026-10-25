@@ -6,6 +6,7 @@ import {
   track,
   trackPageViewCookieless,
   trackPageExitCookieless,
+  setViewId,
 } from "@/lib/tracking/track";
 
 type UseTrackingOptions = {
@@ -13,6 +14,7 @@ type UseTrackingOptions = {
   profileId: string | null;
   userTier: number | null;
   hasCustomPixels: boolean;
+  viewId: string;
 };
 
 export function useTracking({
@@ -20,12 +22,18 @@ export function useTracking({
   profileId,
   userTier,
   hasCustomPixels,
+  viewId,
 }: UseTrackingOptions) {
   const firedRef = useRef(false);
   const maxScrollYRef = useRef(0);
   const exitedRef = useRef(false);
 
   useEffect(() => {
+    // Every /api/track ping from this load (page_view, page_exit, widget_*,
+    // cta_click — including ones fired by other components) carries the
+    // server-issued view id, so it joins to this load's profile_views row.
+    setViewId(viewId);
+
     const props = {
       profile_slug: profileSlug,
       profile_id: profileId,

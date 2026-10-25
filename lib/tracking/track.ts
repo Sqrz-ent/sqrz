@@ -17,6 +17,17 @@ declare global {
 // every fresh load, exactly like the cookieless pings that consume it.
 const pageLoadTime = Date.now();
 
+// Server-issued id for this page load (see lib/tracking/visitor.ts), set by
+// useTracking on mount. Sent as session_id on every /api/track ping so
+// jitsu_events rows join to the same load's profile_views row. Held only in
+// module memory — never written to cookies/sessionStorage — so it is as
+// consent-free as the UTM values in getAttribution().
+let currentViewId: string | null = null;
+
+export function setViewId(id: string | null): void {
+  currentViewId = id;
+}
+
 function getOrCreateSessionId(): string {
   const key = "sqrz_sid";
   const existing = sessionStorage.getItem(key);
@@ -81,17 +92,20 @@ export async function track(
 
     await post({
       event_type: eventType,
-      session_id: getOrCreateSessionId(),
+      session_id: currentViewId,
       ...getAttribution(),
-      event_properties: properties ?? {},
+      // The consented, tab-persistent id stays available for cross-page
+      // analysis; session_id is the per-load view id like every other ping.
+      event_properties: { ...(properties ?? {}), sid: getOrCreateSessionId() },
     });
   } catch {
     // silent failure
   }
 }
 
-// Generic consent-free, identifier-free event. Sends NO session_id and never
-// touches sessionStorage/cookies, so no client identifier is stored — an
+// Generic consent-free, identifier-free event. Never touches
+// sessionStorage/cookies, so no client identifier is stored (its session_id is
+// the per-load view id, held only in memory — see currentViewId) — an
 // aggregate first-party signal that does not require analytics consent under
 // ePrivacy/GDPR. Shares getAttribution() so every cookieless event (page_view,
 // page_exit, widget_*, cta_click) carries identical ad_source/fbclid/UTM tags.
@@ -102,7 +116,7 @@ export async function trackCookieless(
   try {
     await post({
       event_type: eventType,
-      session_id: null,
+      session_id: currentViewId,
       ...getAttribution(),
       event_properties: { ...(properties ?? {}), cookieless: true },
     });
@@ -144,7 +158,7 @@ export async function trackCtaClick(
 }
 
 // Consent-free, identifier-free page-exit engagement ping. Same rules as the
-// page_view ping: NO session_id, no client storage. Carries time-on-page (from
+// page_view ping: per-load view id only, no client storage. Carries time-on-page (from
 // the module-level pageLoadTime) and the max scroll depth reached, so we can see
 // engagement quality for ad traffic that never accepts the cookie banner.
 // keepalive lets it flush during visibilitychange/unload as Meta's in-app
@@ -178,7 +192,7 @@ export async function trackPageExitCookieless(
 
     await post({
       event_type: "page_exit",
-      session_id: null,
+      session_id: currentViewId,
       ...getAttribution(),
       event_properties: {
         ...(properties ?? {}),

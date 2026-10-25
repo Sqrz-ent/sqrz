@@ -1,32 +1,18 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabase-server'
 import { randomUUID } from 'crypto'
-
-const BOT_PATTERNS = [
-  'bot', 'crawler', 'spider', 'crawling',
-  'googlebot', 'bingbot', 'slurp', 'duckduckbot',
-  'baiduspider', 'yandexbot', 'sogou', 'exabot',
-  'facebot', 'ia_archiver', 'python-requests',
-  'curl/', 'wget/', 'axios/', 'node-fetch',
-  'go-http-client', 'java/', 'ruby',
-  'headlesschrome', 'phantomjs', 'selenium',
-  'lighthouse', 'pagespeed', 'chrome-lighthouse',
-  'vercel-screenshot', 'unfurl', 'whatsapp',
-  'telegrambot', 'twitterbot', 'linkedinbot',
-  'slackbot', 'discordbot',
-]
+import { isLikelyBotRequest } from '@/lib/tracking/botFilter'
+import { visitorFingerprint } from '@/lib/tracking/visitor'
 
 export async function POST(request: Request) {
   try {
-    const ua = request.headers.get('user-agent') ?? ''
-    const isBot = !ua || BOT_PATTERNS.some(p => ua.toLowerCase().includes(p))
-    if (isBot) return NextResponse.json({ ok: false }, { status: 204 })
+    if (isLikelyBotRequest(request.headers)) return new NextResponse(null, { status: 204 })
 
     const body = await request.json()
     const {
-      profileId, slug, country, city,
+      profileId, country, city,
       referrer, utmSource, utmMedium, utmCampaign, utmContent,
-      linkId, fingerprint, sessionId,
+      linkId, sessionId,
     } = body
 
     if (!profileId) return NextResponse.json({ ok: false }, { status: 400 })
@@ -34,7 +20,7 @@ export async function POST(request: Request) {
     await supabaseServer.from('profile_views').insert({
       profile_id: profileId,
       session_id: sessionId ?? randomUUID(),
-      visitor_fingerprint: fingerprint,
+      visitor_fingerprint: visitorFingerprint(request.headers),
       country_code: country,
       city: city,
       referrer: referrer,

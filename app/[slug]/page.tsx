@@ -3,6 +3,8 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ViewTracker from "@/components/ViewTracker";
+import { isLikelyBotRequest } from "@/lib/tracking/botFilter";
+import { newViewId } from "@/lib/tracking/visitor";
 import { resolveProfileSlug } from "@/lib/profile-resolver";
 import LegalFooter from "@/components/LegalFooter";
 import CookieBanner from "@/components/CookieBanner";
@@ -420,12 +422,19 @@ export default async function PrivateLinkPage({
 
   // Payment-gated links count a "use" only once payment completes (in the Stripe
   // webhook), never on page load — otherwise every visitor would burn a use.
-  if (!maxUsesReached && !link.payment_gate) {
+  // Bots/datacenter traffic never count either: a crawler burst (e.g. Meta's
+  // preview fetchers) could otherwise exhaust a max_uses-limited link and lock
+  // real visitors out.
+  if (!maxUsesReached && !link.payment_gate && !isLikelyBotRequest(headersList)) {
     await supabase
       .from("private_booking_links")
       .update({ use_count: (link.use_count || 0) + 1 })
       .eq("id", link.id);
   }
+
+  // Per-load id shared by ViewTracker's profile_views row and TrackingGate's
+  // jitsu_events pings — see lib/tracking/visitor.ts.
+  const viewId = newViewId();
 
   // Collect tracking data — sent via client-side beacon after 5 seconds
   const country = headersList.get("x-vercel-ip-country") ?? null;
@@ -665,6 +674,7 @@ export default async function PrivateLinkPage({
           profileId={profile.id as string | null}
           userTier={profile.plan_id as number | null}
           hasCustomPixels={hasCustomPixels}
+          viewId={viewId}
         />
         <CookieBanner templateId={profile.template_id as string} />
         <ProfileInquiryBubble
@@ -684,6 +694,7 @@ export default async function PrivateLinkPage({
           utmCampaign={sp.utm_campaign ?? null}
           utmContent={sp.utm_content ?? null}
           linkId={link.id as string}
+          viewId={viewId}
         />
       </div>
     );
@@ -740,6 +751,7 @@ export default async function PrivateLinkPage({
         profileId={profile.id as string | null}
         userTier={profile.plan_id as number | null}
         hasCustomPixels={hasCustomPixels}
+        viewId={viewId}
       />
       <CookieBanner templateId={profile.template_id as string} />
       <ProfileInquiryBubble
@@ -759,6 +771,7 @@ export default async function PrivateLinkPage({
         utmCampaign={sp.utm_campaign ?? null}
         utmContent={sp.utm_content ?? null}
         linkId={link.id as string}
+        viewId={viewId}
       />
     </div>
   );

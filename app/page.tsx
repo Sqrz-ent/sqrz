@@ -39,6 +39,8 @@ import ShopSection from "@/components/ShopSection";
 import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
+import { isLikelyBot } from "@/lib/tracking/botFilter";
+import { newViewId, visitorFingerprint } from "@/lib/tracking/visitor";
 import { toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
@@ -199,7 +201,6 @@ export default async function HomePage({
     utm_campaign?: string;
     utm_content?: string;
     ref?: string;
-    sid?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -235,6 +236,10 @@ export default async function HomePage({
       ? await getShopProducts(profile.id as string)
       : [];
 
+  // Per-load id shared by the profile_views row below and every jitsu_events
+  // ping this page fires (via TrackingGate) — see lib/tracking/visitor.ts.
+  const viewId = newViewId();
+
   // ── View logging — best-effort, not render-blocking ─────────────────────────
   // Skipped entirely in preview mode (?preview=true) — the owner looking at
   // their own profile (e.g. from the iOS Preview tab) should never count as a
@@ -246,57 +251,17 @@ export default async function HomePage({
     );
     const referrer = headersList.get("referer");
 
-    // Session ID from cookie for consistency across page loads
-    const cookieHeader = headersList.get("cookie") || "";
-    const sessionMatch = cookieHeader.match(/sqrz_session=([^;]+)/);
-    const session_id = sessionMatch?.[1] || params.sid || Math.random().toString(36).slice(2);
-
-    // Visitor fingerprint — non-reversible hash of UA + IP for deduplication
-    const userAgent = headersList.get("user-agent") || "";
-    const ip =
-      headersList.get("x-forwarded-for")?.split(",")[0] ||
-      headersList.get("x-real-ip") ||
-      "";
-    const { createHash } = await import('crypto');
-    const visitor_fingerprint = createHash('sha256')
-      .update(userAgent + ip)
-      .digest('base64')
-      .slice(0, 16);
+    const visitor_fingerprint = visitorFingerprint(headersList);
 
     const country = headersList.get('x-vercel-ip-country') ?? null;
     const city = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
 
-    // Skip logging for bots, crawlers, and anonymized traffic
-    const BOT_PATTERNS = [
-      'bot', 'crawler', 'spider', 'crawling',
-      'googlebot', 'bingbot', 'slurp', 'duckduckbot',
-      'baiduspider', 'yandexbot', 'sogou', 'exabot',
-      'facebot', 'ia_archiver', 'python-requests',
-      'curl/', 'wget/', 'axios/', 'node-fetch',
-      'go-http-client', 'java/', 'ruby',
-      'headlesschrome', 'phantomjs', 'selenium',
-      'lighthouse', 'pagespeed', 'chrome-lighthouse',
-      'vercel-screenshot', 'unfurl', 'whatsapp',
-      'telegrambot', 'twitterbot', 'linkedinbot',
-      'slackbot', 'discordbot',
-    ];
-    const isBot = !userAgent || BOT_PATTERNS.some(p => userAgent.toLowerCase().includes(p));
-    const isTor = country === 'T1';
-
-    const DATACENTER_CITIES = new Set([
-      // US datacenters (previous)
-      'santa clara', 'ashburn', 'boardman', 'hillsboro', 'ogden',
-      'los lunas', 'manassas', 'dekalb', 'north charleston', 'chicago',
-      // US datacenters (new)
-      'council bluffs', 'the dalles', 'gallatin', 'social circle',
-      'huntsville', 'north bergen', 'burlington', 'monte vista',
-      // Singapore, Seoul, etc. (previous)
-      'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo', 'falkenstein',
-    ]);
-    const cityLower = (city ?? '').toLowerCase();
+    // Skip logging for bots, crawlers, datacenter and anonymized traffic —
+    // shared rules, see lib/tracking/botFilter.ts.
+    const isBot = isLikelyBot({ userAgent: headersList.get("user-agent"), country, city });
 
     if (country === 'CN') return;
-    if (!isBot && !isTor && !DATACENTER_CITIES.has(cityLower)) void (async () => {
+    if (!isBot) void (async () => {
       try {
         let boost_campaign_id: string | null = null;
         if (params.utm_campaign?.startsWith("boost_")) {
@@ -311,7 +276,7 @@ export default async function HomePage({
 
         const { error: viewError } = await adminSupabase.from("profile_views").insert({
           profile_id: profile.id,
-          session_id,
+          session_id: viewId,
           visitor_fingerprint,
           utm_source: params.utm_source || params.ref || null,
           utm_medium: params.utm_medium || null,
@@ -500,6 +465,8 @@ const ticket = {
       profileId={profile.id as string | null}
       userTier={profile.plan_id as number | null}
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id)}
+
+      viewId={viewId}
     />
     <LinkClickTracker profileId={profile.id as string | null} />
     <OutreachEngagementGate profileSlug={profile.slug as string | null} />

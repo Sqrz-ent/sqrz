@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { isLikelyBotRequest } from "@/lib/tracking/botFilter";
 
 export const runtime = "edge";
 
@@ -8,6 +9,12 @@ export async function POST(req: NextRequest) {
 
   if (!body?.event_type) {
     return NextResponse.json({ error: "Missing event_type" }, { status: 400 });
+  }
+
+  // Same bot/datacenter rules as profile_views (lib/tracking/botFilter.ts) —
+  // previously jitsu_events had no filtering at all.
+  if (isLikelyBotRequest(req.headers)) {
+    return new NextResponse(null, { status: 204 });
   }
 
   const {

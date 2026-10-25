@@ -7,6 +7,7 @@ type TrackingGateProps = {
   profileId: string | null;
   userTier: number | null;
   hasCustomPixels: boolean;
+  viewId: string;
 };
 
 export default function TrackingGate({
@@ -14,7 +15,8 @@ export default function TrackingGate({
   profileId,
   userTier,
   hasCustomPixels,
+  viewId,
 }: TrackingGateProps) {
-  useTracking({ profileSlug, profileId, userTier, hasCustomPixels });
+  useTracking({ profileSlug, profileId, userTier, hasCustomPixels, viewId });
   return null;
 }
