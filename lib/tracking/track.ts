@@ -151,7 +151,17 @@ const lastCtaByUrl = new Map<string, number>();
 // Single entry point for cta_click. Scope it to intentional CTAs at the call
 // site; this function only handles the shared shape + dedupe.
 export async function trackCtaClick(
-  properties: { link_url?: string | null; link_label?: string | null; profile_id?: string | null }
+  properties: {
+    link_url?: string | null;
+    link_label?: string | null;
+    profile_id?: string | null;
+    // Set for Action Button / floating CTA taps (2026-10-25), so analytics can
+    // break clicks down by what the button does: 'scheduling' | 'shop' |
+    // 'external' | 'private_link', plus the provider (calendly, hubspot,
+    // linkout, …) where there is one.
+    cta_source?: string | null;
+    provider?: string | null;
+  }
 ): Promise<void> {
   const key = properties.link_url ?? properties.link_label ?? "";
   const now = Date.now();

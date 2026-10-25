@@ -15,10 +15,14 @@ export default function CalendlyPopupButton({
   url,
   text,
   style,
+  onOpen,
 }: {
   url: string;
   text: string;
   style: CSSProperties;
+  // Optional, fired when the popup button is tapped (analytics). react-calendly's
+  // PopupButton has no click callback, so it's caught on a wrapper below.
+  onOpen?: () => void;
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -28,12 +32,16 @@ export default function CalendlyPopupButton({
   // avoid SSR access to `document` and any hydration mismatch.
   if (!mounted) return null;
 
+  // display: contents keeps the wrapper out of layout, so the button still
+  // positions exactly as before (it's fixed/floating via `style`).
   return (
-    <PopupButton
-      url={url}
-      rootElement={document.body}
-      text={text}
-      styles={style}
-    />
+    <span style={{ display: "contents" }} onClickCapture={onOpen}>
+      <PopupButton
+        url={url}
+        rootElement={document.body}
+        text={text}
+        styles={style}
+      />
+    </span>
   );
 }

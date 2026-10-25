@@ -17,6 +17,8 @@
 // rendering branch has no way to ever run; removed rather than kept as dead
 // code (see SoundeeEmbed.tsx's removal in the same commit).
 
+import ShopTracker from "./tracking/ShopTracker";
+
 export type ShopProduct = {
   id: string;
   title: string;
@@ -59,6 +61,7 @@ function ProductCard({ product }: { product: ShopProduct }) {
         {price && <span style={priceStyle}>{price}</span>}
         <a
           href={product.buy_url}
+          data-shop-product={product.title}
           target="_blank"
           rel="noopener noreferrer"
           style={buyButtonStyle}
@@ -74,10 +77,13 @@ export default function ShopSection({
   provider,
   beatstarsUrl,
   products,
+  profileId = null,
 }: {
   provider: string | null;
   beatstarsUrl: string | null;
   products: ShopProduct[];
+  // For shop_visible / shop_click analytics (ShopTracker).
+  profileId?: string | null;
 }) {
   if (!provider) return null;
 
@@ -90,26 +96,30 @@ export default function ShopSection({
     // the same borderRadius as the iframe keeps the fade's corners
     // matching instead of poking out past the iframe's rounded corners.
     return (
-      <div className="beatstars-embed-fade" style={beatstarsWrapperStyle}>
-        <iframe
-          src={beatstarsUrl}
-          title="BeatStars store"
-          width="100%"
-          height="500"
-          style={embedStyle}
-        />
-      </div>
+      <ShopTracker profileId={profileId} provider={provider}>
+        <div className="beatstars-embed-fade" style={beatstarsWrapperStyle}>
+          <iframe
+            src={beatstarsUrl}
+            title="BeatStars store"
+            width="100%"
+            height="500"
+            style={embedStyle}
+          />
+        </div>
+      </ShopTracker>
     );
   }
 
   if (provider === "gumroad" || provider === "shopify") {
     if (!products.length) return null;
     return (
-      <div style={gridStyle}>
-        {products.slice(0, 4).map((p) => (
-          <ProductCard key={p.id} product={p} />
-        ))}
-      </div>
+      <ShopTracker profileId={profileId} provider={provider}>
+        <div style={gridStyle}>
+          {products.slice(0, 4).map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
+        </div>
+      </ShopTracker>
     );
   }
 

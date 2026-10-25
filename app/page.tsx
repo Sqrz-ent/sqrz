@@ -643,6 +643,7 @@ const ticket = {
               provider={profile.shop_provider as string | null}
               beatstarsUrl={profile.beatstars_url as string | null}
               products={shopProducts}
+              profileId={profile.id as string}
             />
           </section>
         )}

@@ -5,6 +5,7 @@ import CalendlyPopupButton from "./CalendlyPopupButton";
 import HubSpotMeetingModal from "./HubSpotMeetingModal";
 import LinkOutButton from "./LinkOutButton";
 import { floatingButtonStyle } from "@/lib/floatingCta";
+import { trackCtaClick } from "@/lib/tracking/track";
 
 type Props = {
   // From profiles.scheduling_provider / scheduling_url. Generic on purpose:
@@ -12,6 +13,8 @@ type Props = {
   // savvycal slot in later with no rename and no consumer-side changes.
   provider: string | null;
   url: string | null;
+  // For cta_click analytics (cta_source 'scheduling').
+  profileId: string;
 };
 
 // Floating scheduling CTA for a private link page (private_booking_links.
@@ -23,21 +26,37 @@ type Props = {
 // scheduling integration itself is never duplicated between the two call
 // sites — only BookMeButton's extra featuredLink/lead-form fallback tiers
 // (link pages have none of that; a link page either shows this or nothing).
-export default function SchedulingWidget({ provider, url }: Props) {
+export default function SchedulingWidget({ provider, url, profileId }: Props) {
   const [open, setOpen] = useState(false);
 
   // Unset/no URL → render nothing (no throw, no empty state) — exactly like
   // the social/music embeds when their field is unset.
   if (!provider || !url) return null;
 
+  const onTap = (p: string) =>
+    trackCtaClick({ link_url: url, link_label: "Book a Call", profile_id: profileId, cta_source: "scheduling", provider: p });
+
   if (provider === "calendly") {
-    return <CalendlyPopupButton url={url} text="Book a Call" style={floatingButtonStyle} />;
+    return (
+      <CalendlyPopupButton
+        url={url}
+        text="Book a Call"
+        style={floatingButtonStyle}
+        onOpen={() => onTap("calendly")}
+      />
+    );
   }
 
   if (provider === "hubspot") {
     return (
       <>
-        <button onClick={() => setOpen(true)} style={floatingButtonStyle}>
+        <button
+          onClick={() => {
+            onTap("hubspot");
+            setOpen(true);
+          }}
+          style={floatingButtonStyle}
+        >
           Book a Call
         </button>
         <HubSpotMeetingModal url={url} open={open} onClose={() => setOpen(false)} />
@@ -47,5 +66,7 @@ export default function SchedulingWidget({ provider, url }: Props) {
 
   // Any other configured provider (OpenTable, Resy, Tock, SevenRooms,
   // Eventbrite, Dice, Ticket Tailor, …) — same catch-all as the primary CTA.
-  return <LinkOutButton url={url} text="Book a Call" style={floatingButtonStyle} />;
+  return (
+    <LinkOutButton url={url} text="Book a Call" style={floatingButtonStyle} onOpen={() => onTap("linkout")} />
+  );
 }

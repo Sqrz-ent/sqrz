@@ -620,6 +620,7 @@ export default async function PrivateLinkPage({
         provider={profile.shop_provider as string | null}
         beatstarsUrl={profile.beatstars_url as string | null}
         products={shopProducts}
+        profileId={profile.id as string}
       />
     ) : null;
 
@@ -629,16 +630,23 @@ export default async function PrivateLinkPage({
           <SchedulingWidget
             provider={profile.scheduling_provider as string | null}
             url={profile.scheduling_url as string | null}
+            profileId={profile.id as string}
           />
         )}
         {showVisitStore && (
-          <LinkOutButton url={shopStoreUrl as string} text="Visit Store" style={floatingButtonStyle} />
+          <LinkOutButton
+            url={shopStoreUrl as string}
+            text="Visit Store"
+            style={floatingButtonStyle}
+            tracking={{ profileId: profile.id as string, source: "shop", provider: (profile.shop_provider as string | null) ?? null }}
+          />
         )}
         {showExternalCta && (
           <LinkOutButton
             url={externalCtaUrl as string}
             text={(profile.external_link_label as string | null) || "Visit Link"}
             style={floatingButtonStyle}
+            tracking={{ profileId: profile.id as string, source: "external" }}
           />
         )}
         <OutreachEngagementGate profileSlug={username} />
