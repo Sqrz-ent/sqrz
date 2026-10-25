@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { trackCookieless } from "@/lib/tracking/track";
 import { recordOutreachEngagement } from "@/lib/outreach/engagement";
+import SpotifyEmbed from "./SpotifyEmbed";
 
 type Props = {
   spotifyEmbed: string | null;
@@ -44,13 +45,12 @@ export default function MusicEmbeds({
   mixcloudEmbedUrl,
   profileId,
 }: Props) {
-  const spotifyRef = useRef<HTMLIFrameElement>(null);
   const soundcloudRef = useRef<HTMLIFrameElement>(null);
 
   // ── Visibility tracking: fire widget_visible once per embed at ~50% ────────
+  // (Spotify tracks its own visibility and playback — see SpotifyEmbed.)
   useEffect(() => {
     const targets: Array<{ el: HTMLIFrameElement | null; type: string }> = [
-      { el: spotifyRef.current, type: "spotify" },
       { el: soundcloudRef.current, type: "soundcloud" },
     ];
     const seen = new Set<string>();
@@ -130,16 +130,7 @@ export default function MusicEmbeds({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      {spotifyEmbed && (
-        <iframe
-          ref={spotifyRef}
-          data-widget-type="spotify"
-          src={spotifyEmbed}
-          width="100%"
-          height="352"
-          loading="lazy"
-        />
-      )}
+      {spotifyEmbed && <SpotifyEmbed embedUrl={spotifyEmbed} profileId={profileId} />}
 
       {soundcloudEmbed && (
         <iframe
