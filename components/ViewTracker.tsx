@@ -11,6 +11,10 @@ type Props = {
   utmMedium: string | null
   utmCampaign: string | null
   utmContent: string | null
+  // Meta's numeric campaign id (appended to every ad click) — lets the
+  // resolve_boost_campaign_id trigger attribute the view when utm_campaign
+  // doesn't match the campaign.
+  utmId: string | null
   linkId: string | null
   // Server-issued per-load id (lib/tracking/visitor.ts) — becomes
   // profile_views.session_id, matching this load's jitsu_events pings.

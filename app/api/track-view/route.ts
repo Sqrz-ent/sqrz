@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const {
       profileId, country, city,
-      referrer, utmSource, utmMedium, utmCampaign, utmContent,
+      referrer, utmSource, utmMedium, utmCampaign, utmContent, utmId,
       linkId, sessionId,
     } = body
 
@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       utm_medium: utmMedium,
       utm_campaign: utmCampaign,
       utm_content: utmContent,
+      utm_id: utmId ?? null,
       link_id: linkId ?? null,
     })
 

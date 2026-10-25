@@ -42,6 +42,7 @@ type Attribution = {
   utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  utm_id: string | null;
   fbclid: string | null;
   gclid: string | null;
   referrer: string | null;
@@ -63,6 +64,9 @@ function getAttribution(): Attribution {
     utm_medium:   searchParams.get("utm_medium"),
     utm_campaign: searchParams.get("utm_campaign"),
     utm_content:  searchParams.get("utm_content"),
+    // Meta appends its own numeric campaign id as utm_id to every ad click —
+    // /api/track falls back to it when utm_campaign doesn't match a campaign.
+    utm_id:       searchParams.get("utm_id"),
     fbclid:       searchParams.get("fbclid"),
     gclid:        searchParams.get("gclid"),
     referrer:     document.referrer || null,

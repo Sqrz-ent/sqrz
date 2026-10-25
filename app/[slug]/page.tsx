@@ -385,7 +385,7 @@ export default async function PrivateLinkPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ username?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string }>;
+  searchParams: Promise<{ username?: string; utm_source?: string; utm_medium?: string; utm_campaign?: string; utm_content?: string; utm_id?: string }>;
 }) {
   const { slug: linkSlug } = await params;
   const sp = await searchParams;
@@ -693,6 +693,7 @@ export default async function PrivateLinkPage({
           utmMedium={sp.utm_medium ?? null}
           utmCampaign={sp.utm_campaign ?? null}
           utmContent={sp.utm_content ?? null}
+          utmId={sp.utm_id ?? null}
           linkId={link.id as string}
           viewId={viewId}
         />
@@ -770,6 +771,7 @@ export default async function PrivateLinkPage({
         utmMedium={sp.utm_medium ?? null}
         utmCampaign={sp.utm_campaign ?? null}
         utmContent={sp.utm_content ?? null}
+        utmId={sp.utm_id ?? null}
         linkId={link.id as string}
         viewId={viewId}
       />

@@ -199,6 +199,7 @@ export default async function HomePage({
     utm_medium?: string;
     utm_campaign?: string;
     utm_content?: string;
+    utm_id?: string;
     ref?: string;
   }>;
 }) {
@@ -435,6 +436,7 @@ const ticket = {
         utmMedium={params.utm_medium || null}
         utmCampaign={params.utm_campaign || null}
         utmContent={params.utm_content || null}
+        utmId={params.utm_id || null}
         linkId={null}
         viewId={viewId}
       />
