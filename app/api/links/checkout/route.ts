@@ -3,9 +3,7 @@ import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
 export async function POST(req: NextRequest) {
-  // Live secret key + the live stripe_connect_id column — no live/test switching
-  // here, so the destination account in transfer_data must be a LIVE,
-  // fully-onboarded Connect account.
+  // Live secret key — no live/test switching here.
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,38 +32,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Link is not payment-gated" }, { status: 400 });
   }
 
-  // ── 2. Fetch the owner's Stripe Connect account (service role) ────────────
-  const { data: ownerProfile, error: profileError } = await supabase
+  // ── 2. Fetch the owner's profile (service role) — just for the slug fallback ──
+  const { data: ownerProfile } = await supabase
     .from("profiles")
-    .select("stripe_connect_id, stripe_connect_status, slug")
+    .select("slug")
     .eq("id", link.profile_id)
     .single();
-
-  const connectId = (ownerProfile?.stripe_connect_id as string | null) ?? null;
-  const connectStatus = (ownerProfile?.stripe_connect_status as string | null) ?? null;
-
-  // A destination charge needs a live, fully-onboarded Connect account. Require both
-  // an account id and an 'active' status — a missing id or a non-active status
-  // (e.g. 'pending') has no transfers capability, so Stripe would reject the session.
-  // Block it here with a clear message instead of letting Stripe throw a generic error.
-  if (profileError || !connectId || connectStatus !== "active") {
-    console.error("[links/checkout] connect account not ready:", {
-      profile_id: link.profile_id,
-      profileError,
-      connectId,
-      stripe_connect_status: connectStatus,
-    });
-    return NextResponse.json(
-      { error: "Payment not available" },
-      { status: 400 }
-    );
-  }
-
-  console.log("[links/checkout] using connect account:", {
-    connectId,
-    stripe_connect_status: connectStatus,
-    mode: "live",
-  });
 
   // ── 3. Resolve the current page URL for success/cancel redirects ──────────
   const referer = req.headers.get("referer") || "";
@@ -102,14 +74,13 @@ export async function POST(req: NextRequest) {
         product_data: { name: (link.title as string) ?? "Payment" },
       };
 
-  // ── 5. Create the Stripe Checkout Session (destination charge) ────────────
+  // ── 5. Create the Stripe Checkout Session (charged directly to the SQRZ
+  // platform account — no Connect split; Connect onboarding was removed
+  // elsewhere and no account can reach 'active' status anymore) ────────────
   try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [{ quantity: 1, price_data: priceData }],
-      payment_intent_data: {
-        transfer_data: { destination: connectId },
-      },
       metadata: {
         link_id: link.id as string,
         type: "link_payment",
@@ -120,12 +91,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
-    // Surfaces the exact Stripe reason in the server logs (e.g. destination account
-    // missing the transfers capability, or a test/live object-mode mismatch).
     console.error("[links/checkout] stripe session create failed:", {
       message: (err as Error)?.message,
-      connectId,
-      stripe_connect_status: ownerProfile?.stripe_connect_status ?? null,
       err,
     });
     return NextResponse.json(
