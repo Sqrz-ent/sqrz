@@ -17,6 +17,17 @@ declare global {
 // every fresh load, exactly like the cookieless pings that consume it.
 const pageLoadTime = Date.now();
 
+// Server-issued id for this page load (see lib/tracking/visitor.ts), set by
+// useTracking on mount. Sent as session_id on every /api/track ping so
+// jitsu_events rows join to the same load's profile_views row. Held only in
+// module memory — never written to cookies/sessionStorage — so it is as
+// consent-free as the UTM values in getAttribution().
+let currentViewId: string | null = null;
+
+export function setViewId(id: string | null): void {
+  currentViewId = id;
+}
+
 function getOrCreateSessionId(): string {
   const key = "sqrz_sid";
   const existing = sessionStorage.getItem(key);
@@ -31,6 +42,7 @@ type Attribution = {
   utm_medium: string | null;
   utm_campaign: string | null;
   utm_content: string | null;
+  utm_id: string | null;
   fbclid: string | null;
   gclid: string | null;
   referrer: string | null;
@@ -52,6 +64,9 @@ function getAttribution(): Attribution {
     utm_medium:   searchParams.get("utm_medium"),
     utm_campaign: searchParams.get("utm_campaign"),
     utm_content:  searchParams.get("utm_content"),
+    // Meta appends its own numeric campaign id as utm_id to every ad click —
+    // /api/track falls back to it when utm_campaign doesn't match a campaign.
+    utm_id:       searchParams.get("utm_id"),
     fbclid:       searchParams.get("fbclid"),
     gclid:        searchParams.get("gclid"),
     referrer:     document.referrer || null,
@@ -81,17 +96,20 @@ export async function track(
 
     await post({
       event_type: eventType,
-      session_id: getOrCreateSessionId(),
+      session_id: currentViewId,
       ...getAttribution(),
-      event_properties: properties ?? {},
+      // The consented, tab-persistent id stays available for cross-page
+      // analysis; session_id is the per-load view id like every other ping.
+      event_properties: { ...(properties ?? {}), sid: getOrCreateSessionId() },
     });
   } catch {
     // silent failure
   }
 }
 
-// Generic consent-free, identifier-free event. Sends NO session_id and never
-// touches sessionStorage/cookies, so no client identifier is stored — an
+// Generic consent-free, identifier-free event. Never touches
+// sessionStorage/cookies, so no client identifier is stored (its session_id is
+// the per-load view id, held only in memory — see currentViewId) — an
 // aggregate first-party signal that does not require analytics consent under
 // ePrivacy/GDPR. Shares getAttribution() so every cookieless event (page_view,
 // page_exit, widget_*, cta_click) carries identical ad_source/fbclid/UTM tags.
@@ -102,7 +120,7 @@ export async function trackCookieless(
   try {
     await post({
       event_type: eventType,
-      session_id: null,
+      session_id: currentViewId,
       ...getAttribution(),
       event_properties: { ...(properties ?? {}), cookieless: true },
     });
@@ -133,7 +151,17 @@ const lastCtaByUrl = new Map<string, number>();
 // Single entry point for cta_click. Scope it to intentional CTAs at the call
 // site; this function only handles the shared shape + dedupe.
 export async function trackCtaClick(
-  properties: { link_url?: string | null; link_label?: string | null; profile_id?: string | null }
+  properties: {
+    link_url?: string | null;
+    link_label?: string | null;
+    profile_id?: string | null;
+    // Set for Action Button / floating CTA taps (2026-10-25), so analytics can
+    // break clicks down by what the button does: 'scheduling' | 'shop' |
+    // 'external' | 'private_link', plus the provider (calendly, hubspot,
+    // linkout, …) where there is one.
+    cta_source?: string | null;
+    provider?: string | null;
+  }
 ): Promise<void> {
   const key = properties.link_url ?? properties.link_label ?? "";
   const now = Date.now();
@@ -144,7 +172,7 @@ export async function trackCtaClick(
 }
 
 // Consent-free, identifier-free page-exit engagement ping. Same rules as the
-// page_view ping: NO session_id, no client storage. Carries time-on-page (from
+// page_view ping: per-load view id only, no client storage. Carries time-on-page (from
 // the module-level pageLoadTime) and the max scroll depth reached, so we can see
 // engagement quality for ad traffic that never accepts the cookie banner.
 // keepalive lets it flush during visibilitychange/unload as Meta's in-app
@@ -178,7 +206,7 @@ export async function trackPageExitCookieless(
 
     await post({
       event_type: "page_exit",
-      session_id: null,
+      session_id: currentViewId,
       ...getAttribution(),
       event_properties: {
         ...(properties ?? {}),

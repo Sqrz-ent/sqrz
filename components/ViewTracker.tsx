@@ -11,36 +11,42 @@ type Props = {
   utmMedium: string | null
   utmCampaign: string | null
   utmContent: string | null
+  // Meta's numeric campaign id (appended to every ad click) — lets the
+  // resolve_boost_campaign_id trigger attribute the view when utm_campaign
+  // doesn't match the campaign.
+  utmId: string | null
   linkId: string | null
+  // Server-issued per-load id (lib/tracking/visitor.ts) — becomes
+  // profile_views.session_id, matching this load's jitsu_events pings.
+  viewId: string
 }
 
+// The ONLY writer of profile_views for both the main profile page and private
+// links: a view counts once a real browser has run this page's JS and actually
+// shown it. Server-only fetches (crawlers, link-preview bots, uptime monitors)
+// never run JS; pages prerendered in the background (Meta's in-app browser
+// prefetches ad destinations) only count if the visitor actually opens them.
+// Fires immediately on visibility rather than after a dwell delay, so ad
+// visitors who bounce within seconds are still counted. Fingerprint and bot
+// filtering are done server-side in /api/track-view.
 export default function ViewTracker(props: Props) {
   useEffect(() => {
-    const ua = navigator.userAgent
-    const screen = `${window.screen.width}x${window.screen.height}`
-    const raw = ua + screen + (props.slug ?? '')
-
-    let hash = 0
-    for (let i = 0; i < raw.length; i++) {
-      hash = ((hash << 5) - hash) + raw.charCodeAt(i)
-      hash |= 0
-    }
-    const fingerprint = Math.abs(hash).toString(36).padStart(8, '0')
-    const sessionId = sessionStorage.getItem('sqrz_session') ?? (() => {
-      const id = Math.random().toString(36).slice(2)
-      sessionStorage.setItem('sqrz_session', id)
-      return id
-    })()
-
-    const timer = setTimeout(() => {
+    let sent = false
+    const send = () => {
+      if (sent || document.visibilityState !== 'visible') return
+      sent = true
+      document.removeEventListener('visibilitychange', send)
       fetch('/api/track-view', {
         method: 'POST',
+        keepalive: true,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...props, fingerprint, sessionId }),
+        body: JSON.stringify({ ...props, sessionId: props.viewId }),
       }).catch(() => {}) // silent fail — never block the page
-    }, 5000)
+    }
 
-    return () => clearTimeout(timer)
+    send()
+    document.addEventListener('visibilitychange', send)
+    return () => document.removeEventListener('visibilitychange', send)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   return null

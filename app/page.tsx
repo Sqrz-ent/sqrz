@@ -1,6 +1,5 @@
 import React from "react";
 import { headers } from "next/headers";
-import { createClient } from "@supabase/supabase-js";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Script from "next/script";
@@ -39,6 +38,8 @@ import ShopSection from "@/components/ShopSection";
 import { getShopProducts } from "@/lib/shop";
 import LinkClickTracker from "@/components/LinkClickTracker";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
+import { newViewId } from "@/lib/tracking/visitor";
+import ViewTracker from "@/components/ViewTracker";
 import { toOgImageUrl, normalizeImageUrl } from "@/lib/image-url";
 
 
@@ -198,8 +199,8 @@ export default async function HomePage({
     utm_medium?: string;
     utm_campaign?: string;
     utm_content?: string;
+    utm_id?: string;
     ref?: string;
-    sid?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -235,102 +236,23 @@ export default async function HomePage({
       ? await getShopProducts(profile.id as string)
       : [];
 
-  // ── View logging — best-effort, not render-blocking ─────────────────────────
-  // Skipped entirely in preview mode (?preview=true) — the owner looking at
-  // their own profile (e.g. from the iOS Preview tab) should never count as a
-  // real visitor view.
-  if (!isPreview) {
-    const adminSupabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
-    const referrer = headersList.get("referer");
+  // Per-load id shared by this load's profile_views row (written by the
+  // ViewTracker beacon below) and every jitsu_events ping (via TrackingGate) —
+  // see lib/tracking/visitor.ts.
+  const viewId = newViewId();
 
-    // Session ID from cookie for consistency across page loads
-    const cookieHeader = headersList.get("cookie") || "";
-    const sessionMatch = cookieHeader.match(/sqrz_session=([^;]+)/);
-    const session_id = sessionMatch?.[1] || params.sid || Math.random().toString(36).slice(2);
-
-    // Visitor fingerprint — non-reversible hash of UA + IP for deduplication
-    const userAgent = headersList.get("user-agent") || "";
-    const ip =
-      headersList.get("x-forwarded-for")?.split(",")[0] ||
-      headersList.get("x-real-ip") ||
-      "";
-    const { createHash } = await import('crypto');
-    const visitor_fingerprint = createHash('sha256')
-      .update(userAgent + ip)
-      .digest('base64')
-      .slice(0, 16);
-
-    const country = headersList.get('x-vercel-ip-country') ?? null;
-    const city = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
-
-    // Skip logging for bots, crawlers, and anonymized traffic
-    const BOT_PATTERNS = [
-      'bot', 'crawler', 'spider', 'crawling',
-      'googlebot', 'bingbot', 'slurp', 'duckduckbot',
-      'baiduspider', 'yandexbot', 'sogou', 'exabot',
-      'facebot', 'ia_archiver', 'python-requests',
-      'curl/', 'wget/', 'axios/', 'node-fetch',
-      'go-http-client', 'java/', 'ruby',
-      'headlesschrome', 'phantomjs', 'selenium',
-      'lighthouse', 'pagespeed', 'chrome-lighthouse',
-      'vercel-screenshot', 'unfurl', 'whatsapp',
-      'telegrambot', 'twitterbot', 'linkedinbot',
-      'slackbot', 'discordbot',
-    ];
-    const isBot = !userAgent || BOT_PATTERNS.some(p => userAgent.toLowerCase().includes(p));
-    const isTor = country === 'T1';
-
-    const DATACENTER_CITIES = new Set([
-      // US datacenters (previous)
-      'santa clara', 'ashburn', 'boardman', 'hillsboro', 'ogden',
-      'los lunas', 'manassas', 'dekalb', 'north charleston', 'chicago',
-      // US datacenters (new)
-      'council bluffs', 'the dalles', 'gallatin', 'social circle',
-      'huntsville', 'north bergen', 'burlington', 'monte vista',
-      // Singapore, Seoul, etc. (previous)
-      'singapore', 'seoul', 'pune', 'são paulo', 'sao paulo', 'falkenstein',
-    ]);
-    const cityLower = (city ?? '').toLowerCase();
-
-    if (country === 'CN') return;
-    if (!isBot && !isTor && !DATACENTER_CITIES.has(cityLower)) void (async () => {
-      try {
-        let boost_campaign_id: string | null = null;
-        if (params.utm_campaign?.startsWith("boost_")) {
-          const { data: campaign } = await adminSupabase
-            .from("boost_campaigns")
-            .select("id")
-            .eq("utm_campaign", params.utm_campaign)
-            .eq("profile_id", profile.id)
-            .maybeSingle();
-          boost_campaign_id = campaign?.id ?? null;
-        }
-
-        const { error: viewError } = await adminSupabase.from("profile_views").insert({
-          profile_id: profile.id,
-          session_id,
-          visitor_fingerprint,
-          utm_source: params.utm_source || params.ref || null,
-          utm_medium: params.utm_medium || null,
-          utm_campaign: params.utm_campaign || null,
-          utm_content: params.utm_content || null,
-          boost_campaign_id,
-          referrer: referrer || null,
-          country_code: country,
-          city: city,
-        });
-
-        if (viewError) {
-          console.error("[views] insert error:", viewError.message);
-        }
-      } catch (error) {
-        console.error("[views] logging failed:", error);
-      }
-    })();
-  }
+  // ── View logging ─────────────────────────────────────────────────────────────
+  // No server-side insert: a view only counts once the ViewTracker beacon
+  // lands, i.e. a real browser ran the page's JS and actually showed it. Plain
+  // HTTP fetches (Meta's ad-review/preview crawlers, uptime monitors) never
+  // run JS, so they never count — regardless of the UA they send. Bot/
+  // datacenter filtering and boost_campaign_id resolution happen on the
+  // beacon request (/api/track-view + the resolve_boost_campaign_id trigger).
+  // Preview mode (?preview=true, e.g. the iOS Preview tab) renders no beacon —
+  // the owner looking at their own profile never counts.
+  const viewCountry = headersList.get('x-vercel-ip-country') ?? null;
+  const viewCity = decodeURIComponent(headersList.get('x-vercel-ip-city') ?? '') || null;
+  if (!isPreview && viewCountry === 'CN') return;
 
   // Resolve the featured link only when it's actually the artist's selected
   // Action Button source (profiles.action_button_source === "private_link") —
@@ -500,7 +422,25 @@ const ticket = {
       profileId={profile.id as string | null}
       userTier={profile.plan_id as number | null}
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id)}
+
+      viewId={viewId}
     />
+    {!isPreview && (
+      <ViewTracker
+        profileId={profile.id as string}
+        slug={profile.slug as string}
+        country={viewCountry}
+        city={viewCity}
+        referrer={headersList.get("referer")}
+        utmSource={params.utm_source || params.ref || null}
+        utmMedium={params.utm_medium || null}
+        utmCampaign={params.utm_campaign || null}
+        utmContent={params.utm_content || null}
+        utmId={params.utm_id || null}
+        linkId={null}
+        viewId={viewId}
+      />
+    )}
     <LinkClickTracker profileId={profile.id as string | null} />
     <OutreachEngagementGate profileSlug={profile.slug as string | null} />
 
@@ -703,6 +643,7 @@ const ticket = {
               provider={profile.shop_provider as string | null}
               beatstarsUrl={profile.beatstars_url as string | null}
               products={shopProducts}
+              profileId={profile.id as string}
             />
           </section>
         )}

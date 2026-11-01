@@ -46,16 +46,22 @@ export default function BookMeButton({
     featuredLink,
   });
 
+  // Every Action Button tap: analytics cta_click tagged with what the button
+  // does (feeds Top Buttons + the per-type Action Button breakdown), plus the
+  // outreach ping (a no-op unless a ?r= token is active on this load).
+  const onActionTap = (source: string, provider: string | null, url: string, label: string) => {
+    trackCtaClick({ link_url: url, link_label: label, profile_id: profileId, cta_source: source, provider });
+    recordOutreachEngagement({ linkTap: true });
+    recordOutreachEvent("cta_tap", label);
+  };
+
   if (cta.type === "featuredLink" && cta.mode === "external") {
     return (
       <LinkOutButton
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => {
-          recordOutreachEngagement({ linkTap: true });
-          recordOutreachEvent("cta_tap", cta.label);
-        }}
+        onOpen={() => onActionTap("private_link", null, cta.url, cta.label)}
       />
     );
   }
@@ -76,11 +82,7 @@ export default function BookMeButton({
             link_slug: cta.linkSlug,
             destination: "page",
           });
-          trackCtaClick({ link_url: cta.url, link_label: cta.label, profile_id: profileId });
-          // Additive — outreach engagement is a no-op whenever no ?r= token
-          // is active on this load (see lib/outreach/engagement.ts).
-          recordOutreachEngagement({ linkTap: true });
-          recordOutreachEvent("cta_tap", cta.label);
+          onActionTap("private_link", null, cta.url, cta.label);
         }}
       >
         {cta.label}
@@ -89,13 +91,26 @@ export default function BookMeButton({
   }
 
   if (cta.type === "scheduling" && cta.provider === "calendly") {
-    return <CalendlyPopupButton url={cta.url} text={cta.label} style={floatingButtonStyle} />;
+    return (
+      <CalendlyPopupButton
+        url={cta.url}
+        text={cta.label}
+        style={floatingButtonStyle}
+        onOpen={() => onActionTap("scheduling", "calendly", cta.url, cta.label)}
+      />
+    );
   }
 
   if (cta.type === "scheduling" && cta.provider === "hubspot") {
     return (
       <>
-        <button onClick={() => setOpen(true)} style={floatingButtonStyle}>
+        <button
+          onClick={() => {
+            onActionTap("scheduling", "hubspot", cta.url, cta.label);
+            setOpen(true);
+          }}
+          style={floatingButtonStyle}
+        >
           {cta.label}
         </button>
         <HubSpotMeetingModal url={cta.url} open={open} onClose={() => setOpen(false)} />
@@ -109,10 +124,7 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => {
-          recordOutreachEngagement({ linkTap: true });
-          recordOutreachEvent("cta_tap", cta.label);
-        }}
+        onOpen={() => onActionTap("scheduling", "linkout", cta.url, cta.label)}
       />
     );
   }
@@ -126,10 +138,7 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => {
-          recordOutreachEngagement({ linkTap: true });
-          recordOutreachEvent("cta_tap", cta.label);
-        }}
+        onOpen={() => onActionTap("shop", null, cta.url, cta.label)}
       />
     );
   }
@@ -140,10 +149,7 @@ export default function BookMeButton({
         url={cta.url}
         text={cta.label}
         style={floatingButtonStyle}
-        onOpen={() => {
-          recordOutreachEngagement({ linkTap: true });
-          recordOutreachEvent("cta_tap", cta.label);
-        }}
+        onOpen={() => onActionTap("external", null, cta.url, cta.label)}
       />
     );
   }

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
+import { isLikelyBotRequest } from "@/lib/tracking/botFilter";
 
 export const runtime = "edge";
 
@@ -8,6 +9,12 @@ export async function POST(req: NextRequest) {
 
   if (!body?.event_type) {
     return NextResponse.json({ error: "Missing event_type" }, { status: 400 });
+  }
+
+  // Same bot/datacenter rules as profile_views (lib/tracking/botFilter.ts) —
+  // previously jitsu_events had no filtering at all.
+  if (isLikelyBotRequest(req.headers)) {
+    return new NextResponse(null, { status: 204 });
   }
 
   const {
@@ -22,6 +29,7 @@ export async function POST(req: NextRequest) {
     utm_medium,
     utm_campaign,
     utm_content,
+    utm_id,
     fbclid,
     gclid,
     event_properties,
@@ -72,6 +80,19 @@ export async function POST(req: NextRequest) {
       .maybeSingle();
     boost_campaign_id = campaign?.id ?? null;
   }
+  // Fallback, same as profile_views' resolve_boost_campaign_id trigger: Meta
+  // appends utm_id = its numeric campaign id to ad clicks, which still
+  // identifies the campaign when the ad URL's utm_campaign doesn't match
+  // boost_campaigns.utm_campaign (e.g. GCMN's ads use boost_gcmn).
+  if (!boost_campaign_id && utm_id && resolvedProfileId) {
+    const { data: campaign } = await supabase
+      .from("boost_campaigns")
+      .select("id")
+      .eq("meta_campaign_id", utm_id)
+      .eq("profile_id", resolvedProfileId)
+      .maybeSingle();
+    boost_campaign_id = campaign?.id ?? null;
+  }
 
   const { error } = await supabase.from("jitsu_events").insert({
     event_type,
@@ -96,6 +117,7 @@ export async function POST(req: NextRequest) {
       utm_source: utm_source ?? null,
       utm_medium: utm_medium ?? null,
       utm_campaign: utm_campaign ?? null,
+      ...(utm_id ? { utm_id } : {}),
       ...(fbclid ? { fbclid } : {}),
       ...(gclid ? { gclid } : {}),
     },
