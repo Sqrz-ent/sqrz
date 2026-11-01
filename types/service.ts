@@ -7,8 +7,4 @@ export type Service = {
   price_label?: string;
   price_unit?: string;
   currency?: string;
-  booking_type?: "instant" | "quote";
-  instant_price?: number;
-  instant_currency?: string;
-  instant_tax_rate?: number | null;
 };
