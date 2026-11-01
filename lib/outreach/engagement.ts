@@ -5,7 +5,7 @@
 // persisted visitor identifier. Set once by OutreachEngagementGate when ?r=
 // is present on this page load; every other call site (MusicEmbeds' play
 // handler, LinkClickTracker, BookMeButton, Services, BookingModal,
-// DownloadCtaButton, PaymentGateCta) goes through
+// DownloadCtaButton) goes through
 // recordOutreachEngagement()/recordOutreachEngagementOnHide()/
 // recordOutreachEvent() below, which are safe no-ops whenever this hasn't
 // been set — i.e. on the overwhelming majority of page loads, which never

@@ -11,7 +11,6 @@ import CookieBanner from "@/components/CookieBanner";
 import AnalyticsGate from "@/components/tracking/AnalyticsGate";
 import TrackingGate from "@/components/tracking/TrackingGate";
 import DownloadCtaButton from "@/components/DownloadCtaButton";
-import PaymentGateCta from "@/components/PaymentGateCta";
 import ProfileInquiryBubble from "@/components/ProfileInquiryBubble";
 import SchedulingWidget from "@/components/SchedulingWidget";
 import ShopSection from "@/components/ShopSection";
@@ -408,7 +407,7 @@ export default async function PrivateLinkPage({
 
   const { data: link } = await supabase
     .from("private_booking_links")
-    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, payment_gate, price, currency, cta_label, show_scheduling_cta, show_shop_widget, show_external_cta, cover_focal_x, cover_focal_y, cover_zoom")
+    .select("id, link_slug, page_type, title, description, cover_image_url, external_url, external_url_label, expires_at, max_uses, use_count, video_url, cta_label, show_scheduling_cta, show_shop_widget, show_external_cta, cover_focal_x, cover_focal_y, cover_zoom")
     .eq("profile_id", profile.id)
     .eq("link_slug", linkSlug)
     .eq("is_active", true)
@@ -420,12 +419,10 @@ export default async function PrivateLinkPage({
 
   const maxUsesReached = link.max_uses != null && link.use_count >= link.max_uses;
 
-  // Payment-gated links count a "use" only once payment completes (in the Stripe
-  // webhook), never on page load — otherwise every visitor would burn a use.
-  // Bots/datacenter traffic never count either: a crawler burst (e.g. Meta's
-  // preview fetchers) could otherwise exhaust a max_uses-limited link and lock
-  // real visitors out.
-  if (!maxUsesReached && !link.payment_gate && !isLikelyBotRequest(headersList)) {
+  // Bots/datacenter traffic never count: a crawler burst (e.g. Meta's preview
+  // fetchers) could otherwise exhaust a max_uses-limited link and lock real
+  // visitors out.
+  if (!maxUsesReached && !isLikelyBotRequest(headersList)) {
     await supabase
       .from("private_booking_links")
       .update({ use_count: (link.use_count || 0) + 1 })
@@ -593,18 +590,7 @@ export default async function PrivateLinkPage({
         ? await getShopProducts(profile.id as string)
         : [];
 
-    const bookCta = (link.payment_gate as boolean) && gatedUrl ? (
-      <PaymentGateCta
-        linkId={link.id as string}
-        price={link.price as number | null}
-        currency={link.currency as string | null}
-        externalUrl={gatedUrl}
-        label={ctaLabel || "Unlock"}
-        profileId={profile.id as string}
-        profileSlug={username}
-        linkSlug={linkSlug}
-      />
-    ) : gatedUrl ? (
+    const bookCta = gatedUrl ? (
       <DownloadCtaButton
         href={gatedUrl}
         accent={accent}
@@ -714,16 +700,14 @@ export default async function PrivateLinkPage({
   // above didn't fire). Render a minimal page rather than 404.
   const ctaUrl = safeUrl(link.external_url as string | null);
   const downloadCta = ctaUrl ? (
-    (link.payment_gate as boolean)
-      ? <PaymentGateCta linkId={link.id as string} price={link.price as number | null} currency={link.currency as string | null} externalUrl={ctaUrl} label="Download" profileId={profile.id as string} profileSlug={profile.slug as string} linkSlug={linkSlug} />
-      : <DownloadCtaButton
-          href={ctaUrl}
-          accent={accent}
-          profileSlug={profile.slug as string}
-          profileId={profile.id as string}
-          linkSlug={linkSlug}
-          label="Download"
-        />
+    <DownloadCtaButton
+      href={ctaUrl}
+      accent={accent}
+      profileSlug={profile.slug as string}
+      profileId={profile.id as string}
+      linkSlug={linkSlug}
+      label="Download"
+    />
   ) : null;
 
   return (
