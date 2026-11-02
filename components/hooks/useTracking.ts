@@ -12,7 +12,6 @@ import {
 type UseTrackingOptions = {
   profileSlug: string | null;
   profileId: string | null;
-  userTier: number | null;
   hasCustomPixels: boolean;
   viewId: string;
 };
@@ -20,7 +19,6 @@ type UseTrackingOptions = {
 export function useTracking({
   profileSlug,
   profileId,
-  userTier,
   hasCustomPixels,
   viewId,
 }: UseTrackingOptions) {
@@ -37,7 +35,6 @@ export function useTracking({
     const props = {
       profile_slug: profileSlug,
       profile_id: profileId,
-      user_tier: userTier,
       has_custom_pixels: hasCustomPixels,
     };
 

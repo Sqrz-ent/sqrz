@@ -420,7 +420,6 @@ const ticket = {
     <TrackingGate
       profileSlug={profile.slug as string | null}
       profileId={profile.id as string | null}
-      userTier={profile.plan_id as number | null}
       hasCustomPixels={!!(profile.pixel_google || profile.pixel_facebook || profile.pixel_linkedin || profile.pixel_tiktok || profile.hubspot_portal_id)}
 
       viewId={viewId}
@@ -608,7 +607,7 @@ const ticket = {
         }}
       >
 
-        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} planId={profile.plan_id as number | null} profileName={displayName} />}
+        {hasActiveServices && <Services services={activeServices} username={profile.slug} profileId={profile.id} profileName={displayName} />}
 
         {profile.bio && (
           <section style={sectionShellStyle}>

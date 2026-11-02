@@ -21,7 +21,6 @@ type InquiryThreadRow = {
 type ProfileRow = {
   id: string;
   slug: string;
-  plan_id: number | null;
   inquiry_chat_enabled: boolean | null;
   name: string | null;
   brand_name: string | null;
@@ -74,7 +73,7 @@ function formatProfileName(profile: ProfileRow) {
 async function getInquiryProfile(profileId: string) {
   const { data: profile } = await supabaseServer
     .from("profiles")
-    .select("id, slug, plan_id, inquiry_chat_enabled, name, brand_name, first_name, last_name, email")
+    .select("id, slug, inquiry_chat_enabled, name, brand_name, first_name, last_name, email")
     .eq("id", profileId)
     .maybeSingle();
 

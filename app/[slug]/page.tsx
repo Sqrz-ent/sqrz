@@ -399,7 +399,7 @@ export default async function PrivateLinkPage({
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, plan_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, pixel_tiktok, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url, external_link_url, external_link_label")
+    .select("id, slug, name, first_name, last_name, brand_name, avatar_url, avatar_focal_x, avatar_focal_y, template_id, inquiry_chat_enabled, pixel_google, pixel_facebook, pixel_linkedin, pixel_tiktok, hubspot_portal_id, company_name, company_address, company_tax_id, legal_form, vat_id, trade_register_court, trade_register_number, responsible_person, regulatory_body, dpo_email, external_privacy_url, scheduling_provider, scheduling_url, shop_provider, beatstars_url, shop_store_url, external_link_url, external_link_label")
     .eq("slug", username)
     .single();
 
@@ -666,7 +666,6 @@ export default async function PrivateLinkPage({
         <TrackingGate
           profileSlug={profile.slug as string | null}
           profileId={profile.id as string | null}
-          userTier={profile.plan_id as number | null}
           hasCustomPixels={hasCustomPixels}
           viewId={viewId}
         />
@@ -742,7 +741,6 @@ export default async function PrivateLinkPage({
       <TrackingGate
         profileSlug={profile.slug as string | null}
         profileId={profile.id as string | null}
-        userTier={profile.plan_id as number | null}
         hasCustomPixels={hasCustomPixels}
         viewId={viewId}
       />

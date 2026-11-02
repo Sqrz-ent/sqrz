@@ -15,7 +15,7 @@ export default async function PrivacyPage({
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, slug, name, email, company_name, legal_form, company_address, responsible_person, vat_id, trade_register_court, trade_register_number, company_tax_id, regulatory_body, dpo_email, external_privacy_url, widget_spotify, widget_soundcloud, widget_mixcloud, social_youtube, social_instagram, social_facebook, social_linkedin, plan_id, custom_domain, pixel_google, pixel_facebook, pixel_linkedin"
+      "id, slug, name, email, company_name, legal_form, company_address, responsible_person, vat_id, trade_register_court, trade_register_number, company_tax_id, regulatory_body, dpo_email, external_privacy_url, widget_spotify, widget_soundcloud, widget_mixcloud, social_youtube, social_instagram, social_facebook, social_linkedin, custom_domain, pixel_google, pixel_facebook, pixel_linkedin"
     )
     .eq("slug", slug)
     .single();
@@ -48,7 +48,6 @@ export default async function PrivacyPage({
   if (profile.widget_mixcloud) activeEmbeds.push("Mixcloud (Mixcloud Ltd., UK)");
   if (profile.social_youtube) activeEmbeds.push("YouTube (Google LLC, USA)");
 
-  const isPaidUser = profile.plan_id != null;
 
   return (
     <div style={shell}>
@@ -198,21 +197,6 @@ export default async function PrivacyPage({
           </section>
         )}
 
-        {/* 6. Payments */}
-        {isPaidUser && (
-          <section style={section}>
-            <h2 style={h2}>Payments</h2>
-            <p style={body}>
-              Booking inquiries and payments on this site are facilitated via{" "}
-              <strong>Stripe</strong> (Stripe Inc., 354 Oyster Point Blvd, South San Francisco,
-              CA 94080, USA). Stripe may collect payment and identity data as described in
-              their privacy policy:{" "}
-              <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" style={link}>
-                stripe.com/privacy
-              </a>
-            </p>
-          </section>
-        )}
 
         {/* 7. Contact & data requests */}
         <section style={section}>

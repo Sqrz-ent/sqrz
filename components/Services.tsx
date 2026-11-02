@@ -134,7 +134,6 @@ export default function Services({
   profileId: string;
   // Kept in the prop type (unused now that instant-booking's fee calc is
   // gone) so the existing caller (app/page.tsx) doesn't need to change.
-  planId?: number | null;
   profileName?: string | null;
 }) {
   const [modalOpen, setModalOpen] = useState(false);
